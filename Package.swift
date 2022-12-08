@@ -24,6 +24,7 @@ let package = Package(
         .target(
             name: "TecoCore",
             dependencies: [
+                .byName(name: "TecoSigner"),
                 .product(name: "NIOHTTP1", package: "swift-nio"),
                 .product(name: "NIOFoundationCompat", package: "swift-nio"),
             ]),
