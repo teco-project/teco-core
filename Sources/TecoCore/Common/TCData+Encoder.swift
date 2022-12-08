@@ -30,8 +30,6 @@ import NIOCore
 extension TCEncodableData {
     /// Encode TCDataType as JSON
     func encodeAsJSON(byteBufferAllocator: ByteBufferAllocator) throws -> ByteBuffer {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .secondsSince1970
-        return try encoder.encodeAsByteBuffer(self, allocator: byteBufferAllocator)
+        return try JSONEncoder().encodeAsByteBuffer(self, allocator: byteBufferAllocator)
     }
 }
