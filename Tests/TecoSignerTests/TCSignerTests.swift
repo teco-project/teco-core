@@ -72,7 +72,7 @@ final class TCSignerTests: XCTestCase {
     }
 
     // - MARK: Extended Signing
-    
+
     func testSignPostRequest() {
         let signer = TCSigner(credential: credential, service: "region", version: "2022-06-27")
         let headers = signer.signHeaders(
@@ -84,7 +84,7 @@ final class TCSignerTests: XCTestCase {
         )
         XCTAssertEqual(
             headers["Authorization"].first,
-            "TC3-HMAC-SHA256 Credential=MY_TC_SECRET_ID/2001-09-09/region/tc3_request, SignedHeaders=content-type;host;x-tc-content-sha256;x-tc-requestclient;x-tc-timestamp;x-tc-version, Signature=feec021ffbf7fdd7adcf734f81d665f6f4946fdfdb9d04a316bfa08901472f18"
+            "TC3-HMAC-SHA256 Credential=MY_TC_SECRET_ID/2001-09-09/region/tc3_request, SignedHeaders=content-type;host;x-tc-content-sha256;x-tc-requestclient;x-tc-timestamp;x-tc-version, Signature=c9a0256636cecf2ad527788acbae77096c774f77bb5785f3c6d82a86209dcfc6"
         )
     }
 
@@ -98,7 +98,7 @@ final class TCSignerTests: XCTestCase {
         )
         XCTAssertEqual(
             headers["Authorization"].first,
-            "TC3-HMAC-SHA256 Credential=MY_TC_SECRET_ID/2001-09-09/region/tc3_request, SignedHeaders=content-type;host;x-tc-content-sha256;x-tc-requestclient;x-tc-timestamp;x-tc-version, Signature=dd2225a8938211951f43af1928df59f3496cfcc9eaac9a67a290e87732aedc44"
+            "TC3-HMAC-SHA256 Credential=MY_TC_SECRET_ID/2001-09-09/region/tc3_request, SignedHeaders=content-type;host;x-tc-content-sha256;x-tc-requestclient;x-tc-timestamp;x-tc-version, Signature=e11f23fcc416b3ef22ea72055ff752b80b4d6b86b94cc0a46bd03a80cab14653"
         )
     }
 

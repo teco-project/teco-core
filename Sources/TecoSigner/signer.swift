@@ -252,37 +252,24 @@ public struct TCSigner: Sendable {
     static func headersToSign(_ headers: HTTPHeaders, basicSigning: Bool) -> OrderedDictionary<String, String> {
         var headersToSign: OrderedDictionary<String, String> = [:]
 
-        let headersMustSign: Set<String> = [
-            "content-type",
-            "host",
-        ]
-        let headersNotToSign: Set<String> = [
-            "authorization",
-            "content-length",
-            "expect",
-            "user-agent",
-        ]
+        let headersMustSign: Set<String> = ["content-type", "host"]
+        let headersNotToSign: Set<String> = ["authorization", "content-length", "expect", "user-agent"]
 
         if basicSigning {
-            for header in headers {
-                let lowercasedHeaderName = header.name.lowercased()
-                guard headersMustSign.contains(lowercasedHeaderName) else {
-                    continue
-                }
-                headersToSign[lowercasedHeaderName] = header.value
+            for header in headersMustSign {
+                headersToSign[header] = headers.first(name: header)
             }
         } else {
-            for header in headers {
-                let lowercasedHeaderName = header.name.lowercased()
-                if headersNotToSign.contains(lowercasedHeaderName) {
-                    continue
+            for (header, value) in headers {
+                let lowercasedHeaderName = header.lowercased()
+                if !headersNotToSign.contains(lowercasedHeaderName) {
+                    headersToSign[lowercasedHeaderName] = value
                 }
-                headersToSign[lowercasedHeaderName] = header.value
             }
         }
         headersToSign.sort()
 
-        return headersToSign.mapValues { $0.trimmingCharacters(in: CharacterSet.whitespaces) }
+        return headersToSign.mapValues { $0.trimmingCharacters(in: CharacterSet.whitespaces).lowercased() }
     }
 
     /// returns port from URL. If port is set to 80 on an http url or 443 on an https url nil is returned
