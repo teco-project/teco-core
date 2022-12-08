@@ -34,6 +34,8 @@ public struct TCServiceConfig: Sendable {
     public let service: String
     /// Version of the service API
     public let version: String
+    /// Preferred language for API response
+    public let language: Language?
     /// The url to use in requests
     public let endpoint: String
     /// The base error type returned by the service
@@ -51,6 +53,7 @@ public struct TCServiceConfig: Sendable {
     ///   - region: Region of service you want to operate on
     ///   - service: Name of service endpoint
     ///   - version: Service API version
+    ///   - language: Language of API response
     ///   - endpoint: Endpoint URL preference
     ///   - errorType: Base error type that the client may throw
     ///   - timeout: Time out value for HTTP requests
@@ -60,6 +63,7 @@ public struct TCServiceConfig: Sendable {
         region: TCRegion?,
         service: String,
         version: String,
+        language: Language? = nil,
         endpoint: EndpointPreference = .global,
         errorType: TCErrorType.Type? = nil,
         timeout: TimeAmount? = nil,
@@ -74,12 +78,18 @@ public struct TCServiceConfig: Sendable {
         }
         self.service = service
         self.version = version
+        self.language = language
         self.errorType = errorType
         self.timeout = timeout ?? .seconds(20)
         self.byteBufferAllocator = byteBufferAllocator
 
         self.endpointPreference = endpoint
         self.endpoint = endpoint.resolve(region: self.region, service: service)
+    }
+
+    public enum Language: String, Sendable, Equatable {
+        case zh_CN = "zh-CN"
+        case en_US = "en-US"
     }
 
     public enum EndpointPreference: Sendable, Equatable {
@@ -111,17 +121,20 @@ public struct TCServiceConfig: Sendable {
     /// Service config parameters you can patch
     public struct Patch {
         let region: TCRegion?
-        let endpoint: EndpointPreference?
+        let language: TCServiceConfig.Language?
+        let endpoint: TCServiceConfig.EndpointPreference?
         let timeout: TimeAmount?
         let byteBufferAllocator: ByteBufferAllocator?
 
         init(
             region: TCRegion? = nil,
-            endpoint: EndpointPreference? = nil,
+            language: TCServiceConfig.Language? = nil,
+            endpoint: TCServiceConfig.EndpointPreference? = nil,
             timeout: TimeAmount? = nil,
             byteBufferAllocator: ByteBufferAllocator? = nil
         ) {
             self.region = region
+            self.language = language
             self.endpoint = endpoint
             self.timeout = timeout
             self.byteBufferAllocator = byteBufferAllocator
@@ -141,6 +154,7 @@ public struct TCServiceConfig: Sendable {
         }
         self.service = service.service
         self.version = service.version
+        self.language = patch.language ?? service.language
         self.endpointPreference = service.endpointPreference
         self.errorType = service.errorType
         self.timeout = patch.timeout ?? service.timeout
