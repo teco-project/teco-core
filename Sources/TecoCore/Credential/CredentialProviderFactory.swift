@@ -42,6 +42,8 @@ public struct CredentialProviderFactory {
         public let eventLoop: EventLoop
         /// The `Logger` attached to the TCClient
         public let logger: Logger
+        /// TCClient options
+        public let options: TCClient.Options
     }
 
     private let cb: (Context) -> CredentialProvider
@@ -58,7 +60,7 @@ public struct CredentialProviderFactory {
 extension CredentialProviderFactory {
     /// The default CredentialProvider used to access credentials
     public static var `default`: CredentialProviderFactory {
-        return .environment
+        return .selector(.environment)
     }
 
     /// Create a custom `CredentialProvider`
@@ -85,6 +87,20 @@ extension CredentialProviderFactory {
     public static var empty: CredentialProviderFactory {
         Self { _ in
             StaticCredential(secretId: "", secretKey: "")
+        }
+    }
+
+    /// Use the list of credential providers supplied to get credentials.
+    ///
+    /// When searching for credentials it will go through the list sequentially and the first credential
+    /// provider that returns valid credentials will be used.
+    public static func selector(_ providers: CredentialProviderFactory...) -> CredentialProviderFactory {
+        Self { context in
+            if providers.count == 1 {
+                return providers[0].createProvider(context: context)
+            } else {
+                return RuntimeSelectorCredentialProvider(providers: providers, context: context)
+            }
         }
     }
 }
