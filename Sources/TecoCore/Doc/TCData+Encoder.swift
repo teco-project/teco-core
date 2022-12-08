@@ -26,7 +26,6 @@
 
 import class Foundation.JSONEncoder
 import NIOCore
-import NIOFoundationCompat
 
 extension TCEncodableData {
     /// Encode TCDataType as JSON
@@ -34,12 +33,5 @@ extension TCEncodableData {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
         return try encoder.encodeAsByteBuffer(self, allocator: byteBufferAllocator)
-    }
-
-    /// Encode TCDataType as a query array
-    func encodeAsQuery(with keys: [String: String]) throws -> String? {
-        var encoder = QueryEncoder()
-        encoder.additionalKeys = keys
-        return try encoder.encode(self)
     }
 }
