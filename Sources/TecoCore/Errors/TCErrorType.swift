@@ -28,6 +28,8 @@
 ///
 /// Initialized with error code and message.
 public protocol TCErrorType: Error, CustomStringConvertible {
+    /// Possible error domains related to the base error type.
+    static var domains: [TCErrorType.Type] { get }
     /// Initialize error.
     init?(errorCode: String, context: TCErrorContext)
     /// Error code return by Tencent Cloud.
@@ -43,5 +45,9 @@ extension TCErrorType {
 
     public var message: String? {
         return context?.message
+    }
+
+    public static var domains: [TCErrorType.Type] {
+        return []
     }
 }

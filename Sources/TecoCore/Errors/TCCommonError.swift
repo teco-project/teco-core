@@ -269,6 +269,12 @@ public struct TCCommonError: TCErrorType {
     }
 }
 
+extension TCCommonError {
+    public static var domains: [TCErrorType.Type] {
+        return [AuthFailure.self, RequestLimitExceeded.self]
+    }
+}
+
 extension TCCommonError: Equatable {
     public static func == (lhs: TCCommonError, rhs: TCCommonError) -> Bool {
         lhs.error == rhs.error

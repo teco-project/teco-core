@@ -104,9 +104,9 @@ extension TCCommonError.AuthFailure: CustomStringConvertible {
 }
 
 extension TCCommonError.AuthFailure {
-    public func toCommonError() -> TCCommonError? {
-        guard let code = TCCommonError.Code(rawValue: self.errorCode) else {
-            return nil
+    public func toCommonError() -> TCCommonError {
+        guard let code = TCCommonError.Code(rawValue: self.error.rawValue) else {
+            fatalError("Unexpected internal conversion error!\nPlease file a bug at https://github.com/teco-project/teco to help address the problem.")
         }
         return TCCommonError(code, context: self.context)
     }
