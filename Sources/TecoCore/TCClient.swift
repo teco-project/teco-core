@@ -34,12 +34,12 @@ import TecoSigner
 /// an ``TCErrorType``.
 public final class TCClient {
     // MARK: Member variables
-
+    
     /// Default logger that logs nothing
     public static let loggingDisabled = Logger(label: "Teco-do-not-log", factory: { _ in SwiftLogNoOpLogHandler() })
-
+    
     static let globalRequestID = ManagedAtomic<Int>(0)
-
+    
     /// Tencent Cloud credential provider
     public let credentialProvider: CredentialProvider
     /// HTTP client used by TCClient
@@ -52,11 +52,11 @@ public final class TCClient {
     let clientLogger: Logger
     /// client options
     let options: Options
-
+    
     internal let isShutdown = ManagedAtomic<Bool>(false)
-
+    
     // MARK: Initialization
-
+    
     /// Initialize an TCClient struct
     /// - parameters:
     ///     - credentialProvider: An object that returns valid signing credentials for request signing.
@@ -79,24 +79,24 @@ public final class TCClient {
         case .createNew:
             self.httpClient = AsyncHTTPClient.HTTPClient(eventLoopGroupProvider: .createNew, configuration: .init(timeout: .init(connect: .seconds(10))))
         }
-
+        
         self.credentialProvider = credentialProviderFactory.createProvider(context: .init(
             httpClient: httpClient,
             eventLoop: httpClient.eventLoopGroup.next(),
             logger: clientLogger,
             options: options
         ))
-
+        
         self.clientLogger = clientLogger
         self.options = options
     }
-
+    
     deinit {
         assert(self.isShutdown.load(ordering: .relaxed), "TCClient not shut down before the deinit. Please call client.syncShutdown() when no longer needed.")
     }
-
+    
     // MARK: Shutdown
-
+    
     /// Shutdown client synchronously.
     ///
     /// Before an `TCClient` is deleted you need to call this function or the async version `shutdown`
@@ -123,7 +123,7 @@ public final class TCClient {
             }
         }
     }
-
+    
     /// Shutdown TCClient asynchronously.
     ///
     /// Before an `TCClient` is deleted you need to call this function or the synchronous
@@ -153,40 +153,29 @@ public final class TCClient {
                     }
                     callback(error)
                 }
-
+                
             case .shared:
                 callback(nil)
             }
         }
     }
-
+    
     // MARK: Member structs/enums
-
+    
     /// Errors returned by `TCClient` code
-    public struct ClientError: Swift.Error, Equatable {
-        enum Error {
-            case alreadyShutdown
-            case invalidURL
-            case tooMuchData
-            case notEnoughData
-            case waiterFailed
-            case waiterTimeout
-        }
-
-        let error: Error
-
+    public enum ClientError: Error, Equatable {
         /// client has already been shutdown
-        public static var alreadyShutdown: ClientError { .init(error: .alreadyShutdown) }
+        case alreadyShutdown
         /// URL provided to client is invalid
-        public static var invalidURL: ClientError { .init(error: .invalidURL) }
+        case invalidURL
         /// Too much data has been supplied for the Request
-        public static var tooMuchData: ClientError { .init(error: .tooMuchData) }
+        case tooMuchData
         /// Not enough data has been supplied for the Request
-        public static var notEnoughData: ClientError { .init(error: .notEnoughData) }
+        case notEnoughData
         /// Waiter failed, but without an error. ie a successful api call was an error
-        public static var waiterFailed: ClientError { .init(error: .waiterFailed) }
+        case waiterFailed
         /// Waiter failed to complete in time alloted
-        public static var waiterTimeout: ClientError { .init(error: .waiterTimeout) }
+        case waiterTimeout
     }
 
     /// Specifies how `HTTPClient` will be created and establishes lifecycle ownership.
@@ -199,14 +188,14 @@ public final class TCClient {
         /// `HTTPClient` will be created by `TCClient`. When `shutdown` is called, created `HTTPClient` will be shut down as well.
         case createNew
     }
-
+    
     /// Additional options
     public struct Options {
         /// log level used for request logging
         let requestLogLevel: Logger.Level
         /// log level used for error logging
         let errorLogLevel: Logger.Level
-
+        
         /// Initialize TCClient.Options
         /// - Parameter requestLogLevel:Log level used for request logging
         public init(
@@ -217,6 +206,12 @@ public final class TCClient {
             self.errorLogLevel = errorLogLevel
         }
     }
+}
+
+
+// MARK: Credential & Signature
+
+extension TCClient {
 
     /// Get credential used by client
     /// - Parameters:
@@ -226,6 +221,38 @@ public final class TCClient {
     public func getCredential(on eventLoop: EventLoop? = nil, logger: Logger = TCClient.loggingDisabled) -> EventLoopFuture<Credential> {
         let eventLoop = eventLoop ?? self.eventLoopGroup.next()
         return self.credentialProvider.getCredential(on: eventLoop, logger: logger)
+    }
+
+    /// Generate signed headers
+    /// - parameters:
+    ///     - url : URL to sign
+    ///     - httpMethod: HTTP method to use (.GET, .PUT, .PUSH etc)
+    ///     - httpHeaders: Headers that are to be used with this URL.
+    ///     - body: Payload to sign as well. While it is unnecessary to provide the body for S3 other services may require it
+    ///     - serviceConfig: additional AWS service configuration used to sign the url
+    ///     - logger: Logger to output to
+    /// - returns:
+    ///     A set of signed headers that include the original headers supplied
+    public func signHeaders(
+        url: URL,
+        httpMethod: HTTPMethod,
+        headers: HTTPHeaders = HTTPHeaders(),
+        body: TCPayload,
+        serviceConfig: TCServiceConfig,
+        logger: Logger = TCClient.loggingDisabled
+    ) -> EventLoopFuture<HTTPHeaders> {
+        let logger = logger.attachingRequestId(
+            Self.globalRequestID.wrappingIncrementThenLoad(ordering: .relaxed),
+            action: "SignHeaders",
+            service: serviceConfig.service
+        )
+        return createSigner(serviceConfig: serviceConfig, logger: logger).flatMapThrowing { signer in
+            guard let cleanURL = signer.processURL(url: url) else {
+                throw TCClient.ClientError.invalidURL
+            }
+            let body: TCSigner.BodyData? = body.asByteBuffer().map { .byteBuffer($0) }
+            return signer.signHeaders(url: cleanURL, method: httpMethod, headers: headers, body: body)
+        }
     }
 
     func createSigner(serviceConfig: TCServiceConfig, logger: Logger) -> EventLoopFuture<TCSigner> {
@@ -238,7 +265,7 @@ public final class TCClient {
 extension TCClient.ClientError: CustomStringConvertible {
     /// return human readable description of error
     public var description: String {
-        switch error {
+        switch self {
         case .alreadyShutdown:
             return "The TCClient is already shutdown"
         case .invalidURL:
@@ -257,6 +284,17 @@ extension TCClient.ClientError: CustomStringConvertible {
         }
     }
 }
+
+extension Logger {
+    func attachingRequestId(_ id: Int, action: String, service: String) -> Logger {
+        var logger = self
+        logger[metadataKey: "tc-service"] = .string(service)
+        logger[metadataKey: "tc-action"] = .string(action)
+        logger[metadataKey: "tc-request-id"] = "\(id)"
+        return logger
+    }
+}
+
 
 #if compiler(>=5.6)
 extension TCClient: Sendable {}
