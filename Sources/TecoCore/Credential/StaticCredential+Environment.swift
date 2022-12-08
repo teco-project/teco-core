@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the Soto for AWS open source project
+// This source file was part of the Soto for AWS open source project
 //
 // Copyright (c) 2017-2020 the Soto project authors
 // Licensed under Apache License v2.0
@@ -24,26 +24,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-/// Structure defining where to serialize member of TCDataType.
-public struct TCMemberEncoding {
-    /// Location of TCMemberEncoding.
-    public enum Location {
-        case hostname(String)
-        case uri(String)
-        case querystring(String)
-        case header(String)
-        case headerPrefix(String)
-        case statusCode
-        case body(String)
-    }
+import TecoSigner
 
-    /// name of member
-    public let label: String
-    /// where to find or place member
-    public let location: Location?
+public extension StaticCredential {
+    /// Construct static credentaisl from TCCLI-defined environment variables if it exists.
+    static func fromEnvironment() -> StaticCredential? {
+        guard let secretId = Environment["TENCENTCLOUD_SECRET_ID"] else {
+            return nil
+        }
+        guard let secretKey = Environment["TENCENTCLOUD_SECRET_KEY"] else {
+            return nil
+        }
 
-    public init(label: String, location: Location? = nil) {
-        self.label = label
-        self.location = location
+        return .init(
+            secretId: secretId,
+            secretKey: secretKey,
+            token: Environment["TENCENTCLOUD_TOKEN"]
+        )
     }
 }
