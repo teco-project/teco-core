@@ -229,6 +229,7 @@ extension TCClient {
         httpMethod: HTTPMethod = .POST,
         serviceConfig: TCServiceConfig,
         input: Input,
+        outputs outputType: Output.Type = Output.self,
         logger: Logger = TCClient.loggingDisabled,
         on eventLoop: EventLoop? = nil
     ) -> EventLoopFuture<Output> {
@@ -247,6 +248,7 @@ extension TCClient {
                 self.httpClient.execute(request: request, timeout: serviceConfig.timeout, on: eventLoop, logger: logger)
             },
             config: serviceConfig,
+            outputType: outputType,
             logger: logger,
             on: eventLoop
         )
@@ -267,6 +269,7 @@ extension TCClient {
         path: String = "/",
         httpMethod: HTTPMethod = .GET,
         serviceConfig: TCServiceConfig,
+        outputs outputType: Output.Type = Output.self,
         logger: Logger = TCClient.loggingDisabled,
         on eventLoop: EventLoop? = nil
     ) -> EventLoopFuture<Output> {
@@ -284,6 +287,7 @@ extension TCClient {
                 self.httpClient.execute(request: request, timeout: serviceConfig.timeout, on: eventLoop, logger: logger)
             },
             config: serviceConfig,
+            outputType: outputType,
             logger: logger,
             on: eventLoop
         )
@@ -377,6 +381,7 @@ extension TCClient {
         createRequest: @escaping () throws -> TCRequest,
         executor: @escaping (TCHTTPRequest, EventLoop, Logger) -> EventLoopFuture<TCHTTPResponse>,
         config: TCServiceConfig,
+        outputType: Output.Type,
         logger: Logger,
         on eventLoop: EventLoop?
     ) -> EventLoopFuture<Output> {
@@ -414,14 +419,17 @@ extension TCClient {
 
         func execute(attempt: Int) {
             // execute HTTP request
-            _ = request(eventLoop)
+            request(eventLoop)
                 .flatMapThrowing { response throws -> Void in
                     // Tencent Cloud will return 200 even for API error, so
-                    guard response.status.code == 200 else {
+                    guard response.status == .ok else {
                         throw self.createRawError(for: response, serviceConfig: serviceConfig, logger: logger)
                     }
                     let output: Output = try self.validate(response: response, serviceConfig: serviceConfig, logger: logger)
                     promise.succeed(output)
+                }
+                .whenFailure { error in
+                    promise.fail(error)
                 }
         }
         execute(attempt: 0)
