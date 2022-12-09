@@ -59,7 +59,7 @@ extension TCService {
     /// Generate signed headers
     /// - parameters:
     ///     - url : URL to sign
-    ///     - httpMethod: HTTP method to use (.GET, .PUT, .PUSH etc)
+    ///     - httpMethod: HTTP method to use (.GET or .POST)
     ///     - headers: Headers that are to be used with this URL. Be sure to include these headers when you used the returned URL
     ///     - body: body payload to sign as well. While it is unnecessary to provide the body for S3 other services require it
     ///     - logger: Logger to output to
@@ -67,7 +67,7 @@ extension TCService {
     ///     A series of signed headers including the original headers provided to the function
     public func signHeaders(
         url: URL,
-        httpMethod: HTTPMethod,
+        httpMethod: HTTPMethod = .POST,
         headers: HTTPHeaders = HTTPHeaders(),
         body: TCPayload = .empty,
         logger: Logger = TCClient.loggingDisabled
