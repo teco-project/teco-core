@@ -21,6 +21,7 @@ import AsyncHTTPClient
 import Dispatch
 import struct Foundation.URL
 import Logging
+import Metrics
 import NIOConcurrencyHelpers
 import NIOCore
 import NIOHTTP1
@@ -399,7 +400,7 @@ extension TCClient {
                     request: { eventLoop in executor(request, eventLoop, logger) }
                 )
             }
-        return future
+        return recordRequest(future, service: config.service, action: action, logger: logger)
     }
 
     /// The core invoker.
@@ -461,6 +462,37 @@ extension Logger {
         logger[metadataKey: "tc-action"] = .string(action)
         logger[metadataKey: "tc-request-id"] = "\(id)"
         return logger
+    }
+}
+
+extension TCClient {
+    /// Record request in `Metrics` and `Logging`
+    func recordRequest<Output>(_ future: EventLoopFuture<Output>, service: String, action: String, logger: Logger) -> EventLoopFuture<Output> {
+        let dimensions: [(String, String)] = [("tc-service", service), ("tc-action", action)]
+        let startTime = DispatchTime.now().uptimeNanoseconds
+
+        Counter(label: "tc_requests_total", dimensions: dimensions).increment()
+        logger.log(level: self.options.requestLogLevel, "Tencent Cloud Request")
+
+        return future.map { response in
+            logger.trace("Tencent Cloud Response")
+            Metrics.Timer(
+                label: "tc_request_duration",
+                dimensions: dimensions,
+                preferredDisplayUnit: .seconds
+            ).recordNanoseconds(DispatchTime.now().uptimeNanoseconds - startTime)
+            return response
+        }.flatMapErrorThrowing { error in
+            Counter(label: "tc_request_errors", dimensions: dimensions).increment()
+            // AWSErrorTypes have already been logged
+            if error as? TCErrorType == nil {
+                // log error message
+                logger.log(level: self.options.errorLogLevel, "TCClient error", metadata: [
+                    "tc-error-message": "\(error)",
+                ])
+            }
+            throw error
+        }
     }
 }
 
