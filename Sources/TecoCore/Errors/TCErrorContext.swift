@@ -36,7 +36,7 @@ public struct TCErrorContext: Sendable {
     public let additionalFields: [String: String]
 
     internal init(
-        requestId: UUID?,
+        requestId: UUID? = nil,
         message: String,
         responseCode: HTTPResponseStatus,
         headers: HTTPHeaders = [:],
