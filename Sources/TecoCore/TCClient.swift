@@ -29,13 +29,13 @@ import TecoSigner
 
 /// Client managing communication with Tencent Cloud services.
 ///
-/// This is the workhorse of TecoCore. You provide it with a ``TCEncodableData`` Input object, it converts it to ``TCRequest`` which is then converted
+/// This is the workhorse of TecoCore. You provide it with a ``TCRequestData`` Input object, it converts it to ``TCRequest`` which is then converted
 /// to a raw `HTTPClient` Request. This is then sent to Tencent Cloud. When the response from Tencent Cloud is received if it is successful it is converted
-/// to a ``TCResponse``, which is then decoded to generate a ``TCDecodableData`` Output object. If it is not successful then `TCClient` will throw
+/// to a ``TCResponse``, which is then decoded to generate a ``TCResponseData`` Output object. If it is not successful then `TCClient` will throw
 /// an ``TCErrorType``.
 public final class TCClient {
     // MARK: Member variables
-    
+
     /// Default logger that logs nothing
     public static let loggingDisabled = Logger(label: "Teco-do-not-log", factory: { _ in SwiftLogNoOpLogHandler() })
     
@@ -60,10 +60,10 @@ public final class TCClient {
     
     /// Initialize an TCClient struct
     /// - parameters:
-    ///     - credentialProvider: An object that returns valid signing credentials for request signing.
-    ///     - options: Configuration flags
-    ///     - httpClientProvider: HTTPClient to use. Use `.createNew` if you want the client to manage its own HTTPClient.
-    ///     - logger: Logger used to log background TCClient events
+    ///    - credentialProvider: An object that returns valid signing credentials for request signing.
+    ///    - options: Configuration flags
+    ///    - httpClientProvider: HTTPClient to use. Use `.createNew` if you want the client to manage its own HTTPClient.
+    ///    - logger: Logger used to log background TCClient events
     public init(
         credentialProvider credentialProviderFactory: CredentialProviderFactory = .default,
         options: Options = Options(),
@@ -305,12 +305,12 @@ extension TCClient {
 
     /// Generate signed headers
     /// - parameters:
-    ///     - url : URL to sign
-    ///     - httpMethod: HTTP method to use (.GET, .PUT, .PUSH etc)
-    ///     - httpHeaders: Headers that are to be used with this URL.
-    ///     - body: Payload to sign as well. While it is unnecessary to provide the body for S3 other services may require it
-    ///     - serviceConfig: additional AWS service configuration used to sign the url
-    ///     - logger: Logger to output to
+    ///    - url : URL to sign
+    ///    - httpMethod: HTTP method to use (.GET or .POST)
+    ///    - httpHeaders: Headers that are to be used with this URL.
+    ///    - body: Payload to sign.
+    ///    - serviceConfig: additional Tencent Cloud service configuration used to sign the url
+    ///    - logger: Logger to output to
     /// - returns:
     ///     A set of signed headers that include the original headers supplied
     public func signHeaders(
@@ -484,7 +484,7 @@ extension TCClient {
             return response
         }.flatMapErrorThrowing { error in
             Counter(label: "tc_request_errors", dimensions: dimensions).increment()
-            // AWSErrorTypes have already been logged
+            // TCErrorTypes have already been logged
             if error as? TCErrorType == nil {
                 // log error message
                 logger.log(level: self.options.errorLogLevel, "TCClient error", metadata: [

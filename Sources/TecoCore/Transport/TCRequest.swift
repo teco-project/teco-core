@@ -32,7 +32,7 @@ import NIOCore
 import NIOHTTP1
 import TecoSigner
 
-/// Object encapsulating all the information needed to generate a raw HTTP request to AWS
+/// Object encapsulating all the information needed to generate a raw HTTP request to Tencent Cloud.
 public struct TCRequest {
     /// request Tencent Cloud region
     public let region: TCRegion

@@ -57,7 +57,7 @@ public struct TCServiceConfig: Sendable {
     ///   - endpoint: Endpoint URL preference
     ///   - errorType: Base error type that the client may throw
     ///   - timeout: Time out value for HTTP requests
-    ///   - byteBufferAllocator: byte buffer allocator used throughout AWSClient
+    ///   - byteBufferAllocator: byte buffer allocator used throughout TCClient
     ///
     public init(
         region: TCRegion?,

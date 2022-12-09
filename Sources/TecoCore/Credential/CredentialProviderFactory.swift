@@ -69,7 +69,7 @@ extension CredentialProviderFactory {
     }
 
     /// Get `CredentialProvider` details from the environment
-    /// Looks in environment variables `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_SESSION_TOKEN`.
+    /// Looks in environment variables `TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY` and `TENCENTCLOUD_TOKEN`.
     public static var environment: CredentialProviderFactory {
         Self { _ -> CredentialProvider in
             return StaticCredential.fromEnvironment() ?? NullCredentialProvider()
