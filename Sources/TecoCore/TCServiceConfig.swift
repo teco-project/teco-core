@@ -33,7 +33,7 @@ public struct TCServiceConfig: Sendable {
     /// Name of service
     public let service: String
     /// Version of the service API
-    public let version: String
+    public let apiVersion: String
     /// Preferred language for API response
     public let language: Language?
     /// The url to use in requests
@@ -52,7 +52,7 @@ public struct TCServiceConfig: Sendable {
     /// - Parameters:
     ///   - region: Region of service you want to operate on
     ///   - service: Name of service endpoint
-    ///   - version: Service API version
+    ///   - apiVersion: Service API version
     ///   - language: Language of API response
     ///   - endpoint: Endpoint URL preference
     ///   - errorType: Base error type that the client may throw
@@ -62,7 +62,7 @@ public struct TCServiceConfig: Sendable {
     public init(
         region: TCRegion?,
         service: String,
-        version: String,
+        apiVersion: String,
         language: Language? = nil,
         endpoint: EndpointPreference = .global,
         errorType: TCErrorType.Type? = nil,
@@ -77,7 +77,7 @@ public struct TCServiceConfig: Sendable {
             self.region = .ap_guangzhou
         }
         self.service = service
-        self.version = version
+        self.apiVersion = apiVersion
         self.language = language
         self.errorType = errorType
         self.timeout = timeout ?? .seconds(20)
@@ -153,7 +153,7 @@ public struct TCServiceConfig: Sendable {
             self.endpoint = patch.endpoint?.resolve(region: region, service: service.service) ?? service.endpoint
         }
         self.service = service.service
-        self.version = service.version
+        self.apiVersion = service.apiVersion
         self.language = patch.language ?? service.language
         self.endpointPreference = service.endpointPreference
         self.errorType = service.errorType
