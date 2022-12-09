@@ -79,7 +79,7 @@ public final class TCClient {
         case .createNew:
             self.httpClient = AsyncHTTPClient.HTTPClient(eventLoopGroupProvider: .createNew, configuration: .init(timeout: .init(connect: .seconds(10))))
         }
-        
+
         self.credentialProvider = credentialProviderFactory.createProvider(context: .init(
             httpClient: httpClient,
             eventLoop: httpClient.eventLoopGroup.next(),
@@ -195,7 +195,7 @@ public final class TCClient {
         let requestLogLevel: Logger.Level
         /// log level used for error logging
         let errorLogLevel: Logger.Level
-        
+
         /// Initialize TCClient.Options
         /// - Parameter requestLogLevel:Log level used for request logging
         public init(
@@ -208,11 +208,90 @@ public final class TCClient {
     }
 }
 
+// MARK: Custom API calls
+
+extension TCClient {
+    /// Execute a request with an input object and return a future with the output object generated from the response
+    /// - parameters:
+    ///    - action: Name of the Tencent Cloud operation
+    ///    - path: path to append to endpoint URL
+    ///    - httpMethod: HTTP method to use ("POST" by default)
+    ///    - serviceConfig: Tencent Cloud service configuration
+    ///    - input: API request payload
+    ///    - logger: Logger to log request details to
+    ///    - eventLoop: EventLoop to run request on
+    /// - returns:
+    ///     Future containing output object that completes when response is received
+    public func execute<Input: TCRequestData, Output: TCResponseData>(
+        action: String,
+        path: String = "/",
+        httpMethod: HTTPMethod = .POST,
+        serviceConfig: TCServiceConfig,
+        input: Input,
+        logger: Logger = TCClient.loggingDisabled,
+        on eventLoop: EventLoop? = nil
+    ) -> EventLoopFuture<Output> {
+        self.execute(
+            action: action,
+            createRequest: {
+                try TCRequest(
+                    action: action,
+                    path: path,
+                    httpMethod: httpMethod,
+                    input: input,
+                    configuration: serviceConfig
+                )
+            },
+            executor: { request, eventLoop, logger in
+                self.httpClient.execute(request: request, timeout: serviceConfig.timeout, on: eventLoop, logger: logger)
+            },
+            config: serviceConfig,
+            logger: logger,
+            on: eventLoop
+        )
+    }
+
+    /// Execute a custom request and return a future with the output object generated from the response
+    /// - parameters:
+    ///    - action: Name of the Tencent Cloud operation
+    ///    - path: path to append to endpoint URL
+    ///    - httpMethod: HTTP method to use ("GET" by default)
+    ///    - serviceConfig: Tencent Cloud service configuration
+    ///    - logger: Logger to log request details to
+    ///    - eventLoop: EventLoop to run request on
+    /// - returns:
+    ///     Future containing output object that completes when response is received
+    public func execute<Output: TCResponseData>(
+        action: String,
+        path: String = "/",
+        httpMethod: HTTPMethod = .GET,
+        serviceConfig: TCServiceConfig,
+        logger: Logger = TCClient.loggingDisabled,
+        on eventLoop: EventLoop? = nil
+    ) -> EventLoopFuture<Output> {
+        self.execute(
+            action: action,
+            createRequest: {
+                try TCRequest(
+                    action: action,
+                    path: path,
+                    httpMethod: httpMethod,
+                    configuration: serviceConfig
+                )
+            },
+            executor: { request, eventLoop, logger in
+                self.httpClient.execute(request: request, timeout: serviceConfig.timeout, on: eventLoop, logger: logger)
+            },
+            config: serviceConfig,
+            logger: logger,
+            on: eventLoop
+        )
+    }
+}
 
 // MARK: Credential & Signature
 
 extension TCClient {
-
     /// Get credential used by client
     /// - Parameters:
     ///   - eventLoop: optional eventLoop to run operation on
@@ -257,10 +336,12 @@ extension TCClient {
 
     func createSigner(serviceConfig: TCServiceConfig, logger: Logger) -> EventLoopFuture<TCSigner> {
         return credentialProvider.getCredential(on: eventLoopGroup.next(), logger: logger).map { credential in
-            return TCSigner(credential: credential, service: serviceConfig.service)
+            TCSigner(credential: credential, service: serviceConfig.service)
         }
     }
 }
+
+// MARK: Response helpers
 
 extension TCClient {
     /// Generate a TCResponse from  the operation HTTP response and return the output data from it. This is only every called if the response includes a successful http status code
@@ -269,7 +350,7 @@ extension TCClient {
         let tcResponse = try TCResponse(from: response)
         return try tcResponse.generateOutputData(errorType: serviceConfig.errorType, logLevel: options.errorLogLevel, logger: logger)
     }
-
+    
     /// Create a raw error from HTTPResponse. This is only called if we received an unsuccessful http status code.
     internal func createRawError(for response: TCHTTPResponse, serviceConfig: TCServiceConfig, logger: Logger) -> TCRawError {
         // returns "Unhandled error message" with rawBody attached
@@ -284,14 +365,49 @@ extension TCClient {
         )
         return TCRawError(rawBody: rawBodyString, context: context)
     }
+}
 
-    /// The internal invoker.
-    func invoke<Output: TCResponseData>(
+// MARK: Internal implemenation
+
+extension TCClient {
+    /// The internal executor.
+    internal func execute<Output: TCResponseData>(
+        action: String,
+        createRequest: @escaping () throws -> TCRequest,
+        executor: @escaping (TCHTTPRequest, EventLoop, Logger) -> EventLoopFuture<TCHTTPResponse>,
+        config: TCServiceConfig,
+        logger: Logger,
+        on eventLoop: EventLoop?
+    ) -> EventLoopFuture<Output> {
+        let eventLoop = eventLoop ?? eventLoopGroup.next()
+        let logger = logger.attachingRequestId(
+            Self.globalRequestID.wrappingIncrementThenLoad(ordering: .relaxed),
+            action: action,
+            service: config.service
+        )
+        // get credential
+        let future: EventLoopFuture<Output> = createSigner(serviceConfig: config, logger: logger)
+            .flatMapThrowing { signer -> TCHTTPRequest in
+                // create request and sign with signer
+                let tcRequest = try createRequest()
+                return tcRequest.createHTTPRequest(signer: signer, serviceConfig: config)
+            }.flatMap { request -> EventLoopFuture<Output> in
+                self.invoke(
+                    with: config,
+                    eventLoop: eventLoop,
+                    logger: logger,
+                    request: { eventLoop in executor(request, eventLoop, logger) }
+                )
+            }
+        return future
+    }
+
+    /// The core invoker.
+    private func invoke<Output: TCResponseData>(
         with serviceConfig: TCServiceConfig,
         eventLoop: EventLoop,
         logger: Logger,
-        request: @escaping (EventLoop) -> EventLoopFuture<TCHTTPResponse>,
-        processResponse: @escaping (TCHTTPResponse) throws -> Output
+        request: @escaping (EventLoop) -> EventLoopFuture<TCHTTPResponse>
     ) -> EventLoopFuture<Output> {
         let promise = eventLoop.makePromise(of: Output.self)
 
@@ -312,6 +428,8 @@ extension TCClient {
         return promise.futureResult
     }
 }
+
+// MARK: Helpers & Integrations
 
 extension TCClient.ClientError: CustomStringConvertible {
     /// return human readable description of error
