@@ -12,11 +12,25 @@
 //
 //===----------------------------------------------------------------------===//
 
+import struct Foundation.UUID
+
 /// Protocol for the input and output data objects for all Tencent Cloud service commands.
 public protocol TCDataType: Sendable {}
 
 /// TCDataType that can be encoded into API input
 public protocol TCEncodableData: TCDataType & Encodable {}
 
+/// TCEncodableData that serves as request payload
+public protocol TCRequestData: TCEncodableData {}
+
 /// TCDataType that can be decoded from API output
 public protocol TCDecodableData: TCDataType & Decodable {}
+
+/// TCDecodableData that serves as response payload
+public protocol TCResponseData: TCDecodableData {
+    var requestId: String { get }
+}
+
+extension TCResponseData {
+    public var uuid: UUID? { UUID(uuidString: self.requestId) }
+}

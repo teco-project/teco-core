@@ -29,14 +29,14 @@ import struct Foundation.UUID
 
 /// Additional information about Tencent Cloud error.
 public struct TCErrorContext: Sendable {
-    public let requestId: UUID
+    public let requestId: UUID?
     public let message: String
     public let responseCode: HTTPResponseStatus
     public let headers: HTTPHeaders
     public let additionalFields: [String: String]
 
     internal init(
-        requestId: UUID,
+        requestId: UUID?,
         message: String,
         responseCode: HTTPResponseStatus,
         headers: HTTPHeaders = [:],
