@@ -41,7 +41,7 @@ final class TCSignerTests: XCTestCase {
     // - MARK: Basic signing by API Explorer - https://console.cloud.tencent.com/api/explorer
 
     func testBasicSignPostRequest() {
-        let signer = TCSigner(credential: credential, service: "cvm", version: "2017-03-12")
+        let signer = TCSigner(credential: credential, service: "cvm")
         let headers = signer.signHeaders(
             url: URL(string: "https://cvm.tencentcloudapi.com")!,
             method: .POST,
@@ -57,7 +57,7 @@ final class TCSignerTests: XCTestCase {
     }
 
     func testBasicSignGetRequest() {
-        let signer = TCSigner(credential: credential, service: "cvm", version: "2017-03-12")
+        let signer = TCSigner(credential: credential, service: "cvm")
         let headers = signer.signHeaders(
             url: URL(string: "https://cvm.tencentcloudapi.com/?InstanceIds.0=ins-000000&InstanceIds.1=ins-000001")!,
             method: .GET,
@@ -74,31 +74,39 @@ final class TCSignerTests: XCTestCase {
     // - MARK: Extended Signing
 
     func testSignPostRequest() {
-        let signer = TCSigner(credential: credential, service: "region", version: "2022-06-27")
+        let signer = TCSigner(credential: credential, service: "region")
         let headers = signer.signHeaders(
             url: URL(string: "https://region.tencentcloudapi.com")!,
             method: .POST,
-            headers: ["Content-Type": "application/json"],
+            headers: [
+                "Content-Type": "application/json",
+                "X-TC-Action": "DescribeRegions",
+                "X-TC-Version": "2022-06-27",
+            ],
             body: .string(#"{"Product":"cvm"}"#),
             date: Date(timeIntervalSince1970: 1_000_000_000)
         )
         XCTAssertEqual(
             headers["Authorization"].first,
-            "TC3-HMAC-SHA256 Credential=MY_TC_SECRET_ID/2001-09-09/region/tc3_request, SignedHeaders=content-type;host;x-tc-content-sha256;x-tc-requestclient;x-tc-timestamp;x-tc-version, Signature=c9a0256636cecf2ad527788acbae77096c774f77bb5785f3c6d82a86209dcfc6"
+            "TC3-HMAC-SHA256 Credential=MY_TC_SECRET_ID/2001-09-09/region/tc3_request, SignedHeaders=content-type;host;x-tc-action;x-tc-content-sha256;x-tc-requestclient;x-tc-timestamp;x-tc-version, Signature=2e9e6e2b803969ee22aa7297daa305cde69b30bc0720f3cf779cf69efa6f42cb"
         )
     }
 
     func testSignGetRequest() {
-        let signer = TCSigner(credential: credential, service: "region", version: "2022-06-27")
+        let signer = TCSigner(credential: credential, service: "region")
         let headers = signer.signHeaders(
             url: URL(string: "https://region.tencentcloudapi.com/?Product=cvm")!,
             method: .GET,
-            headers: ["Content-Type": "application/x-www-form-urlencoded"],
+            headers: [
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-TC-Action": "DescribeRegions",
+                "X-TC-Version": "2022-06-27",
+            ],
             date: Date(timeIntervalSince1970: 1_000_000_000)
         )
         XCTAssertEqual(
             headers["Authorization"].first,
-            "TC3-HMAC-SHA256 Credential=MY_TC_SECRET_ID/2001-09-09/region/tc3_request, SignedHeaders=content-type;host;x-tc-content-sha256;x-tc-requestclient;x-tc-timestamp;x-tc-version, Signature=e11f23fcc416b3ef22ea72055ff752b80b4d6b86b94cc0a46bd03a80cab14653"
+            "TC3-HMAC-SHA256 Credential=MY_TC_SECRET_ID/2001-09-09/region/tc3_request, SignedHeaders=content-type;host;x-tc-action;x-tc-content-sha256;x-tc-requestclient;x-tc-timestamp;x-tc-version, Signature=96a261572b4f62ec92bd6f94e28dd772987d77927f937c94524f5a6a955cd7d5"
         )
     }
 
@@ -108,7 +116,7 @@ final class TCSignerTests: XCTestCase {
         var buffer = ByteBufferAllocator().buffer(capacity: data.count)
         buffer.writeBytes(data)
 
-        let signer = TCSigner(credential: credential, service: "cvm", version: "2017-03-12")
+        let signer = TCSigner(credential: credential, service: "cvm")
         let headers1 = signer.signHeaders(url: URL(string: "https://cvm.tencentcloudapi.com")!, method: .POST, body: .string(string), date: Date(timeIntervalSinceReferenceDate: 0))
         let headers2 = signer.signHeaders(url: URL(string: "https://cvm.tencentcloudapi.com")!, method: .POST, body: .data(data), date: Date(timeIntervalSinceReferenceDate: 0))
         let headers3 = signer.signHeaders(url: URL(string: "https://cvm.tencentcloudapi.com")!, method: .POST, body: .byteBuffer(buffer), date: Date(timeIntervalSinceReferenceDate: 0))
@@ -120,7 +128,7 @@ final class TCSignerTests: XCTestCase {
 
     func testCanonicalRequest() throws {
         let url = URL(string: "https://test.com/?hello=true&item=apple")!
-        let signer = TCSigner(credential: credential, service: "sns", version: "2020-01-01")
+        let signer = TCSigner(credential: credential, service: "sns")
         let signingData = TCSigner.SigningData(
             url: url,
             method: .POST,
@@ -148,7 +156,7 @@ final class TCSignerTests: XCTestCase {
 
     // https://cloud.tencent.com/document/api/213/30654
     func testTCSample() {
-        let signer = TCSigner(credential: tcSampleCredential, service: "cvm", version: "2017-03-12")
+        let signer = TCSigner(credential: tcSampleCredential, service: "cvm")
         let url = URL(string: "https://cvm.tencentcloudapi.com")!
         let headers: HTTPHeaders = [
             "Content-Type": "application/json; charset=utf-8",

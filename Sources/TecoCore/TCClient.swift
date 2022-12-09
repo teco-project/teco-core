@@ -257,7 +257,7 @@ extension TCClient {
 
     func createSigner(serviceConfig: TCServiceConfig, logger: Logger) -> EventLoopFuture<TCSigner> {
         return credentialProvider.getCredential(on: eventLoopGroup.next(), logger: logger).map { credential in
-            return TCSigner(credential: credential, service: serviceConfig.service, version: serviceConfig.version)
+            return TCSigner(credential: credential, service: serviceConfig.service)
         }
     }
 }

@@ -44,8 +44,6 @@ public struct TCSigner: Sendable {
     public let credential: Credential
     /// Service name you're requesting for.
     public let service: String
-    /// Service API version you're requesting for.
-    public let version: String
 
     static let hashedEmptyBody = SHA256.hash(data: [UInt8]()).hexDigest()
 
@@ -58,10 +56,9 @@ public struct TCSigner: Sendable {
     }()
 
     /// Initialize the Signer class with Tencent Cloud credential.
-    public init(credential: Credential, service: String, version: String) {
+    public init(credential: Credential, service: String) {
         self.credential = credential
         self.service = service
-        self.version = version
     }
 
     /// Enum for holding request payload
@@ -124,7 +121,6 @@ public struct TCSigner: Sendable {
         headers.replaceOrAdd(name: "X-TC-RequestClient", value: "Teco")
         headers.replaceOrAdd(name: "X-TC-Timestamp", value: timestamp)
         headers.replaceOrAdd(name: "X-TC-Content-SHA256", value: bodyHash)
-        headers.replaceOrAdd(name: "X-TC-Version", value: version)
         if !omitSessionToken, let sessionToken = credential.token {
             headers.replaceOrAdd(name: "X-TC-Token", value: sessionToken)
         }
