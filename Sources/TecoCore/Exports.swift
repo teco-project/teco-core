@@ -23,6 +23,3 @@
 @_exported import class NIOCore.EventLoopFuture
 @_exported import protocol NIOCore.EventLoopGroup
 @_exported import struct NIOCore.TimeAmount
-
-@_exported import struct NIOHTTP1.HTTPHeaders
-@_exported import enum NIOHTTP1.HTTPMethod
