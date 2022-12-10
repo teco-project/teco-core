@@ -25,7 +25,6 @@
 //===----------------------------------------------------------------------===//
 
 import NIOHTTP1
-import struct Foundation.UUID
 
 /// Additional information about Tencent Cloud error.
 public struct TCErrorContext: Sendable {
@@ -33,19 +32,16 @@ public struct TCErrorContext: Sendable {
     public let message: String
     public let responseCode: HTTPResponseStatus
     public let headers: HTTPHeaders
-    public let additionalFields: [String: String]
 
     internal init(
         requestId: String? = nil,
         message: String,
         responseCode: HTTPResponseStatus,
-        headers: HTTPHeaders = [:],
-        additionalFields: [String: String] = [:]
+        headers: HTTPHeaders = [:]
     ) {
         self.requestId = requestId
         self.message = message
         self.responseCode = responseCode
         self.headers = headers
-        self.additionalFields = additionalFields
     }
 }
