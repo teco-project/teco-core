@@ -31,13 +31,13 @@ import NIOCore
 import NIOHTTP1
 
 /// Structure encapsulating a processed HTTP Response
-public struct TCResponse {
+struct TCResponse {
     /// response status
-    public let status: HTTPResponseStatus
+    private let status: HTTPResponseStatus
     /// response headers
-    public var headers: HTTPHeaders
+    private var headers: HTTPHeaders
     /// response body
-    public var body: Body
+    private let body: Body
 
     /// Initialize an TCResponse object
     /// - parameters:

@@ -12,14 +12,18 @@
 //
 //===----------------------------------------------------------------------===//
 
-#if os(Linux)
+#if canImport(Glibc)
 import Glibc
-#else
+#elseif canImport(CRT)
+import CRT
+#elseif canImport(Darwin)
 import Darwin.C
+#else
+#error("Unsupported libc.")
 #endif
 
-internal enum Environment {
-    internal static subscript(_ name: String) -> String? {
+enum Environment {
+    static subscript(_ name: String) -> String? {
         guard let value = getenv(name) else {
             return nil
         }

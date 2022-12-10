@@ -33,21 +33,21 @@ import NIOHTTP1
 import TecoSigner
 
 /// Object encapsulating all the information needed to generate a raw HTTP request to Tencent Cloud.
-public struct TCRequest {
+struct TCRequest {
     /// request Tencent Cloud region
-    public let region: TCRegion
+    private let region: TCRegion
     /// request URL
-    public var url: URL
+    private let url: URL
     /// request HTTP method
-    public let httpMethod: HTTPMethod
+    private let httpMethod: HTTPMethod
     /// request headers
-    public var httpHeaders: HTTPHeaders
+    private var httpHeaders: HTTPHeaders
     /// request body
-    public var body: Body
+    private let body: Body
 
     /// Create HTTP Client request from TCRequest.
     /// If the signer's credentials are available the request will be signed. Otherwise defaults to an unsigned request
-    func createHTTPRequest(signer: TCSigner, serviceConfig: TCServiceConfig) -> TCHTTPRequest {
+    internal func createHTTPRequest(signer: TCSigner, serviceConfig: TCServiceConfig) -> TCHTTPRequest {
         // if credentials are empty don't sign request
         if signer.credential.isEmpty() {
             return self.toHTTPRequest(byteBufferAllocator: serviceConfig.byteBufferAllocator)
@@ -57,12 +57,12 @@ public struct TCRequest {
     }
 
     /// Create HTTP Client request from TCRequest
-    func toHTTPRequest(byteBufferAllocator: ByteBufferAllocator) -> TCHTTPRequest {
+    private func toHTTPRequest(byteBufferAllocator: ByteBufferAllocator) -> TCHTTPRequest {
         return TCHTTPRequest(url: url, method: httpMethod, headers: httpHeaders, body: body.asPayload(byteBufferAllocator: byteBufferAllocator))
     }
 
     /// Create HTTP Client request with signed headers from TCRequest
-    func toHTTPRequestWithSignedHeader(signer: TCSigner, serviceConfig: TCServiceConfig) -> TCHTTPRequest {
+    private func toHTTPRequestWithSignedHeader(signer: TCSigner, serviceConfig: TCServiceConfig) -> TCHTTPRequest {
         let payload = self.body.asPayload(byteBufferAllocator: serviceConfig.byteBufferAllocator)
         let bodyDataForSigning: TCSigner.BodyData?
         switch payload.payload {

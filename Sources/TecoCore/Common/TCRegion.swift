@@ -6,7 +6,6 @@
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of Teco project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -222,7 +221,7 @@ public struct TCRegion: RawRepresentable, Equatable, Sendable, Codable {
         TCRegion(rawValue: "sa-saopaulo")
     }
     
-    /// Other region.
+    /// 其它地区 / Other region
     public static func other(_ name: String) -> TCRegion {
         TCRegion(rawValue: name)
     }
@@ -237,11 +236,11 @@ extension TCRegion: CustomStringConvertible {
 // Isolation and domain helpers.
 extension TCRegion {
     // FSI regions are isolated, which means they can only be accessed with region-specific domains.
-    public var isolated: Bool {
+    internal var isolated: Bool {
         self.rawValue.hasSuffix("-fsi")
     }
-    
-    public func hostname(for service: String, preferringRegional: Bool = false) -> String {
+
+    internal func hostname(for service: String, preferringRegional: Bool = false) -> String {
         guard self.isolated || preferringRegional else {
             return "tencentcloudapi.com"
         }

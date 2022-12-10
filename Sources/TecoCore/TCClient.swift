@@ -29,33 +29,33 @@ import TecoSigner
 
 /// Client managing communication with Tencent Cloud services.
 ///
-/// This is the workhorse of TecoCore. You provide it with a ``TCRequestModel`` Input object, it converts it to ``TCRequest`` which is then converted
-/// to a raw `HTTPClient` Request. This is then sent to Tencent Cloud. When the response from Tencent Cloud is received if it is successful it is converted
-/// to a ``TCResponse``, which is then decoded to generate a ``TCResponseModel`` Output object. If it is not successful then `TCClient` will throw
+/// This is the workhorse of TecoCore. You provide it with a ``TCRequestModel`` Input object, it converts it to `TCRequest` which is then converted
+/// to a raw ``AsyncHTTPClient/HTTPClient`` Request. This is then sent to Tencent Cloud. When the response from Tencent Cloud is received if it is successful it is converted
+/// to a `TCResponse`, which is then decoded to generate a ``TCResponseModel`` Output object. If it is not successful then `TCClient` will throw
 /// an ``TCErrorType``.
 public final class TCClient {
     // MARK: Member variables
 
     /// Default logger that logs nothing
     public static let loggingDisabled = Logger(label: "Teco-do-not-log", factory: { _ in SwiftLogNoOpLogHandler() })
-    
-    static let globalRequestID = ManagedAtomic<Int>(0)
-    
+
+    private static let globalRequestID = ManagedAtomic<Int>(0)
+
     /// Tencent Cloud credential provider
     public let credentialProvider: CredentialProvider
     /// HTTP client used by TCClient
     public let httpClient: HTTPClient
     /// Keeps a record of how we obtained the HTTP client
-    let httpClientProvider: HTTPClientProvider
+    private let httpClientProvider: HTTPClientProvider
     /// EventLoopGroup used by TCClient
     public var eventLoopGroup: EventLoopGroup { return httpClient.eventLoopGroup }
     /// Logger used for non-request based output
-    let clientLogger: Logger
+    private let clientLogger: Logger
     /// client options
-    let options: Options
-    
-    internal let isShutdown = ManagedAtomic<Bool>(false)
-    
+    private let options: Options
+
+    private let isShutdown = ManagedAtomic<Bool>(false)
+
     // MARK: Initialization
     
     /// Initialize an TCClient struct
@@ -339,7 +339,7 @@ extension TCClient {
         }
     }
 
-    func createSigner(serviceConfig: TCServiceConfig, logger: Logger) -> EventLoopFuture<TCSigner> {
+    private func createSigner(serviceConfig: TCServiceConfig, logger: Logger) -> EventLoopFuture<TCSigner> {
         return credentialProvider.getCredential(on: eventLoopGroup.next(), logger: logger).map { credential in
             TCSigner(credential: credential, service: serviceConfig.service)
         }
@@ -350,14 +350,14 @@ extension TCClient {
 
 extension TCClient {
     /// Generate a TCResponse from  the operation HTTP response and return the output data from it. This is only every called if the response includes a successful http status code
-    internal func validate<Output: TCResponseModel>(response: TCHTTPResponse, serviceConfig: TCServiceConfig, logger: Logger) throws -> Output {
+    private func validate<Output: TCResponseModel>(response: TCHTTPResponse, serviceConfig: TCServiceConfig, logger: Logger) throws -> Output {
         assert((200..<300).contains(response.status.code), "Shouldn't get here if unexpected error happens")
         let tcResponse = try TCResponse(from: response)
         return try tcResponse.generateOutputData(errorType: serviceConfig.errorType, logLevel: options.errorLogLevel, logger: logger)
     }
-    
+
     /// Create a raw error from HTTPResponse. This is only called if we received an unsuccessful http status code.
-    internal func createRawError(for response: TCHTTPResponse, serviceConfig: TCServiceConfig, logger: Logger) -> TCRawError {
+    private func createRawError(for response: TCHTTPResponse, serviceConfig: TCServiceConfig, logger: Logger) -> TCRawError {
         // returns "Unhandled error message" with rawBody attached
         var rawBodyString: String?
         if var body = response.body {
@@ -375,8 +375,8 @@ extension TCClient {
 // MARK: Internal implemenation
 
 extension TCClient {
-    /// The internal executor.
-    internal func execute<Output: TCResponseModel>(
+    /// The core executor.
+    private func execute<Output: TCResponseModel>(
         action: String,
         createRequest: @escaping () throws -> TCRequest,
         executor: @escaping (TCHTTPRequest, EventLoop, Logger) -> EventLoopFuture<TCHTTPResponse>,
