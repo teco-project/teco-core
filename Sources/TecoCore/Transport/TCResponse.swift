@@ -132,7 +132,7 @@ extension TCResponse {
         let error: Error
         let requestId: String
 
-        struct Error: TCDecodableModel {
+        struct Error: TCOutputModel {
             let code: String
             let message: String
             

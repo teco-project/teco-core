@@ -13,18 +13,22 @@
 //===----------------------------------------------------------------------===//
 
 /// Protocol for the input and output data objects for all Tencent Cloud service commands.
-public protocol TCModel: Sendable {}
+///
+/// The model must be codable in both directions.
+public protocol TCModel: Sendable, Codable {}
 
-/// TCModel that can be encoded into API input
-public protocol TCEncodableModel: TCModel & Encodable {}
+/// TCModel that can be used in API input.
+///
+/// Provides public initializers for callers to construct.
+public protocol TCInputModel: TCModel {}
 
 /// TCModel that can be decoded from API output
-public protocol TCDecodableModel: TCModel & Decodable {}
+public protocol TCOutputModel: TCModel {}
 
-/// TCEncodableModel that serves as request payload
-public protocol TCRequestModel: TCEncodableModel {}
+/// TCInputModel that serves as request payload
+public protocol TCRequestModel: TCInputModel {}
 
-/// TCDecodableModel that serves as response payload
-public protocol TCResponseModel: TCDecodableModel {
+/// TCOutputModel that serves as response payload
+public protocol TCResponseModel: TCOutputModel {
     var requestId: String { get }
 }
