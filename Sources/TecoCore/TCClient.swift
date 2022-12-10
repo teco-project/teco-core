@@ -29,9 +29,9 @@ import TecoSigner
 
 /// Client managing communication with Tencent Cloud services.
 ///
-/// This is the workhorse of TecoCore. You provide it with a ``TCRequestData`` Input object, it converts it to ``TCRequest`` which is then converted
+/// This is the workhorse of TecoCore. You provide it with a ``TCRequestModel`` Input object, it converts it to ``TCRequest`` which is then converted
 /// to a raw `HTTPClient` Request. This is then sent to Tencent Cloud. When the response from Tencent Cloud is received if it is successful it is converted
-/// to a ``TCResponse``, which is then decoded to generate a ``TCResponseData`` Output object. If it is not successful then `TCClient` will throw
+/// to a ``TCResponse``, which is then decoded to generate a ``TCResponseModel`` Output object. If it is not successful then `TCClient` will throw
 /// an ``TCErrorType``.
 public final class TCClient {
     // MARK: Member variables
@@ -223,7 +223,7 @@ extension TCClient {
     ///    - eventLoop: EventLoop to run request on
     /// - returns:
     ///     Future containing output object that completes when response is received
-    public func execute<Input: TCRequestData, Output: TCResponseData>(
+    public func execute<Input: TCRequestModel, Output: TCResponseModel>(
         action: String,
         path: String = "/",
         httpMethod: HTTPMethod = .POST,
@@ -264,7 +264,7 @@ extension TCClient {
     ///    - eventLoop: EventLoop to run request on
     /// - returns:
     ///     Future containing output object that completes when response is received
-    public func execute<Output: TCResponseData>(
+    public func execute<Output: TCResponseModel>(
         action: String,
         path: String = "/",
         httpMethod: HTTPMethod = .GET,
@@ -350,7 +350,7 @@ extension TCClient {
 
 extension TCClient {
     /// Generate a TCResponse from  the operation HTTP response and return the output data from it. This is only every called if the response includes a successful http status code
-    internal func validate<Output: TCResponseData>(response: TCHTTPResponse, serviceConfig: TCServiceConfig, logger: Logger) throws -> Output {
+    internal func validate<Output: TCResponseModel>(response: TCHTTPResponse, serviceConfig: TCServiceConfig, logger: Logger) throws -> Output {
         assert((200..<300).contains(response.status.code), "Shouldn't get here if unexpected error happens")
         let tcResponse = try TCResponse(from: response)
         return try tcResponse.generateOutputData(errorType: serviceConfig.errorType, logLevel: options.errorLogLevel, logger: logger)
@@ -376,7 +376,7 @@ extension TCClient {
 
 extension TCClient {
     /// The internal executor.
-    internal func execute<Output: TCResponseData>(
+    internal func execute<Output: TCResponseModel>(
         action: String,
         createRequest: @escaping () throws -> TCRequest,
         executor: @escaping (TCHTTPRequest, EventLoop, Logger) -> EventLoopFuture<TCHTTPResponse>,
@@ -409,7 +409,7 @@ extension TCClient {
     }
 
     /// The core invoker.
-    private func invoke<Output: TCResponseData>(
+    private func invoke<Output: TCResponseModel>(
         with serviceConfig: TCServiceConfig,
         eventLoop: EventLoop,
         logger: Logger,

@@ -58,8 +58,8 @@ public struct TCResponse {
         self.body = .json(body)
     }
 
-    /// Generate TCData from TCResponse
-    internal func generateOutputData<Output: TCResponseData>(errorType: TCErrorType.Type? = nil, logLevel: Logger.Level = .info, logger: Logger) throws -> Output {
+    /// Generate TCModel from TCResponse
+    internal func generateOutputData<Output: TCResponseModel>(errorType: TCErrorType.Type? = nil, logLevel: Logger.Level = .info, logger: Logger) throws -> Output {
         let decoder = JSONDecoder()
         let data: Data?
 
@@ -83,7 +83,7 @@ public struct TCResponse {
             ])
             
             let context = TCErrorContext(
-                requestId: apiError.uuid,
+                requestId: apiError.requestId,
                 message: error.message,
                 responseCode: self.status,
                 headers: self.headers
@@ -111,7 +111,7 @@ public struct TCResponse {
 
 extension TCResponse {
     /// Container that holds an API response
-    private struct Container<Output: TCResponseData>: Decodable {
+    private struct Container<Output: TCResponseModel>: Decodable {
         let response: Output
 
         enum CodingKeys: String, CodingKey {
@@ -128,11 +128,11 @@ extension TCResponse {
     }
 
     /// Error payload used in JSON output
-    private struct APIError: TCResponseData, Error {
+    private struct APIError: TCResponseModel, Error {
         let error: Error
         let requestId: String
 
-        struct Error: TCDecodableData {
+        struct Error: TCDecodableModel {
             let code: String
             let message: String
             

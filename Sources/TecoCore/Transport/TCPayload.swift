@@ -118,7 +118,7 @@ public struct TCPayload: Sendable {
 }
 
 extension TCPayload: Decodable {
-    // TCPayload has to conform to Decodable so I can add it to TCDataType objects (which conform to Decodable). But we don't want the
+    // TCPayload has to conform to Decodable so I can add it to TCModel objects (which conform to Decodable). But we don't want the
     // Encoder/Decoder ever to process a TCPayload
     public init(from decoder: Decoder) throws {
         preconditionFailure("Cannot decode an TCPayload")

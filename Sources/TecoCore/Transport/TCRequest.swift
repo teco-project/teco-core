@@ -93,7 +93,7 @@ extension TCRequest {
         self.addStandardHeaders()
     }
 
-    internal init<Input: TCEncodableData>(
+    internal init<Input: TCEncodableModel>(
         action: String,
         path: String = "/",
         httpMethod: HTTPMethod,
