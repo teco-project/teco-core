@@ -29,7 +29,7 @@ import NIOCore
 import NIOHTTP1
 
 /// Services client protocol. Contains a client to communicate with Tencent Cloud and configuration for defining how to communicate.
-public protocol TCService: Sendable {
+public protocol TCService: TecoSendable {
     /// Client used to communicate with Tencent Cloud
     var client: TCClient { get }
     /// Service context details

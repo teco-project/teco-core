@@ -11,8 +11,14 @@
 //
 //===----------------------------------------------------------------------===//
 
+#if compiler(>=5.6)
+public typealias _SignerSendable = Sendable
+#else
+public typealias _SignerSendable = Any
+#endif
+
 /// Protocol for providing credential details for accessing Tencent Cloud services.
-public protocol Credential: Codable, Sendable {
+public protocol Credential: Codable, _SignerSendable {
     var secretId: String { get }
     var secretKey: String { get }
     /// The federation token of your credential. If this field is specified, `secretId` and `secretKey`

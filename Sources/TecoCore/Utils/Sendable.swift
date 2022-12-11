@@ -11,12 +11,9 @@
 //
 //===----------------------------------------------------------------------===//
 
-import class Foundation.JSONEncoder
-import NIOCore
 
-extension TCModel {
-    /// Encode TCModel as JSON
-    func encodeAsJSON(byteBufferAllocator: ByteBufferAllocator) throws -> ByteBuffer {
-        try JSONEncoder().encodeAsByteBuffer(self, allocator: byteBufferAllocator)
-    }
-}
+#if swift(>=5.6)
+@preconcurrency public protocol TecoSendable: Sendable {}
+#else
+public protocol TecoSendable {}
+#endif

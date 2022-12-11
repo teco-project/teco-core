@@ -33,7 +33,7 @@ import TecoSigner
 /// to a raw ``AsyncHTTPClient/HTTPClient`` Request. This is then sent to Tencent Cloud. When the response from Tencent Cloud is received if it is successful it is converted
 /// to a `TCResponse`, which is then decoded to generate a ``TCResponseModel`` Output object. If it is not successful then `TCClient` will throw
 /// an ``TCErrorType``.
-public final class TCClient {
+public final class TCClient: TecoSendable {
     // MARK: Member variables
 
     /// Default logger that logs nothing
@@ -180,7 +180,7 @@ public final class TCClient {
     }
 
     /// Specifies how `HTTPClient` will be created and establishes lifecycle ownership.
-    public enum HTTPClientProvider {
+    public enum HTTPClientProvider: TecoSendable {
         /// Use HTTPClient provided by the user. User is responsible for the lifecycle of the HTTPClient.
         case shared(HTTPClient)
         /// HTTPClient will be created by TCClient using provided EventLoopGroup. When `shutdown` is called, created `HTTPClient`
@@ -189,9 +189,9 @@ public final class TCClient {
         /// `HTTPClient` will be created by `TCClient`. When `shutdown` is called, created `HTTPClient` will be shut down as well.
         case createNew
     }
-    
+
     /// Additional options
-    public struct Options {
+    public struct Options: TecoSendable {
         /// log level used for request logging
         let requestLogLevel: Logger.Level
         /// log level used for error logging
@@ -503,10 +503,3 @@ extension TCClient {
         }
     }
 }
-
-
-#if compiler(>=5.6)
-extension TCClient: Sendable {}
-extension TCClient.HTTPClientProvider: Sendable {}
-extension TCClient.Options: Sendable {}
-#endif

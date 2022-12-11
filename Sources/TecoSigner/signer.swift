@@ -39,7 +39,7 @@ import struct OrderedCollections.OrderedDictionary
 // TODO: Verify if GET query sorting matters.
 
 /// Tencent Cloud API V3 signer (TC3).
-public struct TCSigner: Sendable {
+public struct TCSigner: _SignerSendable {
     /// Security credential for accessing Tencent Cloud services.
     public let credential: Credential
     /// Service name you're requesting for.
@@ -62,7 +62,7 @@ public struct TCSigner: Sendable {
     }
 
     /// Enum for holding request payload
-    public enum BodyData {
+    public enum BodyData: _SignerSendable {
         /// String
         case string(String)
         /// Data
@@ -280,7 +280,7 @@ public struct TCSigner: Sendable {
         "\(url.host ?? "")\(port(from: url).map { ":\($0)" } ?? "")"
     }
 }
-//
+
 extension String {
     func uriEncode() -> String {
         return addingPercentEncoding(withAllowedCharacters: String.uriAllowedCharacters) ?? self

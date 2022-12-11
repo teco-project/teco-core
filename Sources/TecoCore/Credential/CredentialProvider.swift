@@ -28,7 +28,7 @@ import NIOCore
 import TecoSigner
 
 /// Provides Tencent Cloud credentials.
-public protocol CredentialProvider: Sendable, CustomStringConvertible {
+public protocol CredentialProvider: TecoSendable, CustomStringConvertible {
     /// Return credential.
     /// - Parameters:
     ///   - eventLoop: EventLoop to run on.
