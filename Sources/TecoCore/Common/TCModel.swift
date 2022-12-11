@@ -16,18 +16,21 @@
 /// The model must be codable in both directions.
 public protocol TCModel: TecoSendable, Codable {}
 
-/// TCModel that can be used in API input.
+/// ``TCModel`` that can be used in API input.
 ///
 /// Provides public initializers for callers to construct.
 public protocol TCInputModel: TCModel {}
 
-/// TCModel that can be decoded from API output
+/// ``TCModel`` that can be decoded from API output.
 public protocol TCOutputModel: TCModel {}
 
-/// TCInputModel that serves as request payload
+/// ``TCInputModel`` that serves as request payload.
 public protocol TCRequestModel: TCInputModel {}
 
-/// TCOutputModel that serves as response payload
+/// ``TCOutputModel`` that serves as response payload.
+///
+/// Holds the request UUD assigned by Tencent Cloud.
 public protocol TCResponseModel: TCOutputModel {
+    /// Request ID assigned by Tencent Cloud uniquely for every API request.
     var requestId: String { get }
 }

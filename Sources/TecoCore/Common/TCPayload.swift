@@ -30,11 +30,9 @@ import NIOCore
 
 /// Holds a request or response payload.
 ///
-/// A request payload can be in the form of either a ByteBuffer or a stream
-/// function that will supply ByteBuffers to the HTTP client.
-/// A response payload only comes in the form of a ByteBuffer
+/// Currently request or response payloads only come in the form of a `ByteBuffer`.
 public struct TCPayload: Sendable {
-    /// Internal enum
+    /// Internal enum for ``TCPayload``.
     enum Payload: Sendable {
         case byteBuffer(ByteBuffer)
         case empty
@@ -42,31 +40,31 @@ public struct TCPayload: Sendable {
 
     internal let payload: Payload
 
-    /// construct a payload from a ByteBuffer
+    /// Construct a payload from a `ByteBuffer`.
     public static func byteBuffer(_ buffer: ByteBuffer) -> Self {
         return TCPayload(payload: .byteBuffer(buffer))
     }
 
-    /// construct an empty payload
+    /// Construct an empty payload.
     public static var empty: Self {
         return TCPayload(payload: .empty)
     }
 
-    /// Construct a payload from a Collection of UInt8
+    /// Construct a payload from raw data (aka. `[UInt8]`).
     public static func data<C: Collection>(_ data: C, byteBufferAllocator: ByteBufferAllocator = ByteBufferAllocator()) -> Self where C.Element == UInt8 {
         var byteBuffer = byteBufferAllocator.buffer(capacity: data.count)
         byteBuffer.writeBytes(data)
         return TCPayload(payload: .byteBuffer(byteBuffer))
     }
 
-    /// Construct a payload from a `String`
+    /// Construct a payload from a `String`.
     public static func string(_ string: String, byteBufferAllocator: ByteBufferAllocator = ByteBufferAllocator()) -> Self {
         var byteBuffer = byteBufferAllocator.buffer(capacity: string.utf8.count)
         byteBuffer.writeString(string)
         return TCPayload(payload: .byteBuffer(byteBuffer))
     }
 
-    /// Return the size of the payload. If the payload is a stream it is always possible to return a size
+    /// The size of the payload.
     public var size: Int? {
         switch self.payload {
         case .byteBuffer(let byteBuffer):
@@ -76,7 +74,7 @@ public struct TCPayload: Sendable {
         }
     }
 
-    /// return payload as Data
+    /// Get the payload as `Data`.
     public func asData() -> Data? {
         switch self.payload {
         case .byteBuffer(let byteBuffer):
@@ -86,7 +84,7 @@ public struct TCPayload: Sendable {
         }
     }
 
-    /// return payload as String
+    /// Get the payload as `String`.
     public func asString() -> String? {
         switch self.payload {
         case .byteBuffer(let byteBuffer):
@@ -96,7 +94,7 @@ public struct TCPayload: Sendable {
         }
     }
 
-    /// return payload as ByteBuffer
+    /// Get the payload as `ByteBuffer`.
     public func asByteBuffer() -> ByteBuffer? {
         switch self.payload {
         case .byteBuffer(let byteBuffer):
@@ -106,7 +104,7 @@ public struct TCPayload: Sendable {
         }
     }
 
-    /// does payload consist of zero bytes
+    /// Whether the payload consists of zero bytes.
     public var isEmpty: Bool {
         switch self.payload {
         case .byteBuffer(let buffer):

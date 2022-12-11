@@ -29,48 +29,47 @@ import TecoSigner
 
 /// Client managing communication with Tencent Cloud services.
 ///
-/// This is the workhorse of TecoCore. You provide it with a ``TCRequestModel`` Input object, it converts it to `TCRequest` which is then converted
-/// to a raw ``AsyncHTTPClient/HTTPClient`` Request. This is then sent to Tencent Cloud. When the response from Tencent Cloud is received if it is successful it is converted
-/// to a `TCResponse`, which is then decoded to generate a ``TCResponseModel`` Output object. If it is not successful then `TCClient` will throw
-/// an ``TCErrorType``.
+/// This is the workhorse of TecoCore. You provide it with a ``TCRequestModel``, it converts it to `TCRequest` which is then converted to a raw ``HTTPClient`` Request. This is then sent to Tencent Cloud.
+///
+/// When the response from Tencent Cloud is received, it will be converted to a `TCResponse`, which is then decoded to generate a ``TCResponseModel``or to create and throws an ``TCErrorType``.
 public final class TCClient: TecoSendable {
     // MARK: Member variables
 
-    /// Default logger that logs nothing
-    public static let loggingDisabled = Logger(label: "Teco-do-not-log", factory: { _ in SwiftLogNoOpLogHandler() })
-
     private static let globalRequestID = ManagedAtomic<Int>(0)
 
-    /// Tencent Cloud credential provider
-    public let credentialProvider: CredentialProvider
-    /// HTTP client used by TCClient
-    public let httpClient: HTTPClient
-    /// Keeps a record of how we obtained the HTTP client
-    private let httpClientProvider: HTTPClientProvider
-    /// EventLoopGroup used by TCClient
-    public var eventLoopGroup: EventLoopGroup { return httpClient.eventLoopGroup }
-    /// Logger used for non-request based output
-    private let clientLogger: Logger
-    /// client options
-    private let options: Options
+    /// Default logger that logs nothing.
+    public static let loggingDisabled = Logger(label: "Teco-do-not-log", factory: { _ in SwiftLogNoOpLogHandler() })
 
+    /// Tencent Cloud credential provider.
+    public let credentialProvider: CredentialProvider
+    /// HTTP client used by `TCClient`.
+    public let httpClient: HTTPClient
+    /// Keeps a record of how we obtained the HTTP client.
+    private let httpClientProvider: HTTPClientProvider
+    /// ``EventLoopGroup`` used by `TCClient`.
+    public var eventLoopGroup: EventLoopGroup { return httpClient.eventLoopGroup }
+    /// Logger used for non-request based output.
+    private let clientLogger: Logger
+    /// Custom client options.
+    private let options: Options
+    /// Holds the client shutdown state.
     private let isShutdown = ManagedAtomic<Bool>(false)
 
     // MARK: Initialization
-    
-    /// Initialize an TCClient struct
-    /// - parameters:
+
+    /// Initialize an `TCClient`.
+    ///
+    /// - Parameters:
     ///    - credentialProvider: An object that returns valid signing credentials for request signing.
-    ///    - options: Configuration flags
-    ///    - httpClientProvider: HTTPClient to use. Use `.createNew` if you want the client to manage its own HTTPClient.
-    ///    - logger: Logger used to log background TCClient events
+    ///    - options: Client configurations.
+    ///    - httpClientProvider: ``HTTPClient`` to use. Use `.createNew` if you want the client to manage its own `HTTPClient`.
+    ///    - logger: Logger used to log background `TCClient` events.
     public init(
         credentialProvider credentialProviderFactory: CredentialProviderFactory = .default,
         options: Options = Options(),
         httpClientProvider: HTTPClientProvider,
         logger clientLogger: Logger = TCClient.loggingDisabled
     ) {
-        // setup httpClient
         self.httpClientProvider = httpClientProvider
         switch httpClientProvider {
         case .shared(let providedHTTPClient):
@@ -87,7 +86,7 @@ public final class TCClient: TecoSendable {
             logger: clientLogger,
             options: options
         ))
-        
+
         self.clientLogger = clientLogger
         self.options = options
     }
@@ -97,14 +96,13 @@ public final class TCClient: TecoSendable {
     }
     
     // MARK: Shutdown
-    
+
     /// Shutdown client synchronously.
     ///
-    /// Before an `TCClient` is deleted you need to call this function or the async version `shutdown`
-    /// to do a clean shutdown of the client. It cleans up `CredentialProvider` tasks and shuts down the HTTP client if it was created by
-    /// the `TCClient`.
+    /// Before an `TCClient` is deleted, you need to call this function or the async version ``shutdown(queue:_:)`` to do a clean shutdown of the client.
+    /// It cleans up ``CredentialProvider`` tasks and shuts down the HTTP client if it was created by the `TCClient`.
     ///
-    /// - Throws: TCClient.ClientError.alreadyShutdown: You have already shutdown the client
+    /// - Throws: `ClientError.alreadyShutdown`: You have already shutdown the client.
     public func syncShutdown() throws {
         let errorStorageLock = NIOLock()
         var errorStorage: Error?
@@ -124,17 +122,17 @@ public final class TCClient: TecoSendable {
             }
         }
     }
-    
-    /// Shutdown TCClient asynchronously.
+
+    /// Shutdown `TCClient` asynchronously.
     ///
-    /// Before an `TCClient` is deleted you need to call this function or the synchronous
-    /// version `syncShutdown` to do a clean shutdown of the client. It cleans up `CredentialProvider` tasks and shuts down
-    /// the HTTP client if it was created by the `TCClient`. Given we could be destroying the `EventLoopGroup` the client
-    /// uses, we have to use a `DispatchQueue` to run some of this work on.
+    /// Before an `TCClient` is deleted, you need to call this function or the synchronous version ``syncShutdown()`` to do a clean shutdown of the client.
+    /// It cleans up ``CredentialProvider`` tasks and shuts down the HTTP client if it was created by the `TCClient`.
+    ///
+    /// Given we could be destroying the `EventLoopGroup` the client uses, we have to use a `DispatchQueue` to run some of this work on.
     ///
     /// - Parameters:
-    ///   - queue: Dispatch Queue to run shutdown on
-    ///   - callback: Callback called when shutdown is complete. If there was an error it will return with Error in callback
+    ///   - queue: Dispatch queue to run on.
+    ///   - callback: Callback called when shutdown is complete. If there was an error it will return with `Error` in callback.
     public func shutdown(queue: DispatchQueue = .global(), _ callback: @escaping (Error?) -> Void) {
         guard self.isShutdown.compareExchange(expected: false, desired: true, ordering: .relaxed).exchanged else {
             callback(ClientError.alreadyShutdown)
@@ -160,45 +158,45 @@ public final class TCClient: TecoSendable {
             }
         }
     }
-    
+
     // MARK: Member structs/enums
-    
-    /// Errors returned by `TCClient` code
+
+    /// Errors returned by `TCClient` code.
     public enum ClientError: Error, Equatable {
-        /// client has already been shutdown
+        /// Client has already been shutdown.
         case alreadyShutdown
-        /// URL provided to client is invalid
+        /// URL provided to the client is invalid.
         case invalidURL
-        /// Too much data has been supplied for the Request
-        case tooMuchData
-        /// Not enough data has been supplied for the Request
-        case notEnoughData
-        /// Waiter failed, but without an error. ie a successful api call was an error
-        case waiterFailed
-        /// Waiter failed to complete in time alloted
-        case waiterTimeout
     }
 
     /// Specifies how `HTTPClient` will be created and establishes lifecycle ownership.
     public enum HTTPClientProvider: TecoSendable {
-        /// Use HTTPClient provided by the user. User is responsible for the lifecycle of the HTTPClient.
+        /// Use `HTTPClient` provided by the user.
+        ///
+        /// The user should be responsible for the lifecycle of the `HTTPClient`.
         case shared(HTTPClient)
-        /// HTTPClient will be created by TCClient using provided EventLoopGroup. When `shutdown` is called, created `HTTPClient`
-        /// will be shut down as well.
+        /// `HTTPClient` will be created by `TCClient` using provided `EventLoopGroup`.
+        ///
+        /// When `shutdown` is called, created `HTTPClient` will be shut down as well.
         case createNewWithEventLoopGroup(EventLoopGroup)
-        /// `HTTPClient` will be created by `TCClient`. When `shutdown` is called, created `HTTPClient` will be shut down as well.
+        /// `HTTPClient` will be created by `TCClient`.
+        ///
+        /// When `shutdown` is called, created `HTTPClient` will be shut down as well.
         case createNew
     }
 
-    /// Additional options
+    /// Additional options.
     public struct Options: TecoSendable {
-        /// log level used for request logging
+        /// Log level used for request logging.
         let requestLogLevel: Logger.Level
-        /// log level used for error logging
+        /// Log level used for error logging
         let errorLogLevel: Logger.Level
 
-        /// Initialize TCClient.Options
-        /// - Parameter requestLogLevel:Log level used for request logging
+        /// Initialize `TCClient.Options`.
+        ///
+        /// - Parameters:
+        ///   - requestLogLevel: Log level used for request logging.
+        ///   - errorLogLevel: Log level used for error logging.
         public init(
             requestLogLevel: Logger.Level = .debug,
             errorLogLevel: Logger.Level = .debug
@@ -212,17 +210,18 @@ public final class TCClient: TecoSendable {
 // MARK: Custom API calls
 
 extension TCClient {
-    /// Execute a request with an input object and return a future with the output object generated from the response
-    /// - parameters:
-    ///    - action: Name of the Tencent Cloud operation
-    ///    - path: path to append to endpoint URL
-    ///    - httpMethod: HTTP method to use ("POST" by default)
-    ///    - serviceConfig: Tencent Cloud service configuration
-    ///    - input: API request payload
-    ///    - logger: Logger to log request details to
-    ///    - eventLoop: EventLoop to run request on
-    /// - returns:
-    ///     Future containing output object that completes when response is received
+    /// Execute a request with an input object and return a future with the output object generated from the response.
+    ///
+    /// - Parameters:
+    ///    - action: Name of the Tencent Cloud action.
+    ///    - path: Path to append to endpoint URL.
+    ///    - httpMethod: HTTP method to use (`POST` by default).
+    ///    - serviceConfig: Tencent Cloud service configuration.
+    ///    - input: API request payload.
+    ///    - logger: Logger to log request details to.
+    ///    - eventLoop: `EventLoop` to run request on.
+    ///
+    /// - Returns: ``EventLoopFuture`` containing output object that completes when response is received.
     public func execute<Input: TCRequestModel, Output: TCResponseModel>(
         action: String,
         path: String = "/",
@@ -254,16 +253,17 @@ extension TCClient {
         )
     }
 
-    /// Execute a custom request and return a future with the output object generated from the response
-    /// - parameters:
-    ///    - action: Name of the Tencent Cloud operation
-    ///    - path: path to append to endpoint URL
-    ///    - httpMethod: HTTP method to use ("GET" by default)
-    ///    - serviceConfig: Tencent Cloud service configuration
-    ///    - logger: Logger to log request details to
-    ///    - eventLoop: EventLoop to run request on
-    /// - returns:
-    ///     Future containing output object that completes when response is received
+    /// Execute a request with empty body and return a future with the output object generated from the response.
+    ///
+    /// - Parameters:
+    ///    - action: Name of the Tencent Cloud action.
+    ///    - path: Path to append to endpoint URL.
+    ///    - httpMethod: HTTP method to use (`GET` by default).
+    ///    - serviceConfig: Tencent Cloud service configuration.
+    ///    - logger: Logger to log request details to.
+    ///    - eventLoop: `EventLoop` to run request on.
+    ///
+    /// - Returns: ``EventLoopFuture`` containing output object that completes when response is received.
     public func execute<Output: TCResponseModel>(
         action: String,
         path: String = "/",
@@ -297,26 +297,27 @@ extension TCClient {
 // MARK: Credential & Signature
 
 extension TCClient {
-    /// Get credential used by client
+    /// Get a valid credential for signing.
+    ///
     /// - Parameters:
-    ///   - eventLoop: optional eventLoop to run operation on
-    ///   - logger: optional logger to use
-    /// - Returns: Credential
+    ///   - eventLoop: Optional `EventLoop` to run operation on.
+    ///   - logger: Optional logger to use.
     public func getCredential(on eventLoop: EventLoop? = nil, logger: Logger = TCClient.loggingDisabled) -> EventLoopFuture<Credential> {
         let eventLoop = eventLoop ?? self.eventLoopGroup.next()
         return self.credentialProvider.getCredential(on: eventLoop, logger: logger)
     }
 
-    /// Generate signed headers
-    /// - parameters:
-    ///    - url : URL to sign
-    ///    - httpMethod: HTTP method to use (.GET or .POST)
-    ///    - httpHeaders: Headers that are to be used with this URL.
+    /// Generate signed headers.
+    ///
+    /// - Parameters:
+    ///    - url : URL to sign.
+    ///    - httpMethod: HTTP method to use (`.GET` or `.POST`).
+    ///    - httpHeaders: Headers that are to be sent with this URL.
     ///    - body: Payload to sign.
-    ///    - serviceConfig: additional Tencent Cloud service configuration used to sign the url
-    ///    - logger: Logger to output to
-    /// - returns:
-    ///     A set of signed headers that include the original headers supplied
+    ///    - serviceConfig: Additional Tencent Cloud service configuration used to sign the URL.
+    ///    - logger: Logger to output to.
+    ///
+    /// - Returns: A set of signed headers that include the original headers supplied.
     public func signHeaders(
         url: URL,
         httpMethod: HTTPMethod,
@@ -349,14 +350,18 @@ extension TCClient {
 // MARK: Response helpers
 
 extension TCClient {
-    /// Generate a TCResponse from  the operation HTTP response and return the output data from it. This is only every called if the response includes a successful http status code
+    /// Generate a ``TCResponse`` from the HTTP response and return the output data from it.
+    ///
+    /// This is only every called if the response has http status code 200 OK.
     private func validate<Output: TCResponseModel>(response: TCHTTPResponse, serviceConfig: TCServiceConfig, logger: Logger) throws -> Output {
         assert((200..<300).contains(response.status.code), "Shouldn't get here if unexpected error happens")
         let tcResponse = try TCResponse(from: response)
         return try tcResponse.generateOutputData(errorType: serviceConfig.errorType, logLevel: options.errorLogLevel, logger: logger)
     }
 
-    /// Create a raw error from HTTPResponse. This is only called if we received an unsuccessful http status code.
+    /// Create a raw error from ``TCHTTPResponse``.
+    ///
+    /// This is only called if we received an unsuccessful http status code.
     private func createRawError(for response: TCHTTPResponse, serviceConfig: TCServiceConfig, logger: Logger) -> TCRawError {
         // returns "Unhandled error message" with rawBody attached
         var rawBodyString: String?
@@ -441,24 +446,16 @@ extension TCClient {
 // MARK: Helpers & Integrations
 
 extension TCClient.ClientError: CustomStringConvertible {
-    /// return human readable description of error
+    /// Human readable description of ``TCClient/ClientError``.
     public var description: String {
         switch self {
         case .alreadyShutdown:
             return "The TCClient is already shutdown"
         case .invalidURL:
             return """
-            The request url is invalid format.
-            This error is internal. So please make a issue on https://github.com/teco-project/teco/issues to solve it.
+            The request URL has invalid format.
+            If you're using Teco, please file an issue on https://github.com/teco-project/teco/issues to help solve it.
             """
-        case .tooMuchData:
-            return "You have supplied too much data for the Request."
-        case .notEnoughData:
-            return "You have not supplied enough data for the Request."
-        case .waiterFailed:
-            return "Waiter failed"
-        case .waiterTimeout:
-            return "Waiter failed to complete in time allocated"
         }
     }
 }
@@ -468,13 +465,13 @@ extension Logger {
         var logger = self
         logger[metadataKey: "tc-service"] = .string(service)
         logger[metadataKey: "tc-action"] = .string(action)
-        logger[metadataKey: "tc-request-id"] = "\(id)"
+        logger[metadataKey: "tc-client-request-id"] = "\(id)"
         return logger
     }
 }
 
 extension TCClient {
-    /// Record request in `Metrics` and `Logging`
+    /// Record the request in `Metrics` and `Logging`.
     func recordRequest<Output>(_ future: EventLoopFuture<Output>, service: String, action: String, logger: Logger) -> EventLoopFuture<Output> {
         let dimensions: [(String, String)] = [("tc-service", service), ("tc-action", action)]
         let startTime = DispatchTime.now().uptimeNanoseconds

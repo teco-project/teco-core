@@ -24,18 +24,19 @@
 //===----------------------------------------------------------------------===//
 
 import NIOCore
+import struct Foundation.URL
 
-/// Configuration struct defining a Tencent Cloud service
+/// Configuration that defines a Tencent Cloud service.
 public struct TCServiceConfig: Sendable {
-    /// Region where service is running
+    /// Region where service is running.
     public let region: TCRegion
-    /// Name of service
+    /// Short name of the service.
     public let service: String
-    /// Version of the service API
+    /// Version of the service API.
     public let apiVersion: String
-    /// Preferred language for API response
+    /// Preferred language for API response.
     public let language: Language?
-    /// The url to use in requests
+    /// The endpoint URL to use in requests.
     public let endpoint: String
     /// The base error type returned by the service
     public let errorType: TCErrorType.Type?
@@ -43,27 +44,26 @@ public struct TCServiceConfig: Sendable {
     public let timeout: TimeAmount
     /// ByteBuffer allocator used by service
     public let byteBufferAllocator: ByteBufferAllocator
-    /// values used to create endpoint
-    private let endpointPreference: EndpointPreference
+    /// A provider to generate endpoint for service.
+    private let endpointProvider: Endpoint
 
-    /// Create a ServiceConfig object
+    /// Create a ``TCServiceConfig`` configuration.
     ///
     /// - Parameters:
-    ///   - region: Region of service you want to operate on
-    ///   - service: Name of service endpoint
-    ///   - apiVersion: Service API version
-    ///   - language: Language of API response
-    ///   - endpoint: Endpoint URL preference
-    ///   - errorType: Base error type that the client may throw
-    ///   - timeout: Time out value for HTTP requests
-    ///   - byteBufferAllocator: byte buffer allocator used throughout TCClient
-    ///
+    ///   - region: Region of the service you want to operate on.
+    ///   - service: Name of the service endpoint.
+    ///   - apiVersion: Service API version.
+    ///   - language: Preferred language for API response.
+    ///   - endpoint: Endpoint URL for API request.
+    ///   - errorType: Base error type that the client may throw.
+    ///   - timeout: Time out value for HTTP requests.
+    ///   - byteBufferAllocator: Byte buffer allocator used throughout ``TCClient``.
     public init(
         region: TCRegion?,
         service: String,
         apiVersion: String,
         language: Language? = nil,
-        endpoint: EndpointPreference = .global,
+        endpoint: Endpoint = .global,
         errorType: TCErrorType.Type? = nil,
         timeout: TimeAmount? = nil,
         byteBufferAllocator: ByteBufferAllocator = ByteBufferAllocator()
@@ -82,22 +82,24 @@ public struct TCServiceConfig: Sendable {
         self.timeout = timeout ?? .seconds(20)
         self.byteBufferAllocator = byteBufferAllocator
 
-        self.endpointPreference = endpoint
+        self.endpointProvider = endpoint
         self.endpoint = endpoint.resolve(region: self.region, service: service)
     }
 
+    /// Languges supported by Tencent Cloud services.
     public enum Language: String, Sendable, Equatable {
         case zh_CN = "zh-CN"
         case en_US = "en-US"
     }
 
-    public enum EndpointPreference: Sendable, Equatable {
-        /// Prefers to use regional endpoint (eg. https://cvm.ap-guangzhou.tenentcloudapi.com )
+    /// Endpoint configuration for the Tencent Cloud service.
+    public enum Endpoint: Sendable, Equatable {
+        /// Prefers to use the regional endpoint (eg. https://cvm.ap-guangzhou.tencentcloudapi.com ).
         case regional
-        /// Prefers to use global endpoint (eg. https://cvm.tenentcloudapi.com )
+        /// Prefers to use the global endpoint (eg. https://cvm.tencentcloudapi.com ).
         case global
-        /// Use custom endpoint.
-        case custom(_ url: String)
+        /// Provides a custom endpoint.
+        case custom(url: String)
 
         fileprivate func resolve(region: TCRegion, service: String) -> String {
             switch self {
@@ -109,26 +111,28 @@ public struct TCServiceConfig: Sendable {
         }
     }
 
-    /// Return new version of serviceConfig with a modified parameters
+    /// Return a new version of service configuration with edited parameters.
+    ///
     /// - Parameters:
-    ///   - patch: parameters to patch service config
-    /// - Returns: New TCServiceConfig
+    ///   - patch: Parameters to patch the service config.
+    ///
+    /// - Returns: A patched ``TCServiceConfig``.
     public func with(patch: Patch) -> TCServiceConfig {
         return TCServiceConfig(service: self, with: patch)
     }
 
-    /// Service config parameters you can patch
+    /// Service config parameters that a user can patch.
     public struct Patch {
         let region: TCRegion?
         let language: TCServiceConfig.Language?
-        let endpoint: TCServiceConfig.EndpointPreference?
+        let endpoint: TCServiceConfig.Endpoint?
         let timeout: TimeAmount?
         let byteBufferAllocator: ByteBufferAllocator?
 
         init(
             region: TCRegion? = nil,
             language: TCServiceConfig.Language? = nil,
-            endpoint: TCServiceConfig.EndpointPreference? = nil,
+            endpoint: TCServiceConfig.Endpoint? = nil,
             timeout: TimeAmount? = nil,
             byteBufferAllocator: ByteBufferAllocator? = nil
         ) {
@@ -140,13 +144,10 @@ public struct TCServiceConfig: Sendable {
         }
     }
 
-    private init(
-        service: TCServiceConfig,
-        with patch: Patch
-    ) {
+    private init(service: TCServiceConfig, with patch: Patch) {
         if let region = patch.region {
             self.region = region
-            self.endpoint = (patch.endpoint ?? service.endpointPreference).resolve(region: region, service: service.service)
+            self.endpoint = (patch.endpoint ?? service.endpointProvider).resolve(region: region, service: service.service)
         } else {
             self.region = service.region
             self.endpoint = patch.endpoint?.resolve(region: region, service: service.service) ?? service.endpoint
@@ -154,9 +155,32 @@ public struct TCServiceConfig: Sendable {
         self.service = service.service
         self.apiVersion = service.apiVersion
         self.language = patch.language ?? service.language
-        self.endpointPreference = service.endpointPreference
+        self.endpointProvider = service.endpointProvider
         self.errorType = service.errorType
         self.timeout = patch.timeout ?? service.timeout
         self.byteBufferAllocator = patch.byteBufferAllocator ?? service.byteBufferAllocator
+    }
+}
+
+extension TCServiceConfig.Endpoint: LosslessStringConvertible {
+    /// Create a `TCServiceConfig.Endpoint` from URL string.
+    ///
+    /// - Parameter url: The endpoint URL string.
+    public init?(_ url: String) {
+        guard let url = URL(string: url), url.scheme == "http" || url.scheme == "https" else {
+            return nil
+        }
+        self = .custom(url: url.standardized.absoluteString)
+    }
+
+    public var description: String {
+        switch self {
+        case .regional:
+            return "https://<product>.<region>.tencentcloudapi.com"
+        case .global:
+            return "https://<product>.tencentcloudapi.com"
+        case .custom(let url):
+            return url
+        }
     }
 }

@@ -15,7 +15,7 @@ import class Foundation.JSONEncoder
 import NIOCore
 
 extension TCModel {
-    /// Encode TCModel as JSON
+    /// Encode ``TCModel`` as JSON.
     func encodeAsJSON(byteBufferAllocator: ByteBufferAllocator) throws -> ByteBuffer {
         try JSONEncoder().encodeAsByteBuffer(self, allocator: byteBufferAllocator)
     }
