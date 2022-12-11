@@ -13,7 +13,7 @@
 
 /// Raw unprocessed error.
 ///
-/// Used when we cannot extract an error code from the Tencent Cloud response. Returns full body of error response.
+/// Used when we cannot extract an error code from the Tencent Cloud response. Contains full body of error response.
 public struct TCRawError: Error, CustomStringConvertible {
     public let rawBody: String?
     public let context: TCErrorContext

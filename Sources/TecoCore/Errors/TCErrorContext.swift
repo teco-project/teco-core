@@ -27,9 +27,13 @@ import NIOHTTP1
 
 /// Additional information about Tencent Cloud error.
 public struct TCErrorContext: Sendable {
+    /// Request ID assigned by Tencent Cloud, used for error reporting.
     public let requestId: String?
+    /// Error message returned along with the code.
     public let message: String
+    /// HTTP response status from Tencent Cloud API service.
     public let responseCode: HTTPResponseStatus
+    /// HTTP response headers from Tencent Cloud API service.
     public let headers: HTTPHeaders
 
     internal init(

@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-/// Response Error type returned by Teco if the error code is unrecognised.
+/// Response error type returned by Teco if the error code is unrecognized.
 public struct TCResponseError: TCErrorType {
     public let errorCode: String
     public let context: TCErrorContext?

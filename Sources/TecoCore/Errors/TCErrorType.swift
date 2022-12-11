@@ -23,13 +23,14 @@
 //
 //===----------------------------------------------------------------------===//
 
-/// Standard Error type returned by Teco.
+/// Standard error type returned by Tencent Cloud API.
 ///
 /// Initialized with error code and message.
 public protocol TCErrorType: Error, CustomStringConvertible {
-    /// Possible error domains related to the base error type.
+    /// Error domains affliated to the base error type.
     static var domains: [TCErrorType.Type] { get }
-    /// Initialize error.
+
+    /// Initialize a Tencent Cloud error.
     init?(errorCode: String, context: TCErrorContext)
     /// Error code return by Tencent Cloud.
     var errorCode: String { get }
@@ -38,12 +39,15 @@ public protocol TCErrorType: Error, CustomStringConvertible {
 }
 
 extension TCErrorType {
-    public var localizedDescription: String {
-        return description
-    }
-
+    /// Error message returned along with the code.
     public var message: String? {
         return context?.message
+    }
+}
+
+extension TCErrorType {
+    public var localizedDescription: String {
+        return description
     }
 
     public static var domains: [TCErrorType.Type] {
