@@ -24,13 +24,13 @@
 //===----------------------------------------------------------------------===//
 
 public struct CredentialProviderError: Error, Equatable {
-    enum _CredentialProviderError {
+    private enum _Error {
         case noProvider
     }
+    private let error: _Error
 
-    let error: _CredentialProviderError
-
-    public static var noProvider: CredentialProviderError { return .init(error: .noProvider) }
+    /// No credential provider selected.
+    public static var noProvider: CredentialProviderError { .init(error: .noProvider) }
 }
 
 extension CredentialProviderError: CustomStringConvertible {

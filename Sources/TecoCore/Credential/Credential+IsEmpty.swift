@@ -26,7 +26,7 @@
 import TecoSigner
 
 extension Credential {
-    func isEmpty() -> Bool {
-        return self.secretId.isEmpty || self.secretKey.isEmpty
+    var isEmpty: Bool {
+        self.secretId.isEmpty || self.secretKey.isEmpty
     }
 }

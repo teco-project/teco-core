@@ -27,16 +27,18 @@ import Logging
 import NIOCore
 import TecoSigner
 
-/// Provides Tencent Cloud credentials.
+/// Provider for Tencent Cloud credentials.
 public protocol CredentialProvider: TecoSendable, CustomStringConvertible {
-    /// Return credential.
+    /// Provide a credential.
+    ///
     /// - Parameters:
-    ///   - eventLoop: EventLoop to run on.
+    ///   - eventLoop: `EventLoop` to run on.
     ///   - logger: Logger to use.
     func getCredential(on eventLoop: EventLoop, logger: Logger) -> EventLoopFuture<Credential>
 
-    /// Shutdown credential provider.
-    /// - Parameter eventLoop: EventLoop to use when shutiting down.
+    /// Shutdown the credential provider.
+    ///
+    /// - Parameter eventLoop: `Eventloop` to use when shutting down.
     func shutdown(on eventLoop: EventLoop) -> EventLoopFuture<Void>
 }
 
@@ -45,5 +47,5 @@ extension CredentialProvider {
         return eventLoop.makeSucceededFuture(())
     }
 
-    public var description: String { return "\(type(of: self))" }
+    public var description: String { "\(type(of: self))" }
 }

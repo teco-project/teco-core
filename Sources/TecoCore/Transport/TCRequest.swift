@@ -49,7 +49,7 @@ struct TCRequest {
     /// If the signer's credentials are available the request will be signed. Otherwise defaults to an unsigned request
     internal func createHTTPRequest(signer: TCSigner, serviceConfig: TCServiceConfig) -> TCHTTPRequest {
         // if credentials are empty don't sign request
-        if signer.credential.isEmpty() {
+        if signer.credential.isEmpty {
             return self.toHTTPRequest(byteBufferAllocator: serviceConfig.byteBufferAllocator)
         }
 

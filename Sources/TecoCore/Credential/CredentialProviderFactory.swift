@@ -28,20 +28,20 @@ import NIOCore
 import AsyncHTTPClient
 import TecoSigner
 
-/// Provides factory functions for `CredentialProvider`s.
+/// Provide factory functionality for ``CredentialProvider``s.
 ///
-/// The factory functions are only called once the `TCClient` has been setup. This means we can supply
-/// things like a `Logger`, `EventLoop` and `HTTPClient` to the credential provider when we construct it.
+/// The factory functions are only called once the ``TCClient`` has been setup.
+/// This means we can supply things like a `Logger`, `EventLoop` and `HTTPClient` to the credential provider when we construct it.
 public struct CredentialProviderFactory {
-    /// The initialization context for a `ContextProvider`
+    /// The initialization context for a ``ContextProvider``.
     public struct Context {
-        /// The `TCClient`s internal `HTTPClient`
+        /// The `TCClient`'s internal `HTTPClient`
         public let httpClient: HTTPClient
-        /// The `EventLoop` that the `CredentialProvider` should use for credential refreshs
+        /// `EventLoop` that the ``CredentialProvider`` should use for credential refreshs.
         public let eventLoop: EventLoop
-        /// The `Logger` attached to the TCClient
+        /// `Logger` attached to the `TCClient`.
         public let logger: Logger
-        /// TCClient options
+        /// `TCClient` options.
         public let options: TCClient.Options
     }
 
@@ -57,17 +57,18 @@ public struct CredentialProviderFactory {
 }
 
 extension CredentialProviderFactory {
-    /// The default CredentialProvider used to access credentials
+    /// The default ``CredentialProvider`` used to access credentials.
     public static var `default`: CredentialProviderFactory {
         return .selector(.environment)
     }
 
-    /// Create a custom `CredentialProvider`
+    /// Create a custom ``CredentialProvider``.
     public static func custom(_ factory: @escaping (Context) -> CredentialProvider) -> CredentialProviderFactory {
         Self(cb: factory)
     }
 
-    /// Get `CredentialProvider` details from the environment
+    /// Get ``Credential`` details from the environment.
+    ///
     /// Looks in environment variables `TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY` and `TENCENTCLOUD_TOKEN`.
     public static var environment: CredentialProviderFactory {
         Self { _ -> CredentialProvider in
@@ -75,14 +76,14 @@ extension CredentialProviderFactory {
         }
     }
 
-    /// Return static credentials.
+    /// Provide a static credential.
     public static func `static`(secretId: String, secretKey: String, token: String? = nil) -> CredentialProviderFactory {
         Self { _ in
             StaticCredential(secretId: secretId, secretKey: secretKey, token: token)
         }
     }
 
-    /// Don't supply any credentials
+    /// Don't supply any credentials.
     public static var empty: CredentialProviderFactory {
         Self { _ in
             StaticCredential(secretId: "", secretKey: "")
@@ -91,8 +92,7 @@ extension CredentialProviderFactory {
 
     /// Use the list of credential providers supplied to get credentials.
     ///
-    /// When searching for credentials it will go through the list sequentially and the first credential
-    /// provider that returns valid credentials will be used.
+    /// When searching for credentials it will go through the list sequentially and the first credential provider that returns a valid credential will be used.
     public static func selector(_ providers: CredentialProviderFactory...) -> CredentialProviderFactory {
         Self { context in
             if providers.count == 1 {

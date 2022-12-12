@@ -26,7 +26,7 @@
 import TecoSigner
 
 public extension StaticCredential {
-    /// Construct static credentaisl from TCCLI-defined environment variables if it exists.
+    /// Construct static credential from environment variables if they exist.
     static func fromEnvironment() -> StaticCredential? {
         guard let secretId = Environment["TENCENTCLOUD_SECRET_ID"] else {
             return nil

@@ -28,11 +28,11 @@ import NIOConcurrencyHelpers
 import NIOCore
 import TecoSigner
 
-/// Wrap and store result from another credential provider.
+/// Wrap and store result from a static credential provider.
 ///
-/// Used for wrapping another credential provider whose `getCredential` method doesn't return instantly and
-/// is only needed to be called once. After the wrapped `CredentialProvider` has generated a credential this is
-/// returned instead of calling the wrapped `CredentialProvider's` `getCredentials` again.
+/// Used for wrapping another credential provider whose `getCredential` method doesn't return instantly and is only needed to be called once.
+///
+/// After the wrapped `CredentialProvider` has generated a credential, it is stored and returned instead of calling the real `getCredential` again.
 public class DeferredCredentialProvider: CredentialProvider {
     let lock = NIOLock()
     var credential: Credential? {
@@ -52,10 +52,11 @@ public class DeferredCredentialProvider: CredentialProvider {
     private let startupPromise: EventLoopPromise<Credential>
     private var internalCredential: Credential?
 
-    /// Create `DeferredCredentialProvider`.
+    /// Create a ``DeferredCredentialProvider``.
+    ///
     /// - Parameters:
-    ///   - eventLoop: EventLoop that getCredential should run on
-    ///   - provider: Credential provider to wrap
+    ///   - context: Provides the `EventLoop` that ``getCredential(on:logger:)`` should run on.
+    ///   - provider: Credential provider to wrap.
     public init(context: CredentialProviderFactory.Context, provider: CredentialProvider) {
         self.startupPromise = context.eventLoop.makePromise(of: Credential.self)
         self.provider = provider
@@ -69,7 +70,6 @@ public class DeferredCredentialProvider: CredentialProvider {
             .cascade(to: self.startupPromise)
     }
 
-    /// Shutdown credential provider.
     public func shutdown(on eventLoop: EventLoop) -> EventLoopFuture<Void> {
         return self.startupPromise.futureResult
             .and(self.provider.shutdown(on: eventLoop))
@@ -77,10 +77,12 @@ public class DeferredCredentialProvider: CredentialProvider {
             .hop(to: eventLoop)
     }
 
-    /// Return credentials. If still in process of the getting credentials then return future result of `startupPromise`,
-    /// otherwise return credentials store in class.
-    /// - Parameter eventLoop: EventLoop to run off.
-    /// - Returns: EventLoopFuture that will hold credentials.
+    /// Provide the credentials.
+    ///
+    /// If still in process of the getting credentials then return future result of `startupPromise`, otherwise return the stored credential.
+    ///
+    /// - Parameter eventLoop: `EventLoop` to run off.
+    /// - Returns: `EventLoopFuture` that will hold the credential.
     public func getCredential(on eventLoop: EventLoop, logger: Logger) -> EventLoopFuture<Credential> {
         if let credential = self.credential {
             return eventLoop.makeSucceededFuture(credential)
@@ -91,7 +93,7 @@ public class DeferredCredentialProvider: CredentialProvider {
 }
 
 extension DeferredCredentialProvider: CustomStringConvertible {
-    public var description: String { return "\(type(of: self))(\(self.provider.description))" }
+    public var description: String { "\(type(of: self))(\(provider.description))" }
 }
 
 #if compiler(>=5.6)

@@ -28,12 +28,11 @@ import NIOConcurrencyHelpers
 import NIOCore
 import TecoSigner
 
-/// Protocol for CredentialProvider that uses an internal CredentialProvider.
+/// ``CredentialProvider`` that uses an internal ``CredentialProvider``.
 ///
-/// When conforming to this protocol once you have the internal provider it should be supplying to
-/// the startupPromise and you should set `internalProvider` when the setupPromise
-/// result is available.
-/// ```
+/// Once you decide the internal provider, it should be supplied to the ``startupPromise``, and you should set ``internalProvider`` when the ``setupPromise`` result is available.
+///
+/// ```swift
 /// init(providers: [CredentialProviderFactory], context: CredentialProviderFactory.Context) {
 ///    self.startupPromise = context.eventLoop.makePromise(of: CredentialProvider.self)
 ///    self.startupPromise.futureResult.whenSuccess { result in
@@ -45,7 +44,9 @@ import TecoSigner
 protocol CredentialProviderSelector: CredentialProvider, AnyObject {
     /// Promise to find a credential provider.
     var startupPromise: EventLoopPromise<CredentialProvider> { get }
+    /// Access lock for ``internalProvider``.
     var lock: NIOLock { get }
+    /// The storage of ``internalProvider``. **Do not access directly.**
     var _internalProvider: CredentialProvider? { get set }
 }
 

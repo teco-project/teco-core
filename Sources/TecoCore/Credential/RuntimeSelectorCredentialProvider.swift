@@ -28,15 +28,21 @@ import NIOConcurrencyHelpers
 import NIOCore
 import TecoSigner
 
-/// get credentials from a list of possible credential providers. Goes through list of providers from start to end
-/// attempting to get credentials. Once it finds a `CredentialProvider` that supplies credentials use that
-/// one
+/// Get credentials from a list of possible credential providers.
+///
+/// Goes through the list of providers in order until a credential is supplied, and uses the successful provider.
 class RuntimeSelectorCredentialProvider: CredentialProviderSelector {
-    /// promise to find a credential provider
+    /// Promise to find a credential provider.
     let startupPromise: EventLoopPromise<CredentialProvider>
+
     let lock = NIOLock()
     var _internalProvider: CredentialProvider?
 
+    /// Create a ``RuntimeSelectorCredentialProvider``.
+    ///
+    /// - Parameters:
+    ///   - providers: An ordered list of possible credential providers.
+    ///   - context: Provides the `EventLoop` that `getCredential` should run on.
     init(providers: [CredentialProviderFactory], context: CredentialProviderFactory.Context) {
         self.startupPromise = context.eventLoop.makePromise(of: CredentialProvider.self)
         self.startupPromise.futureResult.whenSuccess { result in
@@ -45,8 +51,9 @@ class RuntimeSelectorCredentialProvider: CredentialProviderSelector {
         self.setupInternalProvider(providers: providers, context: context)
     }
 
-    /// goes through list of providers. If provider is able to provide credentials then use that one, otherwise move onto the next
-    /// provider in the list
+    /// Go through the list of providers.
+    ///
+    /// If a provider is able to provide credentials then use that one, otherwise move onto the next provider in the list.
     private func setupInternalProvider(providers: [CredentialProviderFactory], context: CredentialProviderFactory.Context) {
         func _setupInternalProvider(_ index: Int) {
             guard index < providers.count else {

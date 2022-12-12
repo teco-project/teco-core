@@ -27,7 +27,7 @@ import Logging
 import NIOCore
 import TecoSigner
 
-/// Credential provider that always fails
+/// Credential provider that always fails.
 public struct NullCredentialProvider: CredentialProvider {
     public init() {}
 
