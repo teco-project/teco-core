@@ -12,7 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 /// Recognized error type returned by Tencent Cloud API.
-public protocol TCPlatformErrorType: TCErrorType, CustomStringConvertible, Equatable {
+public protocol TCPlatformErrorType: TCErrorType, Equatable {
     /// Get the error as ``TCCommonError`` if possible.
     ///
     /// - Returns: ``TCCommonError`` that holds the same error code and context.
