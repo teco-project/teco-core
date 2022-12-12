@@ -29,7 +29,7 @@ import TecoSigner
 
 /// Client managing communication with Tencent Cloud services.
 ///
-/// This is the workhorse of TecoCore. You provide it with a ``TCRequestModel``, it converts it to `TCRequest` which is then converted to a raw ``HTTPClient`` Request. This is then sent to Tencent Cloud.
+/// This is the workhorse of TecoCore. You provide it with a ``TCRequestModel``, it converts it to `TCRequest` which is then converted to a raw `HTTPClient` request. This is then sent to Tencent Cloud.
 ///
 /// When the response from Tencent Cloud is received, it will be converted to a `TCResponse`, which is then decoded to generate a ``TCResponseModel``or to create and throws an ``TCErrorType``.
 public final class TCClient: TecoSendable {
@@ -46,7 +46,7 @@ public final class TCClient: TecoSendable {
     public let httpClient: HTTPClient
     /// Keeps a record of how we obtained the HTTP client.
     private let httpClientProvider: HTTPClientProvider
-    /// ``EventLoopGroup`` used by `TCClient`.
+    /// `EventLoopGroup` used by `TCClient`.
     public var eventLoopGroup: EventLoopGroup { return httpClient.eventLoopGroup }
     /// Logger used for non-request based output.
     private let clientLogger: Logger
@@ -62,7 +62,7 @@ public final class TCClient: TecoSendable {
     /// - Parameters:
     ///    - credentialProvider: An object that returns valid signing credentials for request signing.
     ///    - options: Client configurations.
-    ///    - httpClientProvider: ``HTTPClient`` to use. Use `.createNew` if you want the client to manage its own `HTTPClient`.
+    ///    - httpClientProvider: `HTTPClient` to use. Use `.createNew` if you want the client to manage its own `HTTPClient`.
     ///    - logger: Logger used to log background `TCClient` events.
     public init(
         credentialProvider credentialProviderFactory: CredentialProviderFactory = .default,
