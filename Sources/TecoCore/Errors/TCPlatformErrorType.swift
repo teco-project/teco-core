@@ -29,8 +29,8 @@ extension TCPlatformErrorType {
     }
 
     public func asCommonError() -> TCCommonError? {
-        if let context = self.context, let error = TCCommonError(errorCode: self.errorCode, context: context) {
-            return error
+        if let code = TCCommonError.Code(rawValue: self.errorCode) {
+            return TCCommonError(code, context: self.context)
         }
         return nil
     }
