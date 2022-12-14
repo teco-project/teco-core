@@ -31,3 +31,18 @@ extension TCDateWrapper {
         try self.storageValue.encode(to: encoder)
     }
 }
+
+extension Swift.KeyedEncodingContainer {
+    public mutating func encode<Wrapper: TCDateWrapper>(_ value: Wrapper, forKey key: K) throws where Wrapper.StorageValue: ExpressibleByNilLiteral {
+        try self.encodeIfPresent(value.storageValue, forKey: key)
+    }
+}
+
+extension Swift.KeyedDecodingContainer {
+    public func decode<Wrapper: TCDateWrapper>(_ type: Wrapper.Type, forKey key: K) throws -> Wrapper where Wrapper.WrappedValue: ExpressibleByNilLiteral {
+        if let value = try self.decodeIfPresent(type, forKey: key) {
+            return value
+        }
+        return Wrapper(wrappedValue: nil)
+    }
+}
