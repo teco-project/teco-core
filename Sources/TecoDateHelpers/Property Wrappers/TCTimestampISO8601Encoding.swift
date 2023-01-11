@@ -18,20 +18,20 @@ import struct Foundation.Date
 import class Foundation.ISO8601DateFormatter
 
 @propertyWrapper
-public struct TCTimestampISO8601Encoding < WrappedValue: TCDateValue > : Codable {
+public struct TCTimestampISO8601Encoding<WrappedValue: TCDateValue>: Codable {
     public var wrappedValue: WrappedValue {
-    didSet {
-        self._stringValue = wrappedValue.encode(formatter: Self._formatter)
+        didSet {
+            self._stringValue = wrappedValue.encode(formatter: Self._formatter)
+        }
     }
-    }
-    
+
     private var _stringValue: StorageValue
-    
+
     public init (wrappedValue: WrappedValue) {
         self.wrappedValue = wrappedValue
         self._stringValue = wrappedValue.encode(formatter: Self._formatter)
     }
-    
+
     public init (from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         self._stringValue = try container.decode(StorageValue.self)
@@ -43,11 +43,11 @@ extension TCTimestampISO8601Encoding: TCDateWrapper {
     public static var _valueDescription: String {
         "timestamp"
     }
-    
+
     public static var _formatter: ISO8601DateFormatter {
         ISO8601DateFormatter()
     }
-    
+
     public var storageValue: StorageValue {
         self._stringValue
     }

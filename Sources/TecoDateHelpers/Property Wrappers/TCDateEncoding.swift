@@ -20,20 +20,20 @@ import struct Foundation.TimeZone
 import class Foundation.DateFormatter
 
 @propertyWrapper
-public struct TCDateEncoding < WrappedValue: TCDateValue > : Codable {
+public struct TCDateEncoding<WrappedValue: TCDateValue>: Codable {
     public var wrappedValue: WrappedValue {
-    didSet {
-        self._stringValue = wrappedValue.encode(formatter: Self._formatter)
+        didSet {
+            self._stringValue = wrappedValue.encode(formatter: Self._formatter)
+        }
     }
-    }
-    
+
     private var _stringValue: StorageValue
-    
+
     public init (wrappedValue: WrappedValue) {
         self.wrappedValue = wrappedValue
         self._stringValue = wrappedValue.encode(formatter: Self._formatter)
     }
-    
+
     public init (from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         self._stringValue = try container.decode(StorageValue.self)
@@ -45,7 +45,7 @@ extension TCDateEncoding: TCDateWrapper {
     public static var _valueDescription: String {
         "date"
     }
-    
+
     public static var _formatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -53,7 +53,7 @@ extension TCDateEncoding: TCDateWrapper {
         formatter.timeZone = TimeZone(secondsFromGMT: 8 * 60 * 60)
         return formatter
     }
-    
+
     public var storageValue: StorageValue {
         self._stringValue
     }
