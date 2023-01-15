@@ -87,10 +87,10 @@ extension CredentialProviderFactory {
         }
     }
 
-    /// Use credentials supplied via the CVM instance metadata endpoint.
+    /// Use credentials supplied via the CVM instance role.
     public static var cvm: CredentialProviderFactory {
         Self { context in
-            let provider = MetadataCredentialProvider(httpClient: context.httpClient)
+            let provider = CVMRoleCredentialProvider(httpClient: context.httpClient)
             return RotatingCredentialProvider(context: context, provider: provider)
         }
     }

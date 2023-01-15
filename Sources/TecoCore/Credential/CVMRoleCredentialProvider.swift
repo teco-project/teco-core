@@ -35,7 +35,7 @@ import NIOHTTP1
 import TecoSigner
 
 /// Credential provider that provides temporary credentials from CVM instance metadata.
-struct MetadataCredentialProvider: CredentialProvider {
+struct CVMRoleCredentialProvider: CredentialProvider {
     static let endpoint = "http://metadata.tencentyun.com/latest/meta-data/cam/security-credentials"
 
     /// CAM role credential for a CVM instance.
