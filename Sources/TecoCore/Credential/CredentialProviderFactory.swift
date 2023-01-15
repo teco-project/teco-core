@@ -33,7 +33,7 @@ import TecoSigner
 /// The factory functions are only called once the ``TCClient`` has been setup.
 /// This means we can supply things like a `Logger`, `EventLoop` and `HTTPClient` to the credential provider when we construct it.
 public struct CredentialProviderFactory {
-    /// The initialization context for a ``ContextProvider``.
+    /// The initialization context for a ``CredentialProvider``.
     public struct Context {
         /// The `TCClient`'s internal `HTTPClient`
         public let httpClient: HTTPClient
@@ -59,7 +59,11 @@ public struct CredentialProviderFactory {
 extension CredentialProviderFactory {
     /// The default ``CredentialProvider`` used to access credentials.
     public static var `default`: CredentialProviderFactory {
+        #if os(Linux)
+        return .selector(.environment, .cvm)
+        #else
         return .selector(.environment)
+        #endif
     }
 
     /// Create a custom ``CredentialProvider``.
@@ -80,6 +84,14 @@ extension CredentialProviderFactory {
     public static func `static`(secretId: String, secretKey: String, token: String? = nil) -> CredentialProviderFactory {
         Self { _ in
             StaticCredential(secretId: secretId, secretKey: secretKey, token: token)
+        }
+    }
+
+    /// Use credentials supplied via the CVM instance metadata endpoint.
+    public static var cvm: CredentialProviderFactory {
+        Self { context in
+            let provider = MetadataCredentialProvider(httpClient: context.httpClient)
+            return RotatingCredentialProvider(context: context, provider: provider)
         }
     }
 
