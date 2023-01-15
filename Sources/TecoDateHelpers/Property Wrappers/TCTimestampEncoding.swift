@@ -22,22 +22,31 @@ import class Foundation.DateFormatter
 @propertyWrapper
 public struct TCTimestampEncoding<WrappedValue: TCDateValue>: Codable {
     public var wrappedValue: WrappedValue {
-        didSet {
-            self._stringValue = wrappedValue.encode(formatter: Self._formatter)
+        self._dateValue
+    }
+
+    public var projectedValue: StorageValue {
+        get {
+            self._stringValue
+        }
+        set {
+            self._stringValue = newValue
         }
     }
 
+    private var _dateValue: WrappedValue
+
     private var _stringValue: StorageValue
 
-    public init (wrappedValue: WrappedValue) {
-        self.wrappedValue = wrappedValue
+    public init(wrappedValue: WrappedValue) {
+        self._dateValue = wrappedValue
         self._stringValue = wrappedValue.encode(formatter: Self._formatter)
     }
 
-    public init (from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         self._stringValue = try container.decode(StorageValue.self)
-        self.wrappedValue = try WrappedValue.decode(from: self._stringValue, formatter: Self._formatter, container: container, wrapper: Self.self)
+        self._dateValue = try WrappedValue.decode(from: self._stringValue, formatter: Self._formatter, container: container, wrapper: Self.self)
     }
 }
 
@@ -52,9 +61,5 @@ extension TCTimestampEncoding: TCDateWrapper {
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         formatter.timeZone = TimeZone(secondsFromGMT: 8 * 60 * 60)
         return formatter
-    }
-
-    public var storageValue: StorageValue {
-        self._stringValue
     }
 }

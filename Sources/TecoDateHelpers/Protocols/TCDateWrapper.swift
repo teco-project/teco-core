@@ -16,8 +16,8 @@ public protocol TCDateWrapper: Codable {
     associatedtype _Formatter: TCDateFormatter
 
     var wrappedValue: WrappedValue { get }
-    var storageValue: StorageValue { get }
-    
+    var projectedValue: StorageValue { get }
+
     init(wrappedValue: WrappedValue)
 
     static var _formatter: _Formatter { get }
@@ -28,13 +28,13 @@ extension TCDateWrapper {
     public typealias StorageValue = WrappedValue.Storage
 
     public func encode(to encoder: Encoder) throws {
-        try self.storageValue.encode(to: encoder)
+        try self.projectedValue.encode(to: encoder)
     }
 }
 
 extension Swift.KeyedEncodingContainer {
     public mutating func encode<Wrapper: TCDateWrapper>(_ value: Wrapper, forKey key: K) throws where Wrapper.StorageValue: ExpressibleByNilLiteral {
-        try self.encodeIfPresent(value.storageValue, forKey: key)
+        try self.encodeIfPresent(value.projectedValue, forKey: key)
     }
 }
 
