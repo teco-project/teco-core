@@ -151,6 +151,18 @@ final class TCSignerTests: XCTestCase {
         XCTAssertEqual(request, expectedRequest)
     }
 
+    func testSkipAuthorization() {
+        let signer = TCSigner(credential: credential, service: "cvm")
+        let headers = signer.signHeaders(
+            url: URL(string: "https://cvm.tencentcloudapi.com/?InstanceIds.0=ins-000000")!,
+            method: .GET,
+            headers: ["Content-Type": "application/x-www-form-urlencoded"],
+            skipAuthorization: true,
+            date: Date(timeIntervalSince1970: 1_000_000_000)
+        )
+        XCTAssertEqual(headers["Authorization"].first, "SKIP")
+    }
+
     // MARK: - Tencent Cloud Signer samples
 
     // https://cloud.tencent.com/document/api/213/30654

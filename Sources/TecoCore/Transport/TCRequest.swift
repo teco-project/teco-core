@@ -47,13 +47,13 @@ struct TCRequest {
 
     /// Create HTTP Client request from TCRequest.
     /// If the signer's credentials are available the request will be signed. Otherwise defaults to an unsigned request
-    internal func createHTTPRequest(signer: TCSigner, serviceConfig: TCServiceConfig) -> TCHTTPRequest {
+    internal func createHTTPRequest(signer: TCSigner, serviceConfig: TCServiceConfig, skipAuthorization: Bool) -> TCHTTPRequest {
         // if credentials are empty don't sign request
-        if signer.credential.isEmpty {
+        if signer.credential.isEmpty && !skipAuthorization {
             return self.toHTTPRequest(byteBufferAllocator: serviceConfig.byteBufferAllocator)
         }
 
-        return self.toHTTPRequestWithSignedHeader(signer: signer, serviceConfig: serviceConfig)
+        return self.toHTTPRequestWithSignedHeader(signer: signer, serviceConfig: serviceConfig, skipAuthorization: skipAuthorization)
     }
 
     /// Create HTTP Client request from TCRequest
@@ -62,7 +62,7 @@ struct TCRequest {
     }
 
     /// Create HTTP Client request with signed headers from TCRequest
-    private func toHTTPRequestWithSignedHeader(signer: TCSigner, serviceConfig: TCServiceConfig) -> TCHTTPRequest {
+    private func toHTTPRequestWithSignedHeader(signer: TCSigner, serviceConfig: TCServiceConfig, skipAuthorization: Bool) -> TCHTTPRequest {
         let payload = self.body.asPayload(byteBufferAllocator: serviceConfig.byteBufferAllocator)
         let bodyDataForSigning: TCSigner.BodyData?
         switch payload.payload {
@@ -71,7 +71,7 @@ struct TCRequest {
         case .empty:
             bodyDataForSigning = nil
         }
-        let signedHeaders = signer.signHeaders(url: url, method: httpMethod, headers: httpHeaders, body: bodyDataForSigning, date: Date())
+        let signedHeaders = signer.signHeaders(url: url, method: httpMethod, headers: httpHeaders, body: bodyDataForSigning, skipAuthorization: skipAuthorization, date: Date())
         return TCHTTPRequest(url: url, method: httpMethod, headers: signedHeaders, body: payload)
     }
 }

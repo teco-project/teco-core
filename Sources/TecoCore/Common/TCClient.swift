@@ -217,6 +217,7 @@ extension TCClient {
     ///    - path: Path to append to endpoint URL.
     ///    - httpMethod: HTTP method to use (`POST` by default).
     ///    - serviceConfig: Tencent Cloud service configuration.
+    ///    - skipAuthorization: If authorization should be set to `SKIP`.
     ///    - input: API request payload.
     ///    - logger: Logger to log request details to.
     ///    - eventLoop: `EventLoop` to run request on.
@@ -227,6 +228,7 @@ extension TCClient {
         path: String = "/",
         httpMethod: HTTPMethod = .POST,
         serviceConfig: TCServiceConfig,
+        skipAuthorization: Bool = false,
         input: Input,
         outputs outputType: Output.Type = Output.self,
         logger: Logger = TCClient.loggingDisabled,
@@ -243,6 +245,7 @@ extension TCClient {
                     configuration: serviceConfig
                 )
             },
+            skipAuthorization: skipAuthorization,
             executor: { request, eventLoop, logger in
                 self.httpClient.execute(request: request, timeout: serviceConfig.timeout, on: eventLoop, logger: logger)
             },
@@ -260,6 +263,7 @@ extension TCClient {
     ///    - path: Path to append to endpoint URL.
     ///    - httpMethod: HTTP method to use (`GET` by default).
     ///    - serviceConfig: Tencent Cloud service configuration.
+    ///    - skipAuthorization: If authorization should be set to `SKIP`.
     ///    - logger: Logger to log request details to.
     ///    - eventLoop: `EventLoop` to run request on.
     ///
@@ -269,6 +273,7 @@ extension TCClient {
         path: String = "/",
         httpMethod: HTTPMethod = .GET,
         serviceConfig: TCServiceConfig,
+        skipAuthorization: Bool = false,
         outputs outputType: Output.Type = Output.self,
         logger: Logger = TCClient.loggingDisabled,
         on eventLoop: EventLoop? = nil
@@ -283,6 +288,7 @@ extension TCClient {
                     configuration: serviceConfig
                 )
             },
+            skipAuthorization: skipAuthorization,
             executor: { request, eventLoop, logger in
                 self.httpClient.execute(request: request, timeout: serviceConfig.timeout, on: eventLoop, logger: logger)
             },
@@ -384,6 +390,7 @@ extension TCClient {
     private func execute<Output: TCResponseModel>(
         action: String,
         createRequest: @escaping () throws -> TCRequest,
+        skipAuthorization: Bool,
         executor: @escaping (TCHTTPRequest, EventLoop, Logger) -> EventLoopFuture<TCHTTPResponse>,
         config: TCServiceConfig,
         outputType: Output.Type,
@@ -401,7 +408,7 @@ extension TCClient {
             .flatMapThrowing { signer -> TCHTTPRequest in
                 // create request and sign with signer
                 let tcRequest = try createRequest()
-                return tcRequest.createHTTPRequest(signer: signer, serviceConfig: config)
+                return tcRequest.createHTTPRequest(signer: signer, serviceConfig: config, skipAuthorization: skipAuthorization)
             }.flatMap { request -> EventLoopFuture<Output> in
                 self.invoke(
                     with: config,

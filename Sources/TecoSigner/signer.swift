@@ -101,6 +101,7 @@ public struct TCSigner: _SignerSendable {
     ///   - body: Request body
     ///   - omitSecurityToken: Should we include security token in the canonical headers
     ///   - basicSigning: Use only the required headers for signature.
+    ///   - skipAuthorization: If `Authorization` header should be set to `SKIP`.
     ///   - date: Date that URL is valid from, defaults to now
     /// - Returns: Request headers with added "authorization" header that contains request signature
     public func signHeaders(
@@ -110,31 +111,42 @@ public struct TCSigner: _SignerSendable {
         body: BodyData? = nil,
         omitSessionToken: Bool = false,
         basicSigning: Bool = false,
+        skipAuthorization: Bool = false,
         date: Date = Date()
     ) -> HTTPHeaders {
         let bodyHash = TCSigner.hashedPayload(body)
         let timestamp = TCSigner.timestamp(date)
         let dateString = TCSigner.dateString(date)
         var headers = headers
-        // add date, host and if available session token headers
+        // add timestamp, host and body hash to headers
         headers.replaceOrAdd(name: "Host", value: Self.hostname(from: url))
         headers.replaceOrAdd(name: "X-TC-RequestClient", value: "Teco")
         headers.replaceOrAdd(name: "X-TC-Timestamp", value: timestamp)
         headers.replaceOrAdd(name: "X-TC-Content-SHA256", value: bodyHash)
+
+        // set authorization to SKIP without actually signing if requested
+        if skipAuthorization {
+            headers.replaceOrAdd(name: "Authorization", value: "SKIP")
+            return headers
+        }
+
+        // add session token if available
         if !omitSessionToken, let sessionToken = credential.token {
             headers.replaceOrAdd(name: "X-TC-Token", value: sessionToken)
         }
+
         // construct signing data. Do this after adding the headers as it uses data from the headers
         let signingData = TCSigner.SigningData(url: url, method: method, headers: headers, body: body, bodyHash: bodyHash, timestamp: timestamp, date: dateString, signer: self, basic: basicSigning)
 
         // construct authorization string as in https://cloud.tencent.com/document/api/213/30654#4.-.E6.8B.BC.E6.8E.A5-Authorization
         let authorization = "TC3-HMAC-SHA256 " +
-            "Credential=\(credential.secretId)/\(dateString)/\(service)/tc3_request, " +
-            "SignedHeaders=\(signingData.signedHeaders), " +
-            "Signature=\(signature(signingData: signingData))"
+        "Credential=\(credential.secretId)/\(dateString)/\(service)/tc3_request, " +
+        "SignedHeaders=\(signingData.signedHeaders), " +
+        "Signature=\(signature(signingData: signingData))"
 
         // add Authorization header
         headers.replaceOrAdd(name: "Authorization", value: authorization)
+
         // now we have signed the request we can add the security token if required
         if omitSessionToken, let sessionToken = credential.token {
             headers.replaceOrAdd(name: "X-TC-Token", value: sessionToken)
