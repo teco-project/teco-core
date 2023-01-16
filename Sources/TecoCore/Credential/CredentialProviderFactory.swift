@@ -60,7 +60,7 @@ extension CredentialProviderFactory {
     /// The default ``CredentialProvider`` used to access credentials.
     public static var `default`: CredentialProviderFactory {
         #if os(Linux)
-        return .selector(.environment, .cvm)
+        return .selector(.environment, .cvm, .tke)
         #else
         return .selector(.environment)
         #endif
@@ -91,6 +91,17 @@ extension CredentialProviderFactory {
     public static var cvm: CredentialProviderFactory {
         Self { context in
             let provider = CVMRoleCredentialProvider(httpClient: context.httpClient)
+            return TemporaryCredentialProvider(context: context, provider: provider)
+        }
+    }
+
+    /// Retrieve identity from the TKE OIDC provider, and acquire temporary credentials with STS.
+    public static var tke: CredentialProviderFactory {
+        Self { context in
+            let provider = OIDCRoleArnCredentialProvider(
+                requestProvider: OIDCRoleArnCredentialProvider.makeRequestForTKE,
+                httpClient: context.httpClient
+            )
             return TemporaryCredentialProvider(context: context, provider: provider)
         }
     }
