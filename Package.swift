@@ -28,15 +28,17 @@ let package = Package(
         .target(
             name: "TecoCore",
             dependencies: [
+                .byName(name: "INIParser"),
                 .byName(name: "TecoSigner"),
                 .product(name: "AsyncHTTPClient", package: "async-http-client"),
                 .product(name: "Atomics", package: "swift-atomics"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "Metrics", package: "swift-metrics"),
-                .product(name: "NIOHTTP1", package: "swift-nio"),
                 .product(name: "NIOFoundationCompat", package: "swift-nio"),
+                .product(name: "NIOHTTP1", package: "swift-nio"),
             ]),
         .target(name: "TecoDateHelpers"),
+        .target(name: "INIParser"),
         .target(
             name: "TecoSigner",
             dependencies: [
