@@ -34,7 +34,7 @@ import TecoSigner
 /// Used for wrapping another credential provider whose ``CredentialProvider/getCredential(on:logger)`` method returns an ``ExpiringCredential``.
 ///
 /// If current credential has not expired, it is returned. If no credential is available, or the current credential is going to expire in the near future, the wrapped credential provider's `getCredential` will be called and awaited.
-public final class RotatingCredentialProvider: CredentialProvider {
+public final class TemporaryCredentialProvider: CredentialProvider {
     let reservedLifetimeForUse: TimeInterval
 
     public let provider: CredentialProvider
@@ -42,7 +42,7 @@ public final class RotatingCredentialProvider: CredentialProvider {
     private var credential: Credential?
     private var credentialFuture: EventLoopFuture<Credential>?
 
-    /// Create a ``RotatingCredentialProvider``.
+    /// Create a ``TemporaryCredentialProvider``.
     ///
     /// - Parameters:
     ///   - context: Provides the `EventLoop` that ``getCredential(on:logger:)`` should run on.
@@ -112,11 +112,11 @@ public final class RotatingCredentialProvider: CredentialProvider {
     }
 }
 
-extension RotatingCredentialProvider: CustomStringConvertible {
+extension TemporaryCredentialProvider: CustomStringConvertible {
     public var description: String { "\(type(of: self))(\(provider.description))" }
 }
 
 #if compiler(>=5.6)
 // can use @unchecked Sendable here as access is protected by 'NIOLock'
-extension RotatingCredentialProvider: @unchecked Sendable {}
+extension TemporaryCredentialProvider: @unchecked Sendable {}
 #endif

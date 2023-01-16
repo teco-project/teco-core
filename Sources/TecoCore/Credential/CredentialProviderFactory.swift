@@ -91,7 +91,7 @@ extension CredentialProviderFactory {
     public static var cvm: CredentialProviderFactory {
         Self { context in
             let provider = CVMRoleCredentialProvider(httpClient: context.httpClient)
-            return RotatingCredentialProvider(context: context, provider: provider)
+            return TemporaryCredentialProvider(context: context, provider: provider)
         }
     }
 

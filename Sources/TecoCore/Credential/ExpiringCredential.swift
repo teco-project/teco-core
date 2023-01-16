@@ -41,7 +41,7 @@ public extension ExpiringCredential {
 }
 
 /// Basic implementation of a struct conforming to ``ExpiringCredential``.
-public struct RotatingCredential: ExpiringCredential {
+public struct TemporaryCredential: ExpiringCredential {
     public let secretId: String
     public let secretKey: String
     public let token: String?
