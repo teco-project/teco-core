@@ -11,6 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+
 import AsyncHTTPClient
 import struct Foundation.Date
 import struct Foundation.TimeInterval
@@ -64,7 +65,7 @@ private struct STSAssumeRoleResponse: TCResponseModel {
     /// Temporary security credentials.
     let credentials: Credentials
     /// Credentials expiration time in Unix timestamp.
-    var expiredTime: Int64
+    let expiredTime: Int64
     /// The unique request ID, which is returned for each request.
     let requestId: String
 
@@ -87,27 +88,7 @@ private struct STSAssumeRoleResponse: TCResponseModel {
     }
 }
 
-/// Credential provider that holds a ``TCClient``.``
-protocol CredentialProviderWithClient: CredentialProvider {
-    var client: TCClient { get }
-}
-
-extension CredentialProviderWithClient {
-    /// Shutdown credential provider and its client.
-    func shutdown(on eventLoop: EventLoop) -> EventLoopFuture<Void> {
-        let promise = eventLoop.makePromise(of: Void.self)
-        client.shutdown { error in
-            if let error = error {
-                promise.completeWith(.failure(error))
-            } else {
-                promise.completeWith(.success(()))
-            }
-        }
-        return promise.futureResult
-    }
-}
-
-/// Credential provider that returns temporary credentials
+/// Credential provider that returns temporary credentials acquired from STS.
 struct STSCredentialProvider: CredentialProviderWithClient {
     let client: TCClient
     let config: TCServiceConfig
