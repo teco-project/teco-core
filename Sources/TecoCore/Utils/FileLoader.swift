@@ -30,6 +30,7 @@ import Glibc
 #else
 import Foundation.NSString
 #endif
+import class Foundation.JSONDecoder
 
 enum FileLoader {
     static let decoder = JSONDecoder()
