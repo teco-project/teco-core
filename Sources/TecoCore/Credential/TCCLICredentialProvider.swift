@@ -62,8 +62,9 @@ final class TCCLICredentialProvider: CredentialProviderSelector {
         region: TCRegion? = nil
     ) -> EventLoopFuture<CredentialProvider> {
         return FileLoader.loadTCCLICredential(path: credentialFilePath, on: context.eventLoop)
-            .flatMapErrorThrowing { _ in
+            .flatMapErrorThrowing { error in
                 // Throw `.noProvider` error if credential file cannot be loaded
+                context.logger.notice("failed to parse \(credentialFilePath): \(error)")
                 throw CredentialProviderError.noProvider
             }
             .flatMapThrowing { credential in

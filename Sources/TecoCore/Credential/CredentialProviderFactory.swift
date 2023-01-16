@@ -113,19 +113,32 @@ extension CredentialProviderFactory {
         }
     }
 
-    /// Use credentials supplied via TCCLI profile of current user.
-    public static func tccliProfile(name: String = "default") -> CredentialProviderFactory {
+    /// Use credentials supplied via TCCLI profile.
+    ///
+    /// - Parameter profile: Name of TCCLI profile to use.
+    public static func tccli(profile: String = "default") -> CredentialProviderFactory {
         Self { context in
-            let provider = TCCLICredentialProvider(profile: name, context: context)
+            let provider = TCCLICredentialProvider(profile: profile, context: context)
             return TemporaryCredentialProvider(context: context, provider: provider)
+        }
+    }
+
+    /// Use credentials supplied via Tencent Cloud credential profile.
+    ///
+    /// - Parameters:
+    ///   - name: Name of Tencent Cloud profile to use.
+    ///   - path: Path to the credential profile. Defaults to look in environment variable `TENCENTCLOUD_CREDENTIALS_FILE`. If not set, try `~/.tencentcloud/credentials` and `/etc/tencentcloud/credentials` in order.
+    public static func profile(name: String = "default", path: String? = nil) -> CredentialProviderFactory {
+        Self { context in
+            ProfileCredentialProvider(profile: name, path: path, context: context)
         }
     }
 
     /// Use Security Token Service (STS) to acquire temporary credentials.
     ///
     /// - Parameters:
-    ///   - roleArn: Resource descriptions of a role, which can be obtained by clicking the role name in the CAM console. Default to look in environment variable `TENCENTCLOUD_ROLE_ARN`.
-    ///   - roleSessionName: Temporary session name. Default to look in environment variable `TENCENTCLOUD_ROLE_SESSION_NAME`.
+    ///   - roleArn: Resource descriptions of a role, which can be obtained by clicking the role name in the CAM console. Defaults to look in environment variable `TENCENTCLOUD_ROLE_ARN`.
+    ///   - roleSessionName: Temporary session name. Defaults to look in environment variable `TENCENTCLOUD_ROLE_SESSION_NAME`.
     ///   - policy: Policy description using CAM's [Syntax Logic](https://www.tencentcloud.com/document/product/598/10603). The policy cannot contain the `principal` element.
     ///   - credentialProvider: Credential provider that gives the initial credential.
     public static func sts(

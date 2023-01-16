@@ -46,7 +46,8 @@ struct TCRequest {
     private let body: Body
 
     /// Create HTTP Client request from TCRequest.
-    /// If the signer's credentials are available the request will be signed. Otherwise defaults to an unsigned request
+    ///
+    /// If the signer's credentials are available the request will be signed. Otherwise defaults to an unsigned request.
     internal func createHTTPRequest(signer: TCSigner, serviceConfig: TCServiceConfig, skipAuthorization: Bool) -> TCHTTPRequest {
         // if credentials are empty don't sign request
         if !skipAuthorization && signer.credential.isEmpty {

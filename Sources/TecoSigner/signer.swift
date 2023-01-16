@@ -93,7 +93,8 @@ public struct TCSigner: _SignerSendable {
         return urlComponents.url
     }
 
-    /// Generate signed headers, for a HTTP request
+    /// Generate signed headers, for a HTTP request.
+    ///
     /// - Parameters:
     ///   - url: Request URL
     ///   - method: Request HTTP method
@@ -102,8 +103,8 @@ public struct TCSigner: _SignerSendable {
     ///   - omitSecurityToken: Should we include security token in the canonical headers
     ///   - basicSigning: Use only the required headers for signature.
     ///   - skipAuthorization: If `Authorization` header should be set to `SKIP`.
-    ///   - date: Date that URL is valid from, defaults to now
-    /// - Returns: Request headers with added "authorization" header that contains request signature
+    ///   - date: Date that URL is valid from, defaults to now.
+    /// - Returns: Request headers with added "authorization" header that contains request signature.
     public func signHeaders(
         url: URL,
         method: HTTPMethod = .POST,
