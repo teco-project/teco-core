@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-import INIParser
+@_implementationOnly import INIParser
 import NIOCore
 import NIOConcurrencyHelpers
 import TecoSigner
