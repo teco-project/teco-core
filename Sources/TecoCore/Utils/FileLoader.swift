@@ -32,6 +32,7 @@ import Foundation.NSString
 #endif
 
 enum FileLoader {
+    static let decoder = JSONDecoder()
 
     // - MARK: File IO
 
@@ -52,7 +53,6 @@ enum FileLoader {
                 // shutdown the threadpool async
                 threadPool.shutdownGracefully { _ in }
             }
-        
     }
 
     /// Load a file from disk without blocking the current thread.

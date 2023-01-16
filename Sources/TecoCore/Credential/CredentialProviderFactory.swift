@@ -106,6 +106,14 @@ extension CredentialProviderFactory {
         }
     }
 
+    /// Use credentials supplied via TCCLI profile of current user.
+    public static func tccliProfile(name: String = "default") -> CredentialProviderFactory {
+        Self { context in
+            let provider = TCCLICredentialProvider(profile: name, context: context)
+            return TemporaryCredentialProvider(context: context, provider: provider)
+        }
+    }
+
     /// Use Security Token Service (STS) to acquire temporary credentials.
     ///
     /// - Parameters:
