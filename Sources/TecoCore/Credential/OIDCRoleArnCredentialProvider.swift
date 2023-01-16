@@ -98,17 +98,17 @@ struct OIDCRoleArnCredentialProvider: CredentialProviderWithClient {
 
     static func makeRequestForTKE(on eventLoop: EventLoop) -> EventLoopFuture<STSAssumeRoleWithWebIdentityRequest> {
         guard let providerId = Environment["TKE_PROVIDER_ID"] else {
-            return eventLoop.makeFailedFuture(OIDCRoleArnCredentialProviderError.environmentVariableNotExist("TKE_PROVIDER_ID"))
+            return eventLoop.makeFailedFuture(OIDCRoleArnCredentialProviderError.missingProviderId)
         }
         guard let tokenFile = Environment["TKE_IDENTITY_TOKEN_FILE"] else {
-            return eventLoop.makeFailedFuture(OIDCRoleArnCredentialProviderError.environmentVariableNotExist("TKE_IDENTITY_TOKEN_FILE"))
+            return eventLoop.makeFailedFuture(OIDCRoleArnCredentialProviderError.missingIdentityTokenFile)
         }
         guard let roleArn = Environment["TKE_ROLE_ARN"] else {
-            return eventLoop.makeFailedFuture(OIDCRoleArnCredentialProviderError.environmentVariableNotExist("TKE_ROLE_ARN"))
+            return eventLoop.makeFailedFuture(OIDCRoleArnCredentialProviderError.missingRoleArn)
         }
         return FileLoader.loadFile(path: tokenFile, on: eventLoop) { byteBuffer in
             guard let identityToken = byteBuffer.getString(at: 0, length: byteBuffer.readableBytes) else {
-                return eventLoop.makeFailedFuture(CVMRoleCredentialProviderError.couldNotGetInstanceRoleName)
+                return eventLoop.makeFailedFuture(OIDCRoleArnCredentialProviderError.couldNotReadIdentityTokenFile)
             }
             let timestamp = UInt64(Date().timeIntervalSince1970 * 1_000_000)
             let request = STSAssumeRoleWithWebIdentityRequest(providerId: providerId, webIdentityToken: identityToken, roleArn: roleArn, roleSessionName: "teco-\(timestamp)")
@@ -137,5 +137,8 @@ struct OIDCRoleArnCredentialProvider: CredentialProviderWithClient {
 }
 
 enum OIDCRoleArnCredentialProviderError: Error {
-    case environmentVariableNotExist(String)
+    case couldNotReadIdentityTokenFile
+    case missingProviderId
+    case missingIdentityTokenFile
+    case missingRoleArn
 }
