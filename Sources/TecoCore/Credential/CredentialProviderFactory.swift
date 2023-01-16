@@ -95,6 +95,32 @@ extension CredentialProviderFactory {
         }
     }
 
+    /// Use Security Token Service (STS) to acquire temporary credentials.
+    ///
+    /// - Parameters:
+    ///   - roleArn: Resource descriptions of a role, which can be obtained by clicking the role name in the CAM console. Default to look in environment variable `TENCENTCLOUD_ROLE_ARN`.
+    ///   - roleSessionName: Temporary session name. Default to look in environment variable `TENCENTCLOUD_ROLE_SESSION_NAME`.
+    ///   - duration: Specifies the validity period of credentials in seconds. Default value: 7200. Maximum value: 43200.
+    ///   - policy: Policy description using CAM's [Syntax Logic](https://www.tencentcloud.com/document/product/598/10603). The policy cannot contain the `principal` element.
+    ///   - credentialProvider: Credential provider that gives the initial credential.
+    public static func sts(
+        roleArn: String? = nil,
+        roleSessionName: String? = nil,
+        duration: UInt64? = nil,
+        policy: String? = nil,
+        credentialProvider: CredentialProviderFactory = .`default`
+    ) -> CredentialProviderFactory {
+        Self { context in
+            guard let roleArn = roleArn ?? Environment["TENCENTCLOUD_ROLE_ARN"],
+                  let roleSessionName = roleSessionName ?? Environment["TENCENTCLOUD_ROLE_SESSION_NAME"] else {
+                return NullCredentialProvider()
+            }
+            let request = STSAssumeRoleRequest(roleArn: roleArn, roleSessionName: roleSessionName, durationSeconds: duration, policy: policy)
+            let provider = STSCredentialProvider(request: request, credentialProvider: credentialProvider, httpClient: context.httpClient)
+            return TemporaryCredentialProvider(context: context, provider: provider)
+        }
+    }
+
     /// Don't supply any credentials.
     public static var empty: CredentialProviderFactory {
         Self { _ in
