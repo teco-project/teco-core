@@ -48,6 +48,8 @@ public final class TCClient: TecoSendable {
     private let httpClientProvider: HTTPClientProvider
     /// `EventLoopGroup` used by `TCClient`.
     public var eventLoopGroup: EventLoopGroup { return httpClient.eventLoopGroup }
+    /// Retry policy specifying what to do when a request fails.
+    public let retryPolicy: RetryPolicy
     /// Logger used for non-request based output.
     private let clientLogger: Logger
     /// Custom client options.
@@ -61,11 +63,13 @@ public final class TCClient: TecoSendable {
     ///
     /// - Parameters:
     ///    - credentialProvider: An object that returns valid signing credentials for request signing.
+    ///    - retryPolicy: An object that tells what to do when a request fails.
     ///    - options: Client configurations.
     ///    - httpClientProvider: `HTTPClient` to use. Use `.createNew` if you want the client to manage its own `HTTPClient`.
     ///    - logger: Logger used to log background `TCClient` events.
     public init(
         credentialProvider credentialProviderFactory: CredentialProviderFactory = .default,
+        retryPolicy retryPolicyFactory: RetryPolicyFactory = .default,
         options: Options = Options(),
         httpClientProvider: HTTPClientProvider,
         logger clientLogger: Logger = TCClient.loggingDisabled
@@ -87,6 +91,7 @@ public final class TCClient: TecoSendable {
             options: options
         ))
 
+        self.retryPolicy = retryPolicyFactory.retryPolicy
         self.clientLogger = clientLogger
         self.options = options
     }
@@ -433,16 +438,28 @@ extension TCClient {
             // execute HTTP request
             request(eventLoop)
                 .flatMapThrowing { response throws -> Void in
-                    // Tencent Cloud will return 200 even for API error, so
+                    // Tencent Cloud will return 200 even for API error, so treat any other response status as error
                     guard response.status == .ok else {
                         throw self.createRawError(for: response, serviceConfig: serviceConfig, logger: logger)
                     }
                     let output: Output = try self.validate(response: response, serviceConfig: serviceConfig, logger: logger)
                     promise.succeed(output)
                 }
-                .whenFailure { error in
-                    promise.fail(error)
+                .flatMapErrorThrowing { error -> Void in
+                    // If we get a retry wait time for this error, then attempt to retry request
+                    if case .retry(let retryTime) = self.retryPolicy.getRetryWaitTime(error: error, attempt: attempt) {
+                        logger.trace("Retrying request", metadata: [
+                            "tc-retry-time": "\(Double(retryTime.nanoseconds) / 1_000_000_000)",
+                        ])
+                        // schedule task for retrying the request
+                        eventLoop.scheduleTask(in: retryTime) {
+                            execute(attempt: attempt + 1)
+                        }
+                    } else {
+                        promise.fail(error)
+                    }
                 }
+                .whenComplete { _ in }
         }
         execute(attempt: 0)
 

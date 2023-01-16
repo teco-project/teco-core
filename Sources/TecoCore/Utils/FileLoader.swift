@@ -34,7 +34,7 @@ import Foundation.NSString
 enum FileLoader {
     static let decoder = JSONDecoder()
 
-    // - MARK: File IO
+    // MARK: File IO
 
     /// Load a file from disk without blocking the current thread.
     ///
@@ -78,7 +78,7 @@ enum FileLoader {
             }
     }
 
-    // - MARK: Path expansion
+    // MARK: Path expansion
 
     static func expandTildeInFilePath(_ filePath: String) -> String {
         #if os(Linux)

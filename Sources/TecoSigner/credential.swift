@@ -19,10 +19,14 @@ public typealias _SignerSendable = Any
 
 /// Protocol for providing credential details for accessing Tencent Cloud services.
 public protocol Credential: Codable, _SignerSendable {
+    /// The credential key ID.
     var secretId: String { get }
+    /// The credential key.
     var secretKey: String { get }
-    /// The federation token of your credential. If this field is specified, `secretId` and `secretKey`
-    /// should be set accordingly, see: https://cloud.tencent.com/document/product/598/13896
+
+    /// The federation token of your credential.
+    ///
+    /// If this field is specified, `secretId` and `secretKey` should be set accordingly.
     var token: String? { get }
 }
 
