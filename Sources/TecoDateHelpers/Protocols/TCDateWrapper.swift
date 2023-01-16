@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-public protocol TCDateWrapper: Codable {
+public protocol TCDateWrapper: Codable, Sendable {
     associatedtype WrappedValue: TCDateValue
     associatedtype _Formatter: TCDateFormatter
 

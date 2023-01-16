@@ -15,14 +15,14 @@ import struct Foundation.Date
 import class Foundation.DateFormatter
 import class Foundation.ISO8601DateFormatter
 
-public protocol TCDateValue {
-    associatedtype Storage: Codable
+public protocol TCDateValue: Sendable {
+    associatedtype Storage: Codable, Sendable
 
     func encode(formatter: TCDateFormatter) -> Storage
     static func decode<Wrapper: TCDateWrapper>(from storageValue: Storage, formatter: TCDateFormatter, container: SingleValueDecodingContainer, wrapper: Wrapper.Type) throws -> Self
 }
 
-extension Foundation.Date: TCDateValue {
+extension Foundation.Date: TCDateValue, @unchecked Sendable {
     public func encode(formatter: TCDateFormatter) -> String {
         return formatter.string(from: self)
     }
@@ -35,7 +35,7 @@ extension Foundation.Date: TCDateValue {
     }
 }
 
-extension Swift.Optional: TCDateValue where Wrapped == Foundation.Date {
+extension Swift.Optional: TCDateValue, @unchecked Sendable where Wrapped == Foundation.Date {
     public func encode(formatter: TCDateFormatter) -> String? {
         switch self {
         case .some(let date):
