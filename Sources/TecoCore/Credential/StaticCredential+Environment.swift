@@ -41,4 +41,20 @@ public extension StaticCredential {
             token: Environment["TENCENTCLOUD_TOKEN"]
         )
     }
+
+    /// Construct static credential from SCF environment variables if they exist.
+    static func fromSCFEnvironment() -> StaticCredential? {
+        guard let secretId = Environment["TENCENTCLOUD_SECRETID"] else {
+            return nil
+        }
+        guard let secretKey = Environment["TENCENTCLOUD_SECRETKEY"] else {
+            return nil
+        }
+
+        return .init(
+            secretId: secretId,
+            secretKey: secretKey,
+            token: Environment["TENCENTCLOUD_SESSIONTOKEN"]
+        )
+    }
 }

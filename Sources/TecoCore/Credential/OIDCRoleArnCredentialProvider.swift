@@ -107,8 +107,7 @@ struct OIDCRoleArnCredentialProvider: CredentialProviderWithClient {
             return eventLoop.makeFailedFuture(OIDCRoleArnCredentialProviderError.environmentVariableNotExist("TKE_ROLE_ARN"))
         }
         return FileLoader.loadFile(path: tokenFile, on: eventLoop) { byteBuffer in
-            var tokenFile = byteBuffer
-            guard let identityToken = tokenFile.readString(length: tokenFile.readableBytes) else {
+            guard let identityToken = byteBuffer.getString(at: 0, length: byteBuffer.readableBytes) else {
                 return eventLoop.makeFailedFuture(CVMRoleCredentialProviderError.couldNotGetInstanceRoleName)
             }
             let timestamp = UInt64(Date().timeIntervalSince1970 * 1_000_000)

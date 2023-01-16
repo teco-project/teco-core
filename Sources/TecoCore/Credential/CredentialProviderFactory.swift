@@ -95,6 +95,13 @@ extension CredentialProviderFactory {
         }
     }
 
+    /// Get ``Credential`` details from SCF environment variables.
+    public static var scf: CredentialProviderFactory {
+        Self { _ -> CredentialProvider in
+            return StaticCredential.fromSCFEnvironment() ?? NullCredentialProvider()
+        }
+    }
+
     /// Retrieve identity from the TKE OIDC provider, and acquire temporary credentials with STS.
     public static var tke: CredentialProviderFactory {
         Self { context in

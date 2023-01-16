@@ -86,7 +86,8 @@ final class TCCLICredentialProvider: CredentialProviderSelector {
         region: TCRegion? = nil
     ) throws -> CredentialProvider {
         guard let roleArn = credential.roleArn,
-              let roleSessionName = credential.roleSessionName else {
+              let roleSessionName = credential.roleSessionName
+        else {
             return StaticCredential(secretId: credential.secretId, secretKey: credential.secretKey)
         }
 

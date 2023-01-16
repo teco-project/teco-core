@@ -103,7 +103,8 @@ extension TCRequest {
         let body = try input.encodeAsJSON(byteBufferAllocator: configuration.byteBufferAllocator)
 
         guard let urlComponents = URLComponents(string: "\(configuration.endpoint)\(path)"),
-              let url = urlComponents.url else {
+              let url = urlComponents.url
+        else {
             throw TCClient.ClientError.invalidURL
         }
 
