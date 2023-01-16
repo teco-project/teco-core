@@ -60,9 +60,9 @@ extension CredentialProviderFactory {
     /// The default ``CredentialProvider`` used to access credentials.
     public static var `default`: CredentialProviderFactory {
         #if os(Linux)
-        return .selector(.environment, .cvm, .tke)
+        return .selector(.environment, .cvm, .tke, .scf, .profile(), .tccli())
         #else
-        return .selector(.environment)
+        return .selector(.environment, .profile(), .tccli())
         #endif
     }
 
