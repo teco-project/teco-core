@@ -86,10 +86,10 @@ struct CVMRoleCredentialProvider: CredentialProvider {
             ).flatMapThrowing { response -> String in
                 // the role name is in the body
                 guard response.status == .ok else {
-                    throw MetadataClientError.unexpectedResponseStatus(status: response.status)
+                    throw CVMRoleCredentialProviderError.unexpectedResponseStatus(status: response.status)
                 }
                 guard var body = response.body, let roleName = body.readString(length: body.readableBytes) else {
-                    throw MetadataClientError.couldNotGetInstanceRoleName
+                    throw CVMRoleCredentialProviderError.couldNotGetInstanceRoleName
                 }
                 return roleName
             }
@@ -103,10 +103,10 @@ struct CVMRoleCredentialProvider: CredentialProvider {
             .flatMapThrowing { response in
                 // decode the repsonse payload into the metadata object
                 guard response.status == .ok else {
-                    throw MetadataClientError.couldNotGetInstanceMetadata
+                    throw CVMRoleCredentialProviderError.couldNotGetInstanceMetadata
                 }
                 guard let body = response.body else {
-                    throw MetadataClientError.missingMetadata
+                    throw CVMRoleCredentialProviderError.missingMetadata
                 }
                 return try self.decoder.decode(Metadata.self, from: body)
             }
@@ -126,7 +126,7 @@ struct CVMRoleCredentialProvider: CredentialProvider {
     }
 }
 
-enum MetadataClientError: Error {
+enum CVMRoleCredentialProviderError: Error {
     case unexpectedResponseStatus(status: HTTPResponseStatus)
     case couldNotGetInstanceRoleName
     case couldNotGetInstanceMetadata
