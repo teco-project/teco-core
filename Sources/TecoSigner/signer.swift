@@ -23,8 +23,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-import struct Foundation.CharacterSet
+#if os(Linux) && compiler(>=5.6)
+@preconcurrency import struct Foundation.Data
+#else
 import struct Foundation.Data
+#endif
+import struct Foundation.CharacterSet
 import struct Foundation.Date
 import class Foundation.DateFormatter
 import struct Foundation.Locale
@@ -35,8 +39,6 @@ import struct Crypto.HMAC
 import struct Crypto.SHA256
 import struct Crypto.SymmetricKey
 import struct OrderedCollections.OrderedDictionary
-
-// TODO: Verify if GET query sorting matters.
 
 /// Tencent Cloud API V3 signer (TC3).
 public struct TCSigner: _SignerSendable {
