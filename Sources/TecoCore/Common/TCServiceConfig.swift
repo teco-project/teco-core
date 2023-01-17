@@ -94,10 +94,12 @@ public struct TCServiceConfig: Sendable {
 
     /// Endpoint configuration for the Tencent Cloud service.
     public enum Endpoint: Sendable, Equatable {
-        /// Prefers to use the regional endpoint (eg. https://cvm.ap-guangzhou.tencentcloudapi.com ).
-        case regional
+        /// Prefers to use the endpoint of service region (eg. https://cvm.ap-guangzhou.tencentcloudapi.com ).
+        case service
         /// Prefers to use the global endpoint (eg. https://cvm.tencentcloudapi.com ).
         case global
+        /// Prefers to use the endpoint of specific region (eg. https://cvm.ap-guangzhou.tencentcloudapi.com ).
+        case regional(TCRegion)
         /// Provides a custom endpoint.
         case custom(url: String)
 
@@ -105,8 +107,12 @@ public struct TCServiceConfig: Sendable {
             switch self {
             case .custom(let endpoint):
                 return endpoint
-            default:
-                return "https://\(service).\(region.hostname(for: service, preferringRegional: self == .regional))"
+            case .regional(let region):
+                return "https://\(service).\(region.hostname(for: service, preferringRegional: true))"
+            case .service:
+                return "https://\(service).\(region.hostname(for: service, preferringRegional: true))"
+            case .global:
+                return "https://\(service).\(region.hostname(for: service))"
             }
         }
     }
@@ -175,10 +181,12 @@ extension TCServiceConfig.Endpoint: LosslessStringConvertible {
 
     public var description: String {
         switch self {
-        case .regional:
+        case .service:
             return "https://<product>.<region>.tencentcloudapi.com"
         case .global:
             return "https://<product>.tencentcloudapi.com"
+        case .regional(let region):
+            return "https://<product>.\(region).tencentcloudapi.com"
         case .custom(let url):
             return url
         }
