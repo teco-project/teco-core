@@ -24,8 +24,6 @@ public struct TCRegion: Equatable, Sendable {
         case global
         /// Financial service regions that are isolated, yet accessible within each other.
         case financial
-        /// Financial service regions that are fully isolated.
-        case autoDriving
         /// Special service regions that are assumed to be fully isolated.
         case `internal`
     }
@@ -104,7 +102,7 @@ public struct TCRegion: Equatable, Sendable {
 
     /// 华东地区(上海自动驾驶云) / East China(Shanghai Self-driving Cloud)
     public static var ap_shanghai_adc: TCRegion {
-        TCRegion(id: "ap-shanghai-adc", kind: .autoDriving)
+        TCRegion(id: "ap-shanghai-adc", kind: .internal)
     }
 
     /// 港澳台地区(中国香港) / Hong Kong, Macau and Taiwan (China)(Hong Kong, China)
@@ -249,19 +247,13 @@ public struct TCRegion: Equatable, Sendable {
 
 extension TCRegion: CustomStringConvertible {
     public var description: String {
-        return self.rawValue
+        self.rawValue
     }
 }
 
 extension TCRegion {
     /// Whether a region is accessible from another.
     public func isAccessible(from region: TCRegion) -> Bool {
-        if self == region {
-            return true
-        }
-        guard self.kind == region.kind else {
-            return false
-        }
-        return self.kind == .global || self.kind == .financial
+        self == region || (self.kind == region.kind && self.kind != .internal)
     }
 }
