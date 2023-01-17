@@ -1,0 +1,30 @@
+name: Integration Test
+on:
+  push:
+    paths:
+      - '.github/workflows/integration.yml'
+      - 'Package.swift'
+      - 'Sources/**'
+  pull_request:
+
+jobs:
+  integration:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout teco
+        uses: actions/checkout@v3
+        with:
+          repository: teco-project/teco
+          path: ./teco
+      - name: Checkout teco-core
+        uses: actions/checkout@v3
+        with:
+          path: ./teco-core
+      - name: Update dependencies
+        working-directory: ./teco
+        run: swift package update
+      - name: Edit package
+        run: swift package --package-path ./teco edit --path ./teco-core teco-core
+      - name: Build
+        working-directory: ./teco
+        run: swift build
