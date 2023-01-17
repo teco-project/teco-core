@@ -71,7 +71,7 @@ public struct TCServiceConfig: Sendable {
         if let region = region {
             self.region = region
         } else if let defaultRegion = Environment["TENCENTCLOUD_REGION"] {
-            self.region = TCRegion(rawValue: defaultRegion)
+            self.region = TCRegion(id: defaultRegion)
         } else {
             self.region = .ap_guangzhou
         }
@@ -103,16 +103,18 @@ public struct TCServiceConfig: Sendable {
         /// Provides a custom endpoint.
         case custom(url: String)
 
+        fileprivate static let baseDomain = "tencentcloudapi.com"
+
         fileprivate func resolve(region: TCRegion, service: String) -> String {
             switch self {
             case .custom(let endpoint):
                 return endpoint
-            case .regional(let region):
-                return "https://\(service).\(region.hostname(for: service, preferringRegional: true))"
-            case .service:
-                return "https://\(service).\(region.hostname(for: service, preferringRegional: true))"
-            case .global:
-                return "https://\(service).\(region.hostname(for: service))"
+            case .regional(let customRegion):
+                return "https://\(service).\(customRegion.rawValue).\(Self.baseDomain)"
+            case .global where region.kind == .global:
+                return "https://\(service).\(Self.baseDomain)"
+            default:
+                return "https://\(service).\(region.rawValue).\(Self.baseDomain)"
             }
         }
     }
@@ -182,11 +184,11 @@ extension TCServiceConfig.Endpoint: LosslessStringConvertible {
     public var description: String {
         switch self {
         case .service:
-            return "https://<product>.<region>.tencentcloudapi.com"
+            return "https://<service>.<region>.\(Self.baseDomain)"
         case .global:
-            return "https://<product>.tencentcloudapi.com"
+            return "https://<service>.\(Self.baseDomain)"
         case .regional(let region):
-            return "https://<product>.\(region).tencentcloudapi.com"
+            return "https://<service>.\(region).\(Self.baseDomain)"
         case .custom(let url):
             return url
         }

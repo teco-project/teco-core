@@ -86,13 +86,16 @@ struct OIDCRoleArnCredentialProvider: CredentialProviderWithClient {
         httpClient: HTTPClient,
         endpoint: TCServiceConfig.Endpoint = .global
     ) {
+        let region: TCRegion? = {
+            var region = region
+            if let regionName = Environment["TKE_REGION"] {
+                region = region ?? TCRegion(id: regionName)
+            }
+            return region
+        }()
+
         self.client = TCClient(credentialProvider: .empty, httpClientProvider: .shared(httpClient))
-        self.config = TCServiceConfig(
-            region: region ?? Environment["TKE_REGION"].map(TCRegion.init),
-            service: "sts",
-            apiVersion: "2018-08-13",
-            endpoint: endpoint
-        )
+        self.config = TCServiceConfig(region: region, service: "sts", apiVersion: "2018-08-13", endpoint: endpoint)
         self.requestProvider = requestProvider
     }
 
