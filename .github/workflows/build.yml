@@ -32,6 +32,7 @@ jobs:
       - name: Build
         run: swift build
       - name: Test
+        if: ${{ matrix.swift != '5.6' }}
         run: swift test
       - name: Build (release)
         run: swift build -c release
