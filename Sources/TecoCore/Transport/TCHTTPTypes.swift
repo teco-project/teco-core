@@ -28,7 +28,7 @@ import Logging
 import NIOCore
 import NIOHTTP1
 
-/// HTTP Request
+/// HTTP Request.
 struct TCHTTPRequest {
     let url: URL
     let method: HTTPMethod
@@ -43,12 +43,12 @@ struct TCHTTPRequest {
     }
 }
 
-/// HTTP Response
+/// HTTP Response.
 protocol TCHTTPResponse {
-    /// HTTP response status
+    /// HTTP response status.
     var status: HTTPResponseStatus { get }
-    /// HTTP response headers
+    /// HTTP response headers.
     var headers: HTTPHeaders { get }
-    /// Payload of response
+    /// Payload of response.
     var body: ByteBuffer? { get }
 }

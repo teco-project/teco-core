@@ -27,18 +27,18 @@
 
 import NIOCore
 
-/// Enumaration used to store request/response body in various forms
+/// Enumaration used to store request/response body in various forms.
 enum Body {
-    /// text
+    /// Text.
     case text(String)
-    /// json data
+    /// JSON data in `ByteBuffer`.
     case json(ByteBuffer)
-    /// empty body
+    /// Empty body.
     case empty
 }
 
 extension Body {
-    /// return as a raw data buffer
+    /// Returns as a string.
     func asString() -> String? {
         switch self {
         case .text(let text):
@@ -52,7 +52,7 @@ extension Body {
         }
     }
 
-    /// return as payload
+    /// Returns as payload.
     func asPayload(byteBufferAllocator: ByteBufferAllocator) -> TCPayload {
         switch self {
         case .text(let text):
@@ -72,7 +72,7 @@ extension Body {
         }
     }
 
-    /// return as ByteBuffer
+    /// Returns as `ByteBuffer`.
     func asByteBuffer(byteBufferAllocator: ByteBufferAllocator) -> ByteBuffer? {
         return asPayload(byteBufferAllocator: byteBufferAllocator).asByteBuffer()
     }

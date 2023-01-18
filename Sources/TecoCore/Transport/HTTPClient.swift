@@ -18,13 +18,14 @@ import NIOCore
 import NIOHTTP1
 
 extension AsyncHTTPClient.HTTPClient {
-    /// Execute HTTP request
+    /// Execute HTTP request.
+    /// 
     /// - Parameters:
-    ///   - request: HTTP request
-    ///   - timeout: If execution is idle for longer than timeout then throw error
-    ///   - eventLoop: eventLoop to run request on
-    /// - Returns: EventLoopFuture that will be fulfilled with request response
-    func execute(
+    ///   - request: HTTP request.
+    ///   - timeout: If execution is idle for longer than timeout then throw error.
+    ///   - eventLoop: `EventLoop` to run request on.
+    /// - Returns: `EventLoopFuture` that will be fulfilled with request response.
+    internal func execute(
         request: TCHTTPRequest,
         timeout: TimeAmount,
         on eventLoop: EventLoop,

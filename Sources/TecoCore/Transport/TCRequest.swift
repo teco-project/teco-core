@@ -32,20 +32,20 @@ import NIOCore
 import NIOHTTP1
 import TecoSigner
 
-/// Object encapsulating all the information needed to generate a raw HTTP request to Tencent Cloud.
+/// Structure encapsulating all the information needed to generate a raw HTTP request to Tencent Cloud.
 struct TCRequest {
-    /// request Tencent Cloud region
+    /// Request Tencent Cloud region.
     private let region: TCRegion
-    /// request URL
+    /// Request URL.
     private let url: URL
-    /// request HTTP method
+    /// Request HTTP method.
     private let httpMethod: HTTPMethod
-    /// request headers
+    /// Request HTTP headers.
     private var httpHeaders: HTTPHeaders
-    /// request body
+    /// Request body.
     private let body: Body
 
-    /// Create HTTP Client request from TCRequest.
+    /// Create HTTP Client request from ``TCRequest``.
     ///
     /// If the signer's credentials are available the request will be signed. Otherwise defaults to an unsigned request.
     internal func createHTTPRequest(signer: TCSigner, serviceConfig: TCServiceConfig, skipAuthorization: Bool) -> TCHTTPRequest {
@@ -57,12 +57,12 @@ struct TCRequest {
         return self.toHTTPRequestWithSignedHeader(signer: signer, serviceConfig: serviceConfig, skipAuthorization: skipAuthorization)
     }
 
-    /// Create HTTP Client request from TCRequest
+    /// Create HTTP Client request from ``TCRequest``.
     private func toHTTPRequest(byteBufferAllocator: ByteBufferAllocator) -> TCHTTPRequest {
         return TCHTTPRequest(url: url, method: httpMethod, headers: httpHeaders, body: body.asPayload(byteBufferAllocator: byteBufferAllocator))
     }
 
-    /// Create HTTP Client request with signed headers from TCRequest
+    /// Create HTTP Client request with signed headers from ``TCRequest``.
     private func toHTTPRequestWithSignedHeader(signer: TCSigner, serviceConfig: TCServiceConfig, skipAuthorization: Bool) -> TCHTTPRequest {
         let payload = self.body.asPayload(byteBufferAllocator: serviceConfig.byteBufferAllocator)
         let bodyDataForSigning: TCSigner.BodyData?
@@ -120,7 +120,7 @@ extension TCRequest {
         self.addStandardHeaders()
     }
     
-    /// Add common header parameters to all requests "Action", "Version" and "Language".
+    /// Add common header parameters to all requests: "Action", "Version" and "Language".
     private mutating func addCommonParameters(action actionName: String, configuration: TCServiceConfig) {
         httpHeaders.replaceOrAdd(name: "X-TC-Action", value: actionName)
         httpHeaders.replaceOrAdd(name: "X-TC-Version", value: configuration.apiVersion)
@@ -129,13 +129,13 @@ extension TCRequest {
         }
     }
 
-    /// Add headers standard to all requests "content-type" and "user-agent"
+    /// Add headers standard to all requests: "content-type" and "user-agent".
     private mutating func addStandardHeaders() {
         httpHeaders.add(name: "user-agent", value: "Teco/0.1")
 
         switch httpMethod {
         case .GET:
-            httpHeaders.replaceOrAdd(name: "Content-Type", value: "application/x-www-form-urlencoded")
+            httpHeaders.replaceOrAdd(name: "content-type", value: "application/x-www-form-urlencoded")
         case .POST:
             httpHeaders.replaceOrAdd(name: "content-type", value: "application/json")
         default:

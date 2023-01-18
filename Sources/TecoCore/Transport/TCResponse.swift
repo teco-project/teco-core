@@ -30,18 +30,19 @@ import Logging
 import NIOCore
 import NIOHTTP1
 
-/// Structure encapsulating a processed HTTP Response
+/// Structure encapsulating a processed HTTP Response.
 struct TCResponse {
-    /// response status
+    /// Response status.
     private let status: HTTPResponseStatus
-    /// response headers
+    /// Response headers.
     private var headers: HTTPHeaders
-    /// response body
+    /// Response body.
     private let body: Body
 
-    /// Initialize an TCResponse object
-    /// - parameters:
-    ///    - response: Raw HTTP Response
+    /// Initialize an ``TCResponse`` object.
+    ///
+    /// - Parameters:
+    ///    - response: Raw HTTP response.
     internal init(from response: TCHTTPResponse) throws {
         self.status = response.status
         
@@ -58,7 +59,7 @@ struct TCResponse {
         self.body = .json(body)
     }
 
-    /// Generate TCModel from TCResponse
+    /// Generate ``TCModel`` from ``TCResponse``.
     internal func generateOutputData<Output: TCResponseModel>(errorType: TCErrorType.Type? = nil, logLevel: Logger.Level = .info, logger: Logger) throws -> Output {
         let decoder = JSONDecoder()
         let data: Data?
@@ -110,7 +111,7 @@ struct TCResponse {
 }
 
 extension TCResponse {
-    /// Container that holds an API response
+    /// Container that holds an API response.
     private struct Container<Output: TCResponseModel>: Decodable {
         let response: Output
 
@@ -127,7 +128,7 @@ extension TCResponse {
         }
     }
 
-    /// Error payload used in JSON output
+    /// Error payload used in JSON output.
     private struct APIError: TCResponseModel, Error {
         let error: Error
         let requestId: String
