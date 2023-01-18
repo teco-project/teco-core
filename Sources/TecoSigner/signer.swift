@@ -57,7 +57,7 @@ public struct TCSigner: _SignerSendable {
         return formatter
     }()
 
-    /// Initialize the Signer class with Tencent Cloud credential.
+    /// Initialize the signer with Tencent Cloud credential.
     public init(credential: Credential, service: String) {
         self.credential = credential
         self.service = service
@@ -75,10 +75,10 @@ public struct TCSigner: _SignerSendable {
         case unsignedPayload
     }
 
-    /// Process URL before signing
+    /// Process URL before signing.
     ///
     /// `signURL` and `signHeaders` make assumptions about the URLs they are provided, this function cleans up a URL so it is ready
-    /// to be signed by either of these functions. It sorts the query params and ensures they are properly percent encoded
+    /// to be signed by either of these functions. It sorts the query params and ensures they are properly percent encoded.
     public func processURL(url: URL) -> URL? {
         guard var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return nil }
         let urlQueryString = urlComponents.queryItems?
@@ -98,15 +98,15 @@ public struct TCSigner: _SignerSendable {
     /// Generate signed headers, for a HTTP request.
     ///
     /// - Parameters:
-    ///   - url: Request URL
-    ///   - method: Request HTTP method
-    ///   - headers: Request headers
-    ///   - body: Request body
-    ///   - omitSecurityToken: Should we include security token in the canonical headers
-    ///   - basicSigning: Use only the required headers for signature.
-    ///   - skipAuthorization: If `Authorization` header should be set to `SKIP`.
+    ///   - url: Request URL.
+    ///   - method: Request HTTP method.
+    ///   - headers: Request headers.
+    ///   - body: Request body.
+    ///   - omitSecurityToken: Should we include security token in the canonical headers.
+    ///   - basicSigning: Use only the minimal required headers for signature.
+    ///   - skipAuthorization: Set "Authorization" header to `SKIP` without actually performing the sign.
     ///   - date: Date that URL is valid from, defaults to now.
-    /// - Returns: Request headers with added "authorization" header that contains request signature.
+    /// - Returns: Request headers with added "Authorization" header that contains request signature.
     public func signHeaders(
         url: URL,
         method: HTTPMethod = .POST,

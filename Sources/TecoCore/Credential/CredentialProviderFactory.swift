@@ -96,13 +96,15 @@ extension CredentialProviderFactory {
     }
 
     /// Get ``Credential`` details from SCF environment variables.
+    ///
+    /// Looks in environment variables `TENCENTCLOUD_SECRETID`, `TENCENTCLOUD_SECRETKEY` and `TENCENTCLOUD_SESSIONTOKEN`.
     public static var scf: CredentialProviderFactory {
         Self { _ -> CredentialProvider in
             return StaticCredential.fromSCFEnvironment() ?? NullCredentialProvider()
         }
     }
 
-    /// Retrieve identity from the TKE OIDC provider, and acquire temporary credentials with STS.
+    /// Retrieve identity from the TKE OIDC provider, then acquire temporary credentials with STS.
     public static var tke: CredentialProviderFactory {
         Self { context in
             let provider = OIDCRoleArnCredentialProvider(

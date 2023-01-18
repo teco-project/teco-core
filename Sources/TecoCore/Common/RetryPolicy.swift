@@ -60,7 +60,7 @@ public enum RetryStatus {
 
 /// Protocol for retry strategy.
 ///
-/// Function may retry a few times after an HTTP error.
+/// Operation may retry a few times after an HTTP error.
 public protocol RetryPolicy: Sendable {
     /// Returns whether we should retry and how long we should wait before retrying.
     ///

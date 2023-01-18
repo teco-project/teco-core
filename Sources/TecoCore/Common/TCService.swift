@@ -40,6 +40,7 @@ public protocol TCService: TecoSendable {
     /// Create new version of service with patch.
     ///
     /// This is required to support ``with(region:language:endpoint:timeout:byteBufferAllocator:)``.
+    ///
     /// Standard implementation is as follows:
     /// ```swift
     /// public init(from service: MyService, patch: TCServiceConfig.Patch) {
@@ -78,14 +79,14 @@ extension TCService {
         return self.client.signHeaders(url: url, httpMethod: httpMethod, headers: headers, body: body, serviceConfig: self.config, logger: logger)
     }
 
-    /// Return a new version of service with edited parameters.
+    /// Returns a new version of service with edited parameters.
     ///
     /// - Parameters:
-    ///   - region: Region where service is running.
+    ///   - region: Region of the service you want to operate on.
     ///   - language: Preferred language for API response.
-    ///   - endpoint: Endpoint URL preference for API request.
+    ///   - endpoint: Endpoint provider for API request.
     ///   - timeout: Timeout value for HTTP requests.
-    ///   - byteBufferAllocator: Byte buffer allocator used by `TCClient`.
+    ///   - byteBufferAllocator: Byte buffer allocator used by ``TCClient``.
     ///
     /// - Returns: New version of the service.
     public func with(

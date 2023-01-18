@@ -32,7 +32,7 @@ import TecoSigner
 ///
 /// Used for wrapping another credential provider whose `getCredential` method doesn't return instantly and is only needed to be called once.
 ///
-/// After the wrapped `CredentialProvider` has generated a credential, it is stored and returned instead of calling the real `getCredential` again.
+/// After the wrapped ``CredentialProvider`` has generated a credential, it is stored and returned instead of calling the real `getCredential` again.
 public class DeferredCredentialProvider: CredentialProvider {
     let lock = NIOLock()
     var credential: Credential? {

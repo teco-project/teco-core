@@ -35,9 +35,3 @@ extension TCPlatformErrorType {
         return nil
     }
 }
-
-extension TCCommonError {
-    public static func ~= (lhs: Self, rhs: Self) -> Bool {
-        lhs.errorCode.hasPrefix(rhs.errorCode)
-    }
-}

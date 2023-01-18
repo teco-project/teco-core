@@ -31,7 +31,7 @@ import TecoSigner
 
 /// Wrap a credential provider that returns an ``ExpiringCredential``.
 ///
-/// Used for wrapping another credential provider whose ``CredentialProvider/getCredential(on:logger)`` method returns an ``ExpiringCredential``.
+/// Used for wrapping another credential provider whose ``CredentialProvider/getCredential(on:logger:)`` method returns an ``ExpiringCredential``.
 ///
 /// If current credential has not expired, it is returned. If no credential is available, or the current credential is going to expire in the near future, the wrapped credential provider's `getCredential` will be called and awaited.
 public final class TemporaryCredentialProvider: CredentialProvider {

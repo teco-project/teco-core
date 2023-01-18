@@ -24,18 +24,24 @@ public protocol Credential: Codable, _SignerSendable {
     /// The credential key.
     var secretKey: String { get }
 
-    /// The federation token of your credential.
+    /// The security token of your credential.
     ///
-    /// If this field is specified, `secretId` and `secretKey` should be set accordingly.
+    /// If this field is specified, ``secretId`` and ``secretKey`` should be set accordingly.
     var token: String? { get }
 }
 
 /// Basic version of ``Credential`` where you supply the credentials.
 public struct StaticCredential: Credential, Equatable {
+    /// The credential key ID.
     public let secretId: String
+    /// The credential key.
     public let secretKey: String
+    /// The security token of your credential.
+    ///
+    /// If this field is specified, ``secretId`` and ``secretKey`` should be set accordingly.
     public let token: String?
 
+    /// Returns a static Tencent Cloud credential.
     public init(secretId: String, secretKey: String, token: String? = nil) {
         self.secretId = secretId
         self.secretKey = secretKey

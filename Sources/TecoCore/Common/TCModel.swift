@@ -29,7 +29,7 @@ public protocol TCRequestModel: TCInputModel {}
 
 /// ``TCOutputModel`` that serves as response payload.
 ///
-/// Holds the request UUD assigned by Tencent Cloud.
+/// Holds the request ID assigned by Tencent Cloud.
 public protocol TCResponseModel: TCOutputModel {
     /// Request ID assigned by Tencent Cloud uniquely for every API request.
     var requestId: String { get }

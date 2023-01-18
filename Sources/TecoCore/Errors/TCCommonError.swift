@@ -268,3 +268,10 @@ public struct TCCommonError: TCPlatformErrorType {
         TCCommonError(.unsupportedRegion)
     }
 }
+
+extension TCCommonError {
+    /// Returns a Boolean value indicating whether a ``TCCommonError`` belongs to another.
+    internal static func ~= (lhs: Self, rhs: Self) -> Bool {
+        lhs.errorCode.hasPrefix("\(rhs.errorCode).")
+    }
+}

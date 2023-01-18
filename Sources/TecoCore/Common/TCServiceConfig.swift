@@ -54,7 +54,7 @@ public struct TCServiceConfig: Sendable {
     ///   - service: Name of the service endpoint.
     ///   - apiVersion: Service API version.
     ///   - language: Preferred language for API response.
-    ///   - endpoint: Endpoint URL for API request.
+    ///   - endpoint: Endpoint provider for API request.
     ///   - errorType: Base error type that the client may throw.
     ///   - timeout: Time out value for HTTP requests.
     ///   - byteBufferAllocator: Byte buffer allocator used throughout ``TCClient``.
@@ -92,15 +92,15 @@ public struct TCServiceConfig: Sendable {
         case en_US = "en-US"
     }
 
-    /// Endpoint configuration for the Tencent Cloud service.
+    /// Endpoint provider for the Tencent Cloud service.
     public enum Endpoint: Sendable, Equatable {
-        /// Prefers to use the endpoint of service region (eg. https://cvm.ap-guangzhou.tencentcloudapi.com ).
+        /// Prefer to use the endpoint of service region (eg. `https://cvm.ap-guangzhou.tencentcloudapi.com`).
         case service
-        /// Prefers to use the global endpoint (eg. https://cvm.tencentcloudapi.com ).
+        /// Prefer to use the global endpoint (eg. `https://cvm.tencentcloudapi.com`).
         case global
-        /// Prefers to use the endpoint of specific region (eg. https://cvm.ap-guangzhou.tencentcloudapi.com ).
+        /// Use the endpoint of provided region (eg. `https://cvm.ap-guangzhou.tencentcloudapi.com`).
         case regional(TCRegion)
-        /// Provides a custom endpoint.
+        /// Use a custom endpoint.
         case custom(url: String)
 
         fileprivate static let baseDomain = "tencentcloudapi.com"
@@ -119,7 +119,7 @@ public struct TCServiceConfig: Sendable {
         }
     }
 
-    /// Return a new version of service configuration with edited parameters.
+    /// Returns a new version of service configuration with edited parameters.
     ///
     /// - Parameters:
     ///   - patch: Parameters to patch the service config.
