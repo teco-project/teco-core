@@ -38,13 +38,14 @@ public struct TCServiceConfig: Sendable {
     public let language: Language?
     /// The endpoint URL to use in requests.
     public let endpoint: String
-    /// The base error type returned by the service
+    /// The base error type returned by the service.
     public let errorType: TCErrorType.Type?
-    /// timeout value for HTTP requests
+    /// Timeout value for HTTP requests.
     public let timeout: TimeAmount
-    /// ByteBuffer allocator used by service
+    /// Byte buffer allocator used by service.
     public let byteBufferAllocator: ByteBufferAllocator
-    /// A provider to generate endpoint for service.
+ 
+    /// A provider to generate endpoint URL for service.
     private let endpointProvider: Endpoint
 
     /// Create a ``TCServiceConfig`` configuration.
@@ -70,8 +71,8 @@ public struct TCServiceConfig: Sendable {
     ) {
         if let region = region {
             self.region = region
-        } else if let defaultRegion = Environment["TENCENTCLOUD_REGION"] {
-            self.region = TCRegion(id: defaultRegion)
+        } else if let regionId = Environment["TENCENTCLOUD_REGION"] {
+            self.region = TCRegion(id: regionId)
         } else {
             self.region = nil
         }
