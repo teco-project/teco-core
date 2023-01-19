@@ -2,7 +2,7 @@
 //
 // This source file is part of the Teco open source project.
 //
-// Copyright (c) 2022 the Teco project authors
+// Copyright (c) 2022-2023 the Teco project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -11,17 +11,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-/// Recognized error type returned by Tencent Cloud API.
-public protocol TCPlatformErrorType: TCErrorType, Equatable {
+/// Service error type returned by Tencent Cloud API.
+public protocol TCServiceErrorType: TCErrorType, Equatable {
     /// Get the error as ``TCCommonError`` if possible.
     ///
     /// - Returns: ``TCCommonError`` that holds the same error code and context.
     func asCommonError() -> TCCommonError?
 }
 
-extension TCPlatformErrorType {
+extension TCServiceErrorType {
     public var description: String {
-        "\(errorCode): \(message ?? "")"
+        "\(self.errorCode): \(self.message ?? "")"
     }
 
     public static func == (lhs: Self, rhs: Self) -> Bool {

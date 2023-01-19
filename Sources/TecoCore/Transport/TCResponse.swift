@@ -105,7 +105,7 @@ struct TCResponse {
                 throw error
             }
             
-            throw TCResponseError(errorCode: error.code, context: context)
+            throw TCRawServiceError(errorCode: error.code, context: context)
         }
     }
 }
