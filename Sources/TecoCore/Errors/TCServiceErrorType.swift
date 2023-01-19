@@ -17,6 +17,11 @@ public protocol TCServiceErrorType: TCErrorType, Equatable {
     ///
     /// - Returns: ``TCCommonError`` that holds the same error code and context.
     func asCommonError() -> TCCommonError?
+
+    /// Get the error as ``TCRawServiceError``.
+    ///
+    /// - Returns: ``TCRawServiceError`` that holds the same error code and context.
+    func asRawError() -> TCRawServiceError
 }
 
 extension TCServiceErrorType {
@@ -33,5 +38,9 @@ extension TCServiceErrorType {
             return TCCommonError(code, context: self.context)
         }
         return nil
+    }
+
+    public func asRawError() -> TCRawServiceError {
+        return TCRawServiceError(self.errorCode, context: self.context)
     }
 }

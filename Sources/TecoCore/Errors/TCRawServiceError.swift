@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-/// Service error type returned by Tencent Cloud, whose error code is unrecognized.
+/// Service error type returned by Tencent Cloud, with unhandled raw error code.
 public struct TCRawServiceError: TCServiceErrorType {
     public let errorCode: String
     public let context: TCErrorContext?
@@ -21,7 +21,12 @@ public struct TCRawServiceError: TCServiceErrorType {
         self.context = context
     }
 
-    public func asCommonError() -> TCCommonError? {
-        return nil
+    internal init(_ errorCode: String, context: TCErrorContext?) {
+        self.errorCode = errorCode
+        self.context = context
+    }
+
+    public func asRawError() -> TCRawServiceError {
+        return self
     }
 }

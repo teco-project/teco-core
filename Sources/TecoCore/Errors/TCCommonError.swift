@@ -73,6 +73,10 @@ public struct TCCommonError: TCServiceErrorType {
         self.context = context
     }
 
+    public func asCommonError() -> TCCommonError? {
+        return self
+    }
+
     internal init(_ error: Code, context: TCErrorContext? = nil) {
         self.error = error
         self.context = context
