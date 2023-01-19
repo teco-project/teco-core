@@ -28,8 +28,8 @@ import struct Foundation.URL
 
 /// Configuration that defines a Tencent Cloud service.
 public struct TCServiceConfig: Sendable {
-    /// Region where service is running.
-    public let region: TCRegion
+    /// Default region of the service to operate on.
+    public let region: TCRegion?
     /// Short name of the service.
     public let service: String
     /// Version of the service API.
@@ -59,7 +59,7 @@ public struct TCServiceConfig: Sendable {
     ///   - timeout: Time out value for HTTP requests.
     ///   - byteBufferAllocator: Byte buffer allocator used throughout ``TCClient``.
     public init(
-        region: TCRegion?,
+        region: TCRegion? = nil,
         service: String,
         apiVersion: String,
         language: Language? = nil,
@@ -73,7 +73,7 @@ public struct TCServiceConfig: Sendable {
         } else if let defaultRegion = Environment["TENCENTCLOUD_REGION"] {
             self.region = TCRegion(id: defaultRegion)
         } else {
-            self.region = .ap_guangzhou
+            self.region = nil
         }
         self.service = service
         self.apiVersion = apiVersion
@@ -100,21 +100,25 @@ public struct TCServiceConfig: Sendable {
         case global
         /// Use the endpoint of provided region (eg. `https://cvm.ap-guangzhou.tencentcloudapi.com`).
         case regional(TCRegion)
-        /// Use a custom endpoint.
+        /// Provide a custom endpoint.
         case custom(url: String)
 
         fileprivate static let baseDomain = "tencentcloudapi.com"
 
-        fileprivate func resolve(region: TCRegion, service: String) -> String {
+        fileprivate func resolve(region: TCRegion?, service: String) -> String {
             switch self {
             case .custom(let endpoint):
                 return endpoint
             case .regional(let customRegion):
                 return "https://\(service).\(customRegion.rawValue).\(Self.baseDomain)"
-            case .global where region.kind == .global:
+            case .global where region?.kind == .global:
                 return "https://\(service).\(Self.baseDomain)"
             default:
-                return "https://\(service).\(region.rawValue).\(Self.baseDomain)"
+                if let region = region {
+                    return "https://\(service).\(region.rawValue).\(Self.baseDomain)"
+                } else {
+                    return "https://\(service).\(Self.baseDomain)"
+                }
             }
         }
     }
@@ -123,7 +127,6 @@ public struct TCServiceConfig: Sendable {
     ///
     /// - Parameters:
     ///   - patch: Parameters to patch the service config.
-    ///
     /// - Returns: A patched ``TCServiceConfig``.
     public func with(patch: Patch) -> TCServiceConfig {
         return TCServiceConfig(service: self, with: patch)

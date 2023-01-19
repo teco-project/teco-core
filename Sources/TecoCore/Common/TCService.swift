@@ -52,8 +52,8 @@ public protocol TCService: TecoSendable {
 }
 
 extension TCService {
-    /// Region where service is running.
-    public var region: TCRegion { config.region }
+    /// Default region of the service to operate on.
+    public var region: TCRegion? { config.region }
     /// The endpoint URL to use in requests.
     public var endpoint: String { config.endpoint }
     /// ``EventLoopGroup`` the service is using.

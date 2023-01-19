@@ -35,7 +35,7 @@ import TecoSigner
 /// Structure encapsulating all the information needed to generate a raw HTTP request to Tencent Cloud.
 struct TCRequest {
     /// Request Tencent Cloud region.
-    private let region: TCRegion
+    private let region: TCRegion?
     /// Request URL.
     private let url: URL
     /// Request HTTP method.
@@ -78,12 +78,12 @@ struct TCRequest {
 }
 
 extension TCRequest {
-    internal init(action: String, path: String = "/", httpMethod: HTTPMethod, configuration: TCServiceConfig) throws {
+    internal init(action: String, path: String = "/", region: TCRegion? = nil, httpMethod: HTTPMethod, configuration: TCServiceConfig) throws {
         guard let url = URL(string: "\(configuration.endpoint)\(path)"), let _ = url.host else {
             throw TCClient.ClientError.invalidURL
         }
 
-        self.region = configuration.region
+        self.region = region ?? configuration.region
         self.url = url
         self.httpMethod = httpMethod
         self.httpHeaders = HTTPHeaders()
@@ -97,6 +97,7 @@ extension TCRequest {
     internal init<Input: TCInputModel>(
         action: String,
         path: String = "/",
+        region: TCRegion? = nil,
         httpMethod: HTTPMethod,
         input: Input,
         configuration: TCServiceConfig
@@ -109,7 +110,7 @@ extension TCRequest {
             throw TCClient.ClientError.invalidURL
         }
 
-        self.region = configuration.region
+        self.region = region ?? configuration.region
         self.url = url
         self.httpMethod = httpMethod
         self.httpHeaders = HTTPHeaders()
@@ -119,11 +120,14 @@ extension TCRequest {
         self.addCommonParameters(action: action, configuration: configuration)
         self.addStandardHeaders()
     }
-    
-    /// Add common header parameters to all requests: "Action", "Version" and "Language".
+
+    /// Add common header parameters to all requests: "Action", "Version", "Region" and "Language".
     private mutating func addCommonParameters(action actionName: String, configuration: TCServiceConfig) {
         httpHeaders.replaceOrAdd(name: "X-TC-Action", value: actionName)
         httpHeaders.replaceOrAdd(name: "X-TC-Version", value: configuration.apiVersion)
+        if let region = self.region {
+            httpHeaders.replaceOrAdd(name: "X-TC-Region", value: region.rawValue)
+        }
         if let language = configuration.language {
             httpHeaders.replaceOrAdd(name: "X-TC-Language", value: language.rawValue)
         }
