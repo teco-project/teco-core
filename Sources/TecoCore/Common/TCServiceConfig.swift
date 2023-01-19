@@ -24,7 +24,6 @@
 //===----------------------------------------------------------------------===//
 
 import NIOCore
-import struct Foundation.URL
 
 /// Configuration that defines a Tencent Cloud service.
 public struct TCServiceConfig: Sendable {
@@ -84,7 +83,7 @@ public struct TCServiceConfig: Sendable {
         self.byteBufferAllocator = byteBufferAllocator
 
         self.endpointProvider = endpoint
-        self.endpoint = endpoint.resolve(service: service, region: self.region)
+        self.endpoint = endpoint.getEndpoint(for: service, region: self.region)
     }
 
     /// Languges supported by Tencent Cloud services.
@@ -94,21 +93,7 @@ public struct TCServiceConfig: Sendable {
     }
 
     /// Endpoint provider for the Tencent Cloud service.
-    public struct Endpoint: Sendable {
-        fileprivate static let baseDomain = "tencentcloudapi.com"
-
-        private let provider: @Sendable (String, TCRegion?) -> String
-        private let placeholder: String
-
-        private init(description: String, provider: @escaping @Sendable (String, TCRegion?) -> String) {
-            self.provider = provider
-            self.placeholder = description
-        }
-
-        fileprivate func resolve(service: String, region: TCRegion?) -> String {
-            self.provider(service, region)
-        }
-    }
+    public typealias Endpoint = TCServiceEndpointProvider
 
     /// Returns a new version of service configuration with edited parameters.
     ///
@@ -145,10 +130,10 @@ public struct TCServiceConfig: Sendable {
     private init(service: TCServiceConfig, with patch: Patch) {
         if service.region != patch.region, let region = patch.region {
             self.region = region
-            self.endpoint = (patch.endpoint ?? service.endpointProvider).resolve(service: service.service, region: region)
+            self.endpoint = (patch.endpoint ?? service.endpointProvider).getEndpoint(for: service.service, region: region)
         } else {
             self.region = service.region
-            self.endpoint = patch.endpoint?.resolve(service: service.service, region: region) ?? service.endpoint
+            self.endpoint = patch.endpoint?.getEndpoint(for: service.service, region: region) ?? service.endpoint
         }
         self.service = service.service
         self.version = service.version
@@ -157,62 +142,5 @@ public struct TCServiceConfig: Sendable {
         self.errorType = service.errorType
         self.timeout = patch.timeout ?? service.timeout
         self.byteBufferAllocator = patch.byteBufferAllocator ?? service.byteBufferAllocator
-    }
-}
-
-extension TCServiceConfig.Endpoint: LosslessStringConvertible {
-    /// Create a `TCServiceConfig.Endpoint` from URL string.
-    ///
-    /// - Parameter url: The endpoint URL string.
-    public init?(_ url: String) {
-        guard let url = URL(string: url), url.scheme == "http" || url.scheme == "https" else {
-            return nil
-        }
-        self = .static(url.standardized.absoluteString)
-    }
-
-    public var description: String {
-        self.placeholder
-    }
-}
-
-extension TCServiceConfig.Endpoint {
-    /// Prefer to use the endpoint of service region.
-    public static var service: Self {
-        Self(description: "https://<service>.<region>.\(Self.baseDomain)") { service, region in
-            if let region = region {
-                return "https://\(service).\(region.rawValue).\(Self.baseDomain)"
-            } else {
-                return "https://\(service).\(Self.baseDomain)"
-            }
-        }
-    }
-
-    /// Prefer to use the global endpoint.
-    public static var global: Self {
-        Self(description: "https://<service>.\(Self.baseDomain)") { service, region in
-            if let region = region, region.kind != .global {
-                return "https://\(service).\(region.rawValue).\(Self.baseDomain)"
-            } else {
-                return "https://\(service).\(Self.baseDomain)"
-            }
-        }
-    }
-
-    /// Use the endpoint of provided region.
-    public static func regional(_ region: TCRegion) -> Self {
-        Self(description: "https://<service>.\(region).\(Self.baseDomain)") { service, _ in
-            "https://\(service).\(region.rawValue).\(Self.baseDomain)"
-        }
-    }
-
-    /// Provide a static endpoint.
-    public static func `static`(_ url: String) -> Self {
-        Self(description: url, provider: { _, _ in url })
-    }
-
-    /// Provide an endpoint based on service configuration.
-    public static func provider(_ provider: @escaping @Sendable (String, TCRegion?) -> String, description: String = "<custom endpoint provider>") -> Self {
-        Self(description: description, provider: provider)
     }
 }
