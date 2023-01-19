@@ -94,33 +94,19 @@ public struct TCServiceConfig: Sendable {
     }
 
     /// Endpoint provider for the Tencent Cloud service.
-    public enum Endpoint: Sendable, Equatable {
-        /// Prefer to use the endpoint of service region.
-        case service
-        /// Prefer to use the global endpoint.
-        case global
-        /// Use the endpoint of provided region.
-        case regional(TCRegion)
-        /// Provide a custom endpoint.
-        case custom(url: String)
-
+    public struct Endpoint: Sendable {
         fileprivate static let baseDomain = "tencentcloudapi.com"
 
+        private let provider: @Sendable (String, TCRegion?) -> String
+        private let placeholder: String
+
+        private init(description: String, provider: @escaping @Sendable (String, TCRegion?) -> String) {
+            self.provider = provider
+            self.placeholder = description
+        }
+
         fileprivate func resolve(service: String, region: TCRegion?) -> String {
-            switch self {
-            case .custom(let endpoint):
-                return endpoint
-            case .regional(let customRegion):
-                return "https://\(service).\(customRegion.rawValue).\(Self.baseDomain)"
-            case .global where region?.kind == .global:
-                return "https://\(service).\(Self.baseDomain)"
-            default:
-                if let region = region {
-                    return "https://\(service).\(region.rawValue).\(Self.baseDomain)"
-                } else {
-                    return "https://\(service).\(Self.baseDomain)"
-                }
-            }
+            self.provider(service, region)
         }
     }
 
@@ -182,19 +168,51 @@ extension TCServiceConfig.Endpoint: LosslessStringConvertible {
         guard let url = URL(string: url), url.scheme == "http" || url.scheme == "https" else {
             return nil
         }
-        self = .custom(url: url.standardized.absoluteString)
+        self = .static(url.standardized.absoluteString)
     }
 
     public var description: String {
-        switch self {
-        case .service:
-            return "https://<service>.<region>.\(Self.baseDomain)"
-        case .global:
-            return "https://<service>.\(Self.baseDomain)"
-        case .regional(let region):
-            return "https://<service>.\(region).\(Self.baseDomain)"
-        case .custom(let url):
-            return url
+        self.placeholder
+    }
+}
+
+extension TCServiceConfig.Endpoint {
+    /// Prefer to use the endpoint of service region.
+    public static var service: Self {
+        Self(description: "https://<service>.<region>.\(Self.baseDomain)") { service, region in
+            if let region = region {
+                return "https://\(service).\(region.rawValue).\(Self.baseDomain)"
+            } else {
+                return "https://\(service).\(Self.baseDomain)"
+            }
         }
+    }
+
+    /// Prefer to use the global endpoint.
+    public static var global: Self {
+        Self(description: "https://<service>.\(Self.baseDomain)") { service, region in
+            if let region = region, region.kind != .global {
+                return "https://\(service).\(region.rawValue).\(Self.baseDomain)"
+            } else {
+                return "https://\(service).\(Self.baseDomain)"
+            }
+        }
+    }
+
+    /// Use the endpoint of provided region.
+    public static func regional(_ region: TCRegion) -> Self {
+        Self(description: "https://<service>.\(region).\(Self.baseDomain)") { service, _ in
+            "https://\(service).\(region.rawValue).\(Self.baseDomain)"
+        }
+    }
+
+    /// Provide a static endpoint.
+    public static func `static`(_ url: String) -> Self {
+        Self(description: url, provider: { _, _ in url })
+    }
+
+    /// Provide an endpoint based on service configuration.
+    public static func provider(_ provider: @escaping @Sendable (String, TCRegion?) -> String, description: String = "<custom endpoint provider>") -> Self {
+        Self(description: description, provider: provider)
     }
 }
