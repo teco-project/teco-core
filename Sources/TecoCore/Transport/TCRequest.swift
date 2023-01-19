@@ -79,6 +79,13 @@ struct TCRequest {
 
 extension TCRequest {
     internal init(action: String, path: String = "/", region: TCRegion? = nil, httpMethod: HTTPMethod, configuration: TCServiceConfig) throws {
+        let configuration: TCServiceConfig = {
+            if let region = region, region != configuration.region {
+                return configuration.with(patch: .init(region: region))
+            }
+            return configuration
+        }()
+
         guard let url = URL(string: "\(configuration.endpoint)\(path)"), let _ = url.host else {
             throw TCClient.ClientError.invalidURL
         }

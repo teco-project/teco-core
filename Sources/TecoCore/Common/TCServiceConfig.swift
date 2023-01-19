@@ -36,7 +36,7 @@ public struct TCServiceConfig: Sendable {
     public let region: TCRegion?
     /// Preferred language for API response.
     public let language: Language?
-    /// The endpoint URL to use in requests.
+    /// Default endpoint URL to use in requests.
     public let endpoint: String
     /// The base error type returned by the service.
     public let errorType: TCErrorType.Type?
@@ -44,7 +44,7 @@ public struct TCServiceConfig: Sendable {
     public let timeout: TimeAmount
     /// Byte buffer allocator used by service.
     public let byteBufferAllocator: ByteBufferAllocator
- 
+
     /// A provider to generate endpoint URL for service.
     private let endpointProvider: Endpoint
 
@@ -84,7 +84,7 @@ public struct TCServiceConfig: Sendable {
         self.byteBufferAllocator = byteBufferAllocator
 
         self.endpointProvider = endpoint
-        self.endpoint = endpoint.resolve(region: self.region, service: service)
+        self.endpoint = endpoint.resolve(service: service, region: self.region)
     }
 
     /// Languges supported by Tencent Cloud services.
@@ -95,18 +95,18 @@ public struct TCServiceConfig: Sendable {
 
     /// Endpoint provider for the Tencent Cloud service.
     public enum Endpoint: Sendable, Equatable {
-        /// Prefer to use the endpoint of service region (eg. `https://cvm.ap-guangzhou.tencentcloudapi.com`).
+        /// Prefer to use the endpoint of service region.
         case service
-        /// Prefer to use the global endpoint (eg. `https://cvm.tencentcloudapi.com`).
+        /// Prefer to use the global endpoint.
         case global
-        /// Use the endpoint of provided region (eg. `https://cvm.ap-guangzhou.tencentcloudapi.com`).
+        /// Use the endpoint of provided region.
         case regional(TCRegion)
         /// Provide a custom endpoint.
         case custom(url: String)
 
         fileprivate static let baseDomain = "tencentcloudapi.com"
 
-        fileprivate func resolve(region: TCRegion?, service: String) -> String {
+        fileprivate func resolve(service: String, region: TCRegion?) -> String {
             switch self {
             case .custom(let endpoint):
                 return endpoint
@@ -157,12 +157,12 @@ public struct TCServiceConfig: Sendable {
     }
 
     private init(service: TCServiceConfig, with patch: Patch) {
-        if let region = patch.region {
+        if service.region != patch.region, let region = patch.region {
             self.region = region
-            self.endpoint = (patch.endpoint ?? service.endpointProvider).resolve(region: region, service: service.service)
+            self.endpoint = (patch.endpoint ?? service.endpointProvider).resolve(service: service.service, region: region)
         } else {
             self.region = service.region
-            self.endpoint = patch.endpoint?.resolve(region: region, service: service.service) ?? service.endpoint
+            self.endpoint = patch.endpoint?.resolve(service: service.service, region: region) ?? service.endpoint
         }
         self.service = service.service
         self.version = service.version
