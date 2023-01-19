@@ -37,202 +37,97 @@ public struct TCRegion: Equatable, Sendable {
         self.kind = kind
     }
 
-    /// 华南地区(广州) / South China(Guangzhou)
+    /// South China(Guangzhou) / 华南地区(广州)
     public static var ap_guangzhou: TCRegion {
         TCRegion(id: "ap-guangzhou")
     }
 
-    /// 华南地区(深圳金融) / South China(Shenzhen Finance)
-    public static var ap_shenzhen_fsi: TCRegion {
-        TCRegion(id: "ap-shenzhen-fsi", kind: .financial)
-    }
-
-    /// 华南地区(广州OPEN) / South China(Guangzhou OPEN)
-    public static var ap_guangzhou_open: TCRegion {
-        TCRegion(id: "ap-guangzhou-open")
-    }
-
-    /// 华南地区(清远) / South China(Qingyuan)
-    public static var ap_qingyuan: TCRegion {
-        TCRegion(id: "ap-qingyuan")
-    }
-
-    /// 华南地区(清远信安) / South China(Qingyuan Xinan)
-    public static var ap_qingyuan_xinan: TCRegion {
-        TCRegion(id: "ap-qingyuan-xinan", kind: .internal)
-    }
-
-    /// 华南地区(深圳深宇财付通) / South China(Shenzhen Shenyu Tenpay)
-    public static var ap_shenzhen_sycft: TCRegion {
-        TCRegion(id: "ap-shenzhen-sycft", kind: .internal)
-    }
-
-    /// 华东地区(上海) / East China(Shanghai)
+    /// East China(Shanghai) / 华东地区(上海)
     public static var ap_shanghai: TCRegion {
         TCRegion(id: "ap-shanghai")
     }
 
-    /// 华东地区(上海金融) / East China(Shanghai Finance)
-    public static var ap_shanghai_fsi: TCRegion {
-        TCRegion(id: "ap-shanghai-fsi", kind: .financial)
-    }
-
-    /// 华东地区(济南) / East China(Jinan)
-    public static var ap_jinan_ec: TCRegion {
-        TCRegion(id: "ap-jinan-ec")
-    }
-
-    /// 华东地区(杭州) / East China(Hangzhou)
-    public static var ap_hangzhou_ec: TCRegion {
-        TCRegion(id: "ap-hangzhou-ec")
-    }
-
-    /// 华东地区(南京) / East China(Nanjing)
+    /// East China(Nanjing) / 华东地区(南京)
     public static var ap_nanjing: TCRegion {
         TCRegion(id: "ap-nanjing")
     }
 
-    /// 华东地区(福州) / East China(Fuzhou)
-    public static var ap_fuzhou_ec: TCRegion {
-        TCRegion(id: "ap-fuzhou-ec")
-    }
-
-    /// 华东地区(合肥) / East China(Hefei)
-    public static var ap_hefei_ec: TCRegion {
-        TCRegion(id: "ap-hefei-ec")
-    }
-
-    /// 华东地区(上海自动驾驶云) / East China(Shanghai Self-driving Cloud)
-    public static var ap_shanghai_adc: TCRegion {
-        TCRegion(id: "ap-shanghai-adc", kind: .internal)
-    }
-
-    /// 港澳台地区(中国香港) / Hong Kong, Macau and Taiwan (China)(Hong Kong, China)
+    /// Hong Kong, Macau and Taiwan (China)(Hong Kong, China) / 港澳台地区(中国香港)
     public static var ap_hongkong: TCRegion {
         TCRegion(id: "ap-hongkong")
     }
 
-    /// 港澳台地区(中国台北) / Hong Kong, Macau and Taiwan (China)(Taiwan, China)
-    public static var ap_taipei: TCRegion {
-        TCRegion(id: "ap-taipei")
-    }
-
-    /// 北美地区(多伦多) / North America(Toronto)
+    /// North America(Toronto) / 北美地区(多伦多)
     public static var na_toronto: TCRegion {
         TCRegion(id: "na-toronto")
     }
 
-    /// 华北地区(北京) / North China region(Beijing)
+    /// North China region(Beijing) / 华北地区(北京)
     public static var ap_beijing: TCRegion {
         TCRegion(id: "ap-beijing")
     }
 
-    /// 华北地区(北京金融) / North China region(Beijing Finance)
-    public static var ap_beijing_fsi: TCRegion {
-        TCRegion(id: "ap-beijing-fsi", kind: .financial)
-    }
-
-    /// 华北地区(石家庄) / North China region(Shijiazhuang)
-    public static var ap_shijiazhuang_ec: TCRegion {
-        TCRegion(id: "ap-shijiazhuang-ec")
-    }
-
-    /// 亚太东南(新加坡) / Southeast Asia(Singapore)
+    /// Southeast Asia(Singapore) / 亚太东南(新加坡)
     public static var ap_singapore: TCRegion {
         TCRegion(id: "ap-singapore")
     }
 
-    /// 亚太东南(曼谷) / Southeast Asia(Bangkok)
+    /// Southeast Asia(Bangkok) / 亚太东南(曼谷)
     public static var ap_bangkok: TCRegion {
         TCRegion(id: "ap-bangkok")
     }
 
-    /// 亚太东南(雅加达) / Southeast Asia(Jakarta)
+    /// Southeast Asia(Jakarta) / 亚太东南(雅加达)
     public static var ap_jakarta: TCRegion {
         TCRegion(id: "ap-jakarta")
     }
 
-    /// 美国西部(硅谷) / US West(Silicon Valley)
+    /// US West(Silicon Valley) / 美国西部(硅谷)
     public static var na_siliconvalley: TCRegion {
         TCRegion(id: "na-siliconvalley")
     }
 
-    /// 西南地区(成都) / Southwest China(Chengdu)
+    /// Southwest China(Chengdu) / 西南地区(成都)
     public static var ap_chengdu: TCRegion {
         TCRegion(id: "ap-chengdu")
     }
 
-    /// 西南地区(重庆) / Southwest China(Chongqing)
+    /// Southwest China(Chongqing) / 西南地区(重庆)
     public static var ap_chongqing: TCRegion {
         TCRegion(id: "ap-chongqing")
     }
 
-    /// 西南地区(贵阳) / Southwest China(Guiyang)
-    public static var ap_guiyang: TCRegion {
-        TCRegion(id: "ap-guiyang")
-    }
-
-    /// 欧洲地区(法兰克福) / Europe(Frankfurt)
+    /// Europe(Frankfurt) / 欧洲地区(法兰克福)
     public static var eu_frankfurt: TCRegion {
         TCRegion(id: "eu-frankfurt")
     }
 
-    /// 欧洲地区(莫斯科) / Europe(Northeastern Europe)
+    /// Europe(Northeastern Europe) / 欧洲地区(莫斯科)
     public static var eu_moscow: TCRegion {
         TCRegion(id: "eu-moscow")
     }
 
-    /// 亚太东北(首尔) / Northeast Asia(Seoul)
+    /// Northeast Asia(Seoul) / 亚太东北(首尔)
     public static var ap_seoul: TCRegion {
         TCRegion(id: "ap-seoul")
     }
 
-    /// 亚太东北(东京) / Northeast Asia(Tokyo)
+    /// Northeast Asia(Tokyo) / 亚太东北(东京)
     public static var ap_tokyo: TCRegion {
         TCRegion(id: "ap-tokyo")
     }
 
-    /// 亚太南部(孟买) / South Asia(Mumbai)
+    /// South Asia(Mumbai) / 亚太南部(孟买)
     public static var ap_mumbai: TCRegion {
         TCRegion(id: "ap-mumbai")
     }
 
-    /// 美国东部(弗吉尼亚) / US East(Virginia)
+    /// US East(Virginia) / 美国东部(弗吉尼亚)
     public static var na_ashburn: TCRegion {
         TCRegion(id: "na-ashburn")
     }
 
-    /// 华中地区(武汉) / Central China(Wuhan)
-    public static var ap_wuhan_ec: TCRegion {
-        TCRegion(id: "ap-wuhan-ec")
-    }
-
-    /// 华中地区(长沙) / Central China(Changsha)
-    public static var ap_changsha_ec: TCRegion {
-        TCRegion(id: "ap-changsha-ec")
-    }
-
-    /// 华中地区(郑州) / Central China(Zhengzhou)
-    public static var ap_zhengzhou_ec: TCRegion {
-        TCRegion(id: "ap-zhengzhou-ec")
-    }
-
-    /// 东北地区(沈阳) / Northeast China(Shenyang)
-    public static var ap_shenyang_ec: TCRegion {
-        TCRegion(id: "ap-shenyang-ec")
-    }
-
-    /// 西北地区(西安) / Northwest region(Xi'an)
-    public static var ap_xian_ec: TCRegion {
-        TCRegion(id: "ap-xian-ec")
-    }
-
-    /// 西北地区(西北) / Northwest region(Northwest China)
-    public static var ap_xibei_ec: TCRegion {
-        TCRegion(id: "ap-xibei-ec")
-    }
-
-    /// 南美地区(圣保罗) / South America(São Paulo)
+    /// South America(São Paulo) / 南美地区(圣保罗)
     public static var sa_saopaulo: TCRegion {
         TCRegion(id: "sa-saopaulo")
     }
