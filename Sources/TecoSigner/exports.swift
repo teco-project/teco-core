@@ -13,5 +13,3 @@
 
 @_exported import struct NIOCore.ByteBuffer
 @_exported import struct NIOCore.TimeAmount
-
-@_exported import NIOHTTP1

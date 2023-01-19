@@ -35,10 +35,12 @@ import struct Foundation.Locale
 import struct Foundation.TimeZone
 import struct Foundation.URL
 import struct Foundation.URLComponents
-import struct Crypto.HMAC
-import struct Crypto.SHA256
-import struct Crypto.SymmetricKey
-import struct OrderedCollections.OrderedDictionary
+import struct NIOHTTP1.HTTPHeaders
+import enum NIOHTTP1.HTTPMethod
+@_implementationOnly import struct Crypto.HMAC
+@_implementationOnly import struct Crypto.SHA256
+@_implementationOnly import struct Crypto.SymmetricKey
+@_implementationOnly import struct OrderedCollections.OrderedDictionary
 
 /// Tencent Cloud API V3 signer (TC3).
 public struct TCSigner: _SignerSendable {
