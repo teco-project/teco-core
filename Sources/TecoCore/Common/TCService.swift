@@ -55,9 +55,14 @@ extension TCService {
     /// Default region of the service to operate on.
     public var defaultRegion: TCRegion? { config.region }
     /// Default endpoint URL to use in requests.
-    public var endpoint: String { config.endpoint }
+    public var defaultEndpoint: String { config.endpoint }
     /// ``EventLoopGroup`` the service is using.
     public var eventLoopGroup: EventLoopGroup { client.eventLoopGroup }
+
+    /// Returns the service endpoint URL.
+    public func endpoint(for region: TCRegion? = nil) -> String {
+        self.config.getEndpoint(for: region)
+    }
 
     /// Generate signed headers.
     ///
@@ -67,7 +72,6 @@ extension TCService {
     ///    - headers: Headers that are to be sent with this URL.
     ///    - body: Payload to sign.
     ///    - logger: Logger to output to.
-    ///
     /// - Returns: A set of signed headers that include the original headers supplied.
     public func signHeaders(
         url: URL,
@@ -87,7 +91,6 @@ extension TCService {
     ///   - endpoint: Endpoint provider for API request.
     ///   - timeout: Timeout value for HTTP requests.
     ///   - byteBufferAllocator: Byte buffer allocator used by ``TCClient``.
-    ///
     /// - Returns: New version of the service.
     public func with(
         region: TCRegion? = nil,

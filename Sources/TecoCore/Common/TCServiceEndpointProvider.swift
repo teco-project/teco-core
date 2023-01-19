@@ -25,7 +25,8 @@ public struct TCServiceEndpointProvider: Sendable {
         self.placeholder = description
     }
 
-    internal func getEndpoint(for service: String, region: TCRegion? = nil) -> String {
+    /// Returns the endpoint URL for provided service and region.
+    internal func getEndpoint(for service: String, region: TCRegion?) -> String {
         self.provider(service, region)
     }
 
