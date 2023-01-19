@@ -147,3 +147,9 @@ extension TCRequest {
         }
     }
 }
+
+extension Credential {
+    fileprivate var isEmpty: Bool {
+        self.secretId.isEmpty || self.secretKey.isEmpty
+    }
+}

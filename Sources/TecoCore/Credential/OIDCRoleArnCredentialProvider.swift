@@ -77,8 +77,9 @@ private struct STSAssumeRoleWithWebIdentityResponse: TCResponseModel {
 /// Credential provider that returns temporary credentials acquired with OIDC.
 struct OIDCRoleArnCredentialProvider: CredentialProviderWithClient {
     let client: TCClient
-    let config: TCServiceConfig
-    let requestProvider: (EventLoop) -> EventLoopFuture<STSAssumeRoleWithWebIdentityRequest>
+
+    private let config: TCServiceConfig
+    private let requestProvider: (EventLoop) -> EventLoopFuture<STSAssumeRoleWithWebIdentityRequest>
 
     init(
         requestProvider: @escaping (EventLoop) -> EventLoopFuture<STSAssumeRoleWithWebIdentityRequest>,

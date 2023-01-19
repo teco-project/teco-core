@@ -91,8 +91,9 @@ private struct STSAssumeRoleResponse: TCResponseModel {
 /// Credential provider that returns temporary credentials acquired from STS.
 struct STSCredentialProvider: CredentialProviderWithClient {
     let client: TCClient
-    let config: TCServiceConfig
-    let request: STSAssumeRoleRequest
+
+    private let config: TCServiceConfig
+    private let request: STSAssumeRoleRequest
 
     init(
         request: STSAssumeRoleRequest,

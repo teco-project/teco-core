@@ -35,9 +35,9 @@ import TecoSigner
 ///
 /// If current credential has not expired, it is returned. If no credential is available, or the current credential is going to expire in the near future, the wrapped credential provider's `getCredential` will be called and awaited.
 public final class TemporaryCredentialProvider: CredentialProvider {
-    let reservedLifetimeForUse: TimeInterval
+    private let reservedLifetimeForUse: TimeInterval
 
-    public let provider: CredentialProvider
+    private let provider: CredentialProvider
     private let lock = NIOLock()
     private var credential: Credential?
     private var credentialFuture: EventLoopFuture<Credential>?
