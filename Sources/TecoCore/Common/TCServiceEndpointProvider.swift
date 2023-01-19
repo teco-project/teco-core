@@ -64,6 +64,10 @@ public struct TCServiceEndpointProvider: Sendable {
     }
 
     /// Provide an endpoint based on service configuration.
+    ///
+    /// - Parameters:
+    ///   - provider: Callback closure which calculates the endpoint URL from service name and region.
+    ///   - placeholder: Placeholder description for the provider.
     public static func provider(
         _ provider: @escaping @Sendable (String, TCRegion?) -> String,
         placeholder: String = "<custom endpoint provider>"
