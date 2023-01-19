@@ -103,12 +103,7 @@ struct STSCredentialProvider: CredentialProviderWithClient {
     ) {
         self.client = TCClient(credentialProvider: credentialProvider,
                                httpClientProvider: .shared(httpClient))
-        self.config = TCServiceConfig(
-            region: region,
-            service: "sts",
-            apiVersion: "2018-08-13",
-            endpoint: endpoint
-        )
+        self.config = TCServiceConfig(service: "sts", version: "2018-08-13", region: region, endpoint: endpoint)
         self.request = request
     }
 

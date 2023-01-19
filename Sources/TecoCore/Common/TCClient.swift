@@ -106,11 +106,11 @@ public final class TCClient: TecoSendable {
         self.clientLogger = clientLogger
         self.options = options
     }
-    
+
     deinit {
         assert(self.isShutdown.load(ordering: .relaxed), "TCClient not shut down before the deinit. Please call client.syncShutdown() when no longer needed.")
     }
-    
+
     // MARK: Shutdown
 
     /// Shutdown client synchronously.
@@ -231,7 +231,8 @@ extension TCClient {
     /// - Parameters:
     ///    - action: Name of the Tencent Cloud action.
     ///    - path: Path to append to endpoint URL.
-    ///    - httpMethod: HTTP method to use (`POST` by default).
+    ///    - region: Region of the service you want to operate on.
+    ///    - httpMethod: HTTP method to use. Defaults to`.POST`.
     ///    - serviceConfig: Tencent Cloud service configuration.
     ///    - skipAuthorization: If authorization should be set to `SKIP`.
     ///    - input: API request payload.
@@ -242,6 +243,7 @@ extension TCClient {
     public func execute<Input: TCRequestModel, Output: TCResponseModel>(
         action: String,
         path: String = "/",
+        region: TCRegion? = nil,
         httpMethod: HTTPMethod = .POST,
         serviceConfig: TCServiceConfig,
         skipAuthorization: Bool = false,
@@ -256,6 +258,7 @@ extension TCClient {
                 try TCRequest(
                     action: action,
                     path: path,
+                    region: region,
                     httpMethod: httpMethod,
                     input: input,
                     configuration: serviceConfig
@@ -277,7 +280,8 @@ extension TCClient {
     /// - Parameters:
     ///    - action: Name of the Tencent Cloud action.
     ///    - path: Path to append to endpoint URL.
-    ///    - httpMethod: HTTP method to use (`GET` by default).
+    ///    - region: Region of the service you want to operate on.
+    ///    - httpMethod: HTTP method to use. Defaults to`.GET`.
     ///    - serviceConfig: Tencent Cloud service configuration.
     ///    - skipAuthorization: If authorization should be set to `SKIP`.
     ///    - logger: Logger to log request details to.
@@ -287,6 +291,7 @@ extension TCClient {
     public func execute<Output: TCResponseModel>(
         action: String,
         path: String = "/",
+        region: TCRegion? = nil,
         httpMethod: HTTPMethod = .GET,
         serviceConfig: TCServiceConfig,
         skipAuthorization: Bool = false,
@@ -300,6 +305,7 @@ extension TCClient {
                 try TCRequest(
                     action: action,
                     path: path,
+                    region: region,
                     httpMethod: httpMethod,
                     configuration: serviceConfig
                 )

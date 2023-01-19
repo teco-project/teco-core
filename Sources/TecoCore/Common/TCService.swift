@@ -2,7 +2,7 @@
 //
 // This source file is part of the Teco open source project.
 //
-// Copyright (c) 2022 the Teco project authors
+// Copyright (c) 2022-2023 the Teco project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -53,7 +53,7 @@ public protocol TCService: TecoSendable {
 
 extension TCService {
     /// Default region of the service to operate on.
-    public var region: TCRegion? { config.region }
+    public var defaultRegion: TCRegion? { config.region }
     /// The endpoint URL to use in requests.
     public var endpoint: String { config.endpoint }
     /// ``EventLoopGroup`` the service is using.

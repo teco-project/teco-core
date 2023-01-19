@@ -28,12 +28,12 @@ import struct Foundation.URL
 
 /// Configuration that defines a Tencent Cloud service.
 public struct TCServiceConfig: Sendable {
-    /// Default region of the service to operate on.
-    public let region: TCRegion?
     /// Short name of the service.
     public let service: String
     /// Version of the service API.
-    public let apiVersion: String
+    public let version: String
+    /// Default region of the service to operate on.
+    public let region: TCRegion?
     /// Preferred language for API response.
     public let language: Language?
     /// The endpoint URL to use in requests.
@@ -50,18 +50,18 @@ public struct TCServiceConfig: Sendable {
     /// Create a ``TCServiceConfig`` configuration.
     ///
     /// - Parameters:
-    ///   - region: Region of the service you want to operate on.
     ///   - service: Name of the service endpoint.
-    ///   - apiVersion: Service API version.
+    ///   - version: Service API version.
+    ///   - region: Region of the service you want to operate on.
     ///   - language: Preferred language for API response.
     ///   - endpoint: Endpoint provider for API request.
     ///   - errorType: Base error type that the client may throw.
     ///   - timeout: Time out value for HTTP requests.
     ///   - byteBufferAllocator: Byte buffer allocator used throughout ``TCClient``.
     public init(
-        region: TCRegion? = nil,
         service: String,
-        apiVersion: String,
+        version: String,
+        region: TCRegion? = nil,
         language: Language? = nil,
         endpoint: Endpoint = .global,
         errorType: TCErrorType.Type? = nil,
@@ -76,7 +76,7 @@ public struct TCServiceConfig: Sendable {
             self.region = nil
         }
         self.service = service
-        self.apiVersion = apiVersion
+        self.version = version
         self.language = language
         self.errorType = errorType
         self.timeout = timeout ?? .seconds(20)
@@ -164,7 +164,7 @@ public struct TCServiceConfig: Sendable {
             self.endpoint = patch.endpoint?.resolve(region: region, service: service.service) ?? service.endpoint
         }
         self.service = service.service
-        self.apiVersion = service.apiVersion
+        self.version = service.version
         self.language = patch.language ?? service.language
         self.endpointProvider = service.endpointProvider
         self.errorType = service.errorType
