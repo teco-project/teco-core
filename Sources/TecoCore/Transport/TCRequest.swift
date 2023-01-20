@@ -79,13 +79,7 @@ struct TCRequest {
 
 extension TCRequest {
     internal init(action: String, path: String = "/", region: TCRegion? = nil, httpMethod: HTTPMethod, configuration: TCServiceConfig) throws {
-        let endpoint: String = {
-            if let region = region, region != configuration.region {
-                return configuration.getEndpoint(for: region)
-            }
-            return configuration.endpoint
-        }()
-
+        let endpoint = configuration.getEndpoint(for: region)
         guard let url = URL(string: "\(endpoint)\(path)"), let _ = url.host else {
             throw TCClient.ClientError.invalidURL
         }
@@ -111,7 +105,8 @@ extension TCRequest {
     ) throws {
         let body = try input.encodeAsJSON(byteBufferAllocator: configuration.byteBufferAllocator)
 
-        guard let urlComponents = URLComponents(string: "\(configuration.endpoint)\(path)"),
+        let endpoint = configuration.getEndpoint(for: region)
+        guard let urlComponents = URLComponents(string: "\(endpoint)\(path)"),
               let url = urlComponents.url
         else {
             throw TCClient.ClientError.invalidURL

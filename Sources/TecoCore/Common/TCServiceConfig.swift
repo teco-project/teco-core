@@ -36,8 +36,8 @@ public struct TCServiceConfig: Sendable {
     /// Preferred language for API response.
     public let language: Language?
     /// Default endpoint URL to use in requests.
-    internal let endpoint: String
-    /// A provider to generate endpoint URL for service.
+    private let defaultEndpoint: String
+    /// Provider that generates endpoint URL for service.
     private let endpointProvider: EndpointProvider
     /// The base error type returned by the service.
     public let errorType: TCErrorType.Type?
@@ -83,7 +83,7 @@ public struct TCServiceConfig: Sendable {
         self.byteBufferAllocator = byteBufferAllocator
 
         self.endpointProvider = endpoint.endpointProvider
-        self.endpoint = self.endpointProvider.getEndpoint(for: service, region: self.region)
+        self.defaultEndpoint = self.endpointProvider.getEndpoint(for: service, region: self.region)
     }
 
     /// Languges supported by Tencent Cloud services.
@@ -97,7 +97,11 @@ public struct TCServiceConfig: Sendable {
 
     /// Returns the service endpoint URL.
     internal func getEndpoint(for region: TCRegion?) -> String {
-        self.endpointProvider.getEndpoint(for: self.service, region: region ?? self.region)
+        if let region = region {
+            return self.endpointProvider.getEndpoint(for: self.service, region: region)
+        } else {
+            return self.defaultEndpoint
+        }
     }
 
     /// Returns a new version of service configuration with edited parameters.
@@ -133,17 +137,25 @@ public struct TCServiceConfig: Sendable {
     }
 
     private init(service: TCServiceConfig, with patch: Patch) {
-        if service.region != patch.region, let region = patch.region {
+        // try to short-circuit endpoint resolution as it may be expensive
+        if let region = patch.region {
             self.region = region
-            self.endpoint = (patch.endpointProvider ?? service.endpointProvider).getEndpoint(for: service.service, region: region)
+            self.endpointProvider = patch.endpointProvider ?? service.endpointProvider
+            self.defaultEndpoint = self.endpointProvider.getEndpoint(for: service.service, region: self.region)
         } else {
             self.region = service.region
-            self.endpoint = patch.endpointProvider?.getEndpoint(for: service.service, region: region) ?? service.endpoint
+            if let endpointProvider = patch.endpointProvider {
+                self.endpointProvider = endpointProvider
+                self.defaultEndpoint = endpointProvider.getEndpoint(for: service.service, region: self.region)
+            } else {
+                self.endpointProvider = service.endpointProvider
+                self.defaultEndpoint = service.defaultEndpoint
+            }
         }
+
         self.service = service.service
         self.version = service.version
         self.language = patch.language ?? service.language
-        self.endpointProvider = service.endpointProvider
         self.errorType = service.errorType
         self.timeout = patch.timeout ?? service.timeout
         self.byteBufferAllocator = patch.byteBufferAllocator ?? service.byteBufferAllocator
