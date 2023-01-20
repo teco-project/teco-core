@@ -162,9 +162,11 @@ public final class TCClient: TecoSendable {
             case .createNew, .createNewWithEventLoopGroup:
                 self.httpClient.shutdown(queue: queue) { error in
                     if let error = error {
-                        self.clientLogger.log(level: self.options.errorLogLevel, "Error shutting down HTTP client", metadata: [
-                            "tc-error": "\(error)",
-                        ])
+                        self.clientLogger.log(
+                            level: self.options.errorLogLevel,
+                            "Error occurred when shutting down HTTP client",
+                            metadata: ["tc-error": "\(error)"]
+                        )
                     }
                     callback(error)
                 }
@@ -465,8 +467,9 @@ extension TCClient {
                 .flatMapErrorThrowing { error -> Void in
                     // If we get a retry wait time for this error, then attempt to retry request
                     if case .retry(let retryTime) = self.retryPolicy.getRetryWaitTime(error: error, attempt: attempt) {
-                        logger.trace("Retrying request", metadata: [
+                        logger.trace("Retrying API request", metadata: [
                             "tc-retry-time": "\(Double(retryTime.nanoseconds) / 1_000_000_000)",
+                            "tc-retry-attempt": "\(attempt)"
                         ])
                         // schedule task for retrying the request
                         eventLoop.scheduleTask(in: retryTime) {
@@ -518,10 +521,10 @@ extension TCClient {
         let startTime = DispatchTime.now().uptimeNanoseconds
 
         Counter(label: "tc_requests_total", dimensions: dimensions).increment()
-        logger.log(level: self.options.requestLogLevel, "Tencent Cloud Request")
+        logger.log(level: self.options.requestLogLevel, "Tencent Cloud API request was invoked")
 
         return future.map { response in
-            logger.trace("Tencent Cloud Response")
+            logger.trace("Tencent Cloud API response was received")
             Metrics.Timer(
                 label: "tc_request_duration",
                 dimensions: dimensions,
@@ -530,7 +533,7 @@ extension TCClient {
             return response
         }.flatMapErrorThrowing { error in
             Counter(label: "tc_request_errors", dimensions: dimensions).increment()
-            // TCErrorTypes have already been logged
+            // `TCErrorType`s have already been logged
             if error as? TCErrorType == nil {
                 // log error message
                 logger.log(level: self.options.errorLogLevel, "TCClient error", metadata: [

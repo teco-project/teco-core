@@ -64,7 +64,9 @@ public class DeferredCredentialProvider: CredentialProvider {
             .flatMapErrorThrowing { _ in throw CredentialProviderError.noProvider }
             .map { credential in
                 self.credential = credential
-                context.logger.debug("Tencent Cloud credentials ready", metadata: ["TC-credential-provider": .string("\(self)")])
+                context.logger.debug("Tencent Cloud credential was ready", metadata: [
+                    "tc-credential-provider": "\(self)"
+                ])
                 return credential
             }
             .cascade(to: self.startupPromise)

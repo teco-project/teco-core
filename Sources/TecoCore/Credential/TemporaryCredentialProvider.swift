@@ -95,7 +95,7 @@ public final class TemporaryCredentialProvider: CredentialProvider {
             return future
         }
 
-        logger.debug("Refeshing Tencent Cloud credentials", metadata: ["TC-credential-provider": .string("\(self)")])
+        logger.debug("Tencent Cloud credential needs to be refreshed", metadata: ["tc-credential-provider": "\(self)"])
 
         credentialFuture = self.provider.getCredential(on: eventLoop, logger: logger)
             .map { credential -> (Credential) in
@@ -103,7 +103,7 @@ public final class TemporaryCredentialProvider: CredentialProvider {
                 self.lock.withLock {
                     self.credentialFuture = nil
                     self.credential = credential
-                    logger.debug("Tencent Cloud credentials ready", metadata: ["TC-credential-provider": .string("\(self)")])
+                    logger.debug("Tencent Cloud credential was ready", metadata: ["tc-credential-provider": "\(self)"])
                 }
                 return credential
             }

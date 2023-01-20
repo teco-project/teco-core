@@ -65,10 +65,10 @@ class RuntimeSelectorCredentialProvider: CredentialProviderSelector {
             provider.getCredential(on: context.eventLoop, logger: context.logger).whenComplete { result in
                 switch result {
                 case .success:
-                    context.logger.debug("Select credential provider", metadata: ["teco-credential-provider": .string("\(provider)")])
+                    context.logger.debug("Credential provider was selected", metadata: ["tc-credential-provider": "\(provider)"])
                     self.startupPromise.succeed(provider)
                 case .failure:
-                    context.logger.log(level: context.options.errorLogLevel, "Select credential provider failed")
+                    context.logger.debug("Credential provider failed during selection", metadata: ["tc-credential-provider": "\(provider)"])
                     _setupInternalProvider(index + 1)
                 }
             }

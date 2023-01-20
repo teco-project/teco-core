@@ -78,11 +78,11 @@ struct TCResponse {
             return container.response
         } catch let apiError as APIError {
             let error = apiError.error
-            logger.log(level: logLevel, "Tencent Cloud Error", metadata: [
+            logger.log(level: logLevel, "Tencent Cloud service error", metadata: [
                 "tc-error-code": .string(error.code),
                 "tc-error-message": .string(error.message),
             ])
-            
+
             let context = TCErrorContext(
                 requestId: apiError.requestId,
                 message: error.message,
