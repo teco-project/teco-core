@@ -1,3 +1,3 @@
 #  `TecoCore`
 
-The core library for Teco, the open-source Tencent Cloud SDK for Swift.
+The core library of [Teco](https://github.com/teco-project/teco), an open-source Tencent Cloud SDK for Swift.
