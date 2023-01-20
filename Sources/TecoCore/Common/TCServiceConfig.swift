@@ -74,6 +74,8 @@ public struct TCServiceConfig: Sendable {
         } else {
             self.region = nil
         }
+        self.endpointProvider = endpoint.endpointProvider
+        self.defaultEndpoint = self.endpointProvider.getEndpoint(for: service, region: self.region)
 
         self.service = service
         self.version = version
@@ -81,9 +83,6 @@ public struct TCServiceConfig: Sendable {
         self.errorType = errorType
         self.timeout = timeout ?? .seconds(20)
         self.byteBufferAllocator = byteBufferAllocator
-
-        self.endpointProvider = endpoint.endpointProvider
-        self.defaultEndpoint = self.endpointProvider.getEndpoint(for: service, region: self.region)
     }
 
     /// Languges supported by Tencent Cloud services.
@@ -96,7 +95,7 @@ public struct TCServiceConfig: Sendable {
     public typealias Endpoint = EndpointProviderFactory
 
     /// Returns the service endpoint URL.
-    internal func getEndpoint(for region: TCRegion?) -> String {
+    public func getEndpoint(for region: TCRegion? = nil) -> String {
         if let region = region {
             return self.endpointProvider.getEndpoint(for: self.service, region: region)
         } else {
