@@ -45,7 +45,7 @@ public struct TCServiceConfig: Sendable {
     public let byteBufferAllocator: ByteBufferAllocator
 
     /// A provider to generate endpoint URL for service.
-    private let endpointProvider: Endpoint
+    private let endpointProvider: EndpointProvider
 
     /// Create a ``TCServiceConfig`` configuration.
     ///
@@ -63,7 +63,7 @@ public struct TCServiceConfig: Sendable {
         version: String,
         region: TCRegion? = nil,
         language: Language? = nil,
-        endpoint: Endpoint = .global,
+        endpoint: EndpointProvider = .global,
         errorType: TCErrorType.Type? = nil,
         timeout: TimeAmount? = nil,
         byteBufferAllocator: ByteBufferAllocator = ByteBufferAllocator()
@@ -92,9 +92,6 @@ public struct TCServiceConfig: Sendable {
         case en_US = "en-US"
     }
 
-    /// Endpoint provider for the Tencent Cloud service.
-    public typealias Endpoint = TCServiceEndpointProvider
-
     /// Returns the service endpoint URL.
     internal func getEndpoint(for region: TCRegion?) -> String {
         self.endpointProvider.getEndpoint(for: self.service, region: region ?? self.region)
@@ -113,14 +110,14 @@ public struct TCServiceConfig: Sendable {
     public struct Patch {
         let region: TCRegion?
         let language: TCServiceConfig.Language?
-        let endpoint: TCServiceConfig.Endpoint?
+        let endpoint: EndpointProvider?
         let timeout: TimeAmount?
         let byteBufferAllocator: ByteBufferAllocator?
 
         init(
             region: TCRegion? = nil,
             language: TCServiceConfig.Language? = nil,
-            endpoint: TCServiceConfig.Endpoint? = nil,
+            endpoint: EndpointProvider? = nil,
             timeout: TimeAmount? = nil,
             byteBufferAllocator: ByteBufferAllocator? = nil
         ) {

@@ -14,7 +14,7 @@
 import struct Foundation.URL
 
 /// Endpoint provider for the Tencent Cloud service.
-public struct TCServiceEndpointProvider: Sendable {
+public struct EndpointProvider: Sendable {
     private static let defaultDomain = "tencentcloudapi.com"
 
     private let provider: @Sendable (String, TCRegion?) -> String
@@ -31,8 +31,8 @@ public struct TCServiceEndpointProvider: Sendable {
     }
 
     /// Prefer to use the endpoint of service region.
-    public static var service: TCServiceEndpointProvider {
-        TCServiceEndpointProvider("https://<service>.<region>.\(Self.defaultDomain)") { service, region in
+    public static var service: EndpointProvider {
+        EndpointProvider("https://<service>.<region>.\(Self.defaultDomain)") { service, region in
             if let region = region {
                 return "https://\(service).\(region.rawValue).\(Self.defaultDomain)"
             } else {
@@ -42,8 +42,8 @@ public struct TCServiceEndpointProvider: Sendable {
     }
 
     /// Prefer to use the global endpoint.
-    public static var global: TCServiceEndpointProvider {
-        TCServiceEndpointProvider("https://<service>.\(Self.defaultDomain)") { service, region in
+    public static var global: EndpointProvider {
+        EndpointProvider("https://<service>.\(Self.defaultDomain)") { service, region in
             if let region = region, region.kind != .global {
                 return "https://\(service).\(region.rawValue).\(Self.defaultDomain)"
             } else {
@@ -53,15 +53,15 @@ public struct TCServiceEndpointProvider: Sendable {
     }
 
     /// Use the endpoint of provided region.
-    public static func regional(_ region: TCRegion) -> TCServiceEndpointProvider {
-        TCServiceEndpointProvider("https://<service>.\(region).\(Self.defaultDomain)") { service, _ in
+    public static func regional(_ region: TCRegion) -> EndpointProvider {
+        EndpointProvider("https://<service>.\(region).\(Self.defaultDomain)") { service, _ in
             "https://\(service).\(region.rawValue).\(Self.defaultDomain)"
         }
     }
 
     /// Provide a static endpoint.
-    public static func `static`(_ url: String) -> TCServiceEndpointProvider {
-        TCServiceEndpointProvider(url, provider: { _, _ in url })
+    public static func `static`(_ url: String) -> EndpointProvider {
+        EndpointProvider(url, provider: { _, _ in url })
     }
 
     /// Provide an endpoint based on service configuration.
@@ -72,8 +72,8 @@ public struct TCServiceEndpointProvider: Sendable {
     public static func provider(
         _ provider: @escaping @Sendable (String, TCRegion?) -> String,
         placeholder: String = "<custom endpoint provider>"
-    ) -> TCServiceEndpointProvider {
-        TCServiceEndpointProvider(placeholder, provider: provider)
+    ) -> EndpointProvider {
+        EndpointProvider(placeholder, provider: provider)
     }
 
     /// Choose an endpoint provider based on service configuration.
@@ -82,16 +82,16 @@ public struct TCServiceEndpointProvider: Sendable {
     ///   - factory: Callback closure which returns an endpoint provider.
     ///   - placeholder: Placeholder description for the provider.
     public static func factory(
-        _ factory: @escaping @Sendable (String, TCRegion?) -> TCServiceEndpointProvider,
+        _ factory: @escaping @Sendable (String, TCRegion?) -> EndpointProvider,
         placeholder: String = "<custom endpoint provider>"
-    ) -> TCServiceEndpointProvider {
-        TCServiceEndpointProvider(placeholder) { service, region in
+    ) -> EndpointProvider {
+        EndpointProvider(placeholder) { service, region in
             factory(service, region).getEndpoint(for: service, region: region)
         }
     }
 }
 
-extension TCServiceEndpointProvider: LosslessStringConvertible {
+extension EndpointProvider: LosslessStringConvertible {
     /// Create a ``TCServiceEndpointProvider`` from URL string.
     ///
     /// - Parameter url: The endpoint URL string.

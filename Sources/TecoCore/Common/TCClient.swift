@@ -240,7 +240,6 @@ extension TCClient {
     ///    - input: API request payload.
     ///    - logger: Logger to log request details to.
     ///    - eventLoop: `EventLoop` to run request on.
-    ///
     /// - Returns: ``EventLoopFuture`` containing output object that completes when response is received.
     public func execute<Input: TCRequestModel, Output: TCResponseModel>(
         action: String,
@@ -288,7 +287,6 @@ extension TCClient {
     ///    - skipAuthorization: If authorization should be set to `SKIP`.
     ///    - logger: Logger to log request details to.
     ///    - eventLoop: `EventLoop` to run request on.
-    ///
     /// - Returns: ``EventLoopFuture`` containing output object that completes when response is received.
     public func execute<Output: TCResponseModel>(
         action: String,
@@ -346,7 +344,6 @@ extension TCClient {
     ///    - body: Payload to sign.
     ///    - serviceConfig: Additional Tencent Cloud service configuration used to sign the URL.
     ///    - logger: Logger to output to.
-    ///
     /// - Returns: A set of signed headers that include the original headers supplied.
     public func signHeaders(
         url: URL,

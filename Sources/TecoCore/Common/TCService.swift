@@ -95,7 +95,7 @@ extension TCService {
     public func with(
         region: TCRegion? = nil,
         language: TCServiceConfig.Language? = nil,
-        endpoint: TCServiceConfig.Endpoint? = nil,
+        endpoint: EndpointProvider? = nil,
         timeout: TimeAmount? = nil,
         byteBufferAllocator: ByteBufferAllocator? = nil
     ) -> Self {

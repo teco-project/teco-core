@@ -100,7 +100,7 @@ struct STSCredentialProvider: CredentialProviderWithClient {
         credentialProvider: CredentialProviderFactory,
         region: TCRegion? = nil,
         httpClient: HTTPClient,
-        endpoint: TCServiceConfig.Endpoint = .global
+        endpoint: EndpointProvider = .global
     ) {
         self.client = TCClient(credentialProvider: credentialProvider,
                                httpClientProvider: .shared(httpClient))
