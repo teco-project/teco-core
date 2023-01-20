@@ -36,16 +36,15 @@ public struct TCServiceConfig: Sendable {
     /// Preferred language for API response.
     public let language: Language?
     /// Default endpoint URL to use in requests.
-    public let endpoint: String
+    internal let endpoint: String
+    /// A provider to generate endpoint URL for service.
+    private let endpointProvider: EndpointProvider
     /// The base error type returned by the service.
     public let errorType: TCErrorType.Type?
     /// Timeout value for HTTP requests.
     public let timeout: TimeAmount
     /// Byte buffer allocator used by service.
     public let byteBufferAllocator: ByteBufferAllocator
-
-    /// A provider to generate endpoint URL for service.
-    private let endpointProvider: EndpointProvider
 
     /// Create a ``TCServiceConfig`` configuration.
     ///
@@ -63,7 +62,7 @@ public struct TCServiceConfig: Sendable {
         version: String,
         region: TCRegion? = nil,
         language: Language? = nil,
-        endpoint endpointProviderFactory: EndpointProviderFactory = .global,
+        endpoint: Endpoint = .global,
         errorType: TCErrorType.Type? = nil,
         timeout: TimeAmount? = nil,
         byteBufferAllocator: ByteBufferAllocator = ByteBufferAllocator()
@@ -83,7 +82,7 @@ public struct TCServiceConfig: Sendable {
         self.timeout = timeout ?? .seconds(20)
         self.byteBufferAllocator = byteBufferAllocator
 
-        self.endpointProvider = endpointProviderFactory.endpointProvider
+        self.endpointProvider = endpoint.endpointProvider
         self.endpoint = self.endpointProvider.getEndpoint(for: service, region: self.region)
     }
 
@@ -92,6 +91,9 @@ public struct TCServiceConfig: Sendable {
         case zh_CN = "zh-CN"
         case en_US = "en-US"
     }
+
+    /// Endpoint provider for Tencent Cloud APIs.
+    public typealias Endpoint = EndpointProviderFactory
 
     /// Returns the service endpoint URL.
     internal func getEndpoint(for region: TCRegion?) -> String {
@@ -111,20 +113,20 @@ public struct TCServiceConfig: Sendable {
     public struct Patch {
         let region: TCRegion?
         let language: TCServiceConfig.Language?
-        let endpoint: EndpointProvider?
+        let endpointProvider: EndpointProvider?
         let timeout: TimeAmount?
         let byteBufferAllocator: ByteBufferAllocator?
 
         init(
             region: TCRegion? = nil,
             language: TCServiceConfig.Language? = nil,
-            endpoint: EndpointProviderFactory? = nil,
+            endpoint: TCServiceConfig.Endpoint? = nil,
             timeout: TimeAmount? = nil,
             byteBufferAllocator: ByteBufferAllocator? = nil
         ) {
             self.region = region
             self.language = language
-            self.endpoint = endpoint?.endpointProvider
+            self.endpointProvider = endpoint?.endpointProvider
             self.timeout = timeout
             self.byteBufferAllocator = byteBufferAllocator
         }
@@ -133,10 +135,10 @@ public struct TCServiceConfig: Sendable {
     private init(service: TCServiceConfig, with patch: Patch) {
         if service.region != patch.region, let region = patch.region {
             self.region = region
-            self.endpoint = (patch.endpoint ?? service.endpointProvider).getEndpoint(for: service.service, region: region)
+            self.endpoint = (patch.endpointProvider ?? service.endpointProvider).getEndpoint(for: service.service, region: region)
         } else {
             self.region = service.region
-            self.endpoint = patch.endpoint?.getEndpoint(for: service.service, region: region) ?? service.endpoint
+            self.endpoint = patch.endpointProvider?.getEndpoint(for: service.service, region: region) ?? service.endpoint
         }
         self.service = service.service
         self.version = service.version
