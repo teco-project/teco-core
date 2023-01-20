@@ -75,6 +75,20 @@ public struct TCServiceEndpointProvider: Sendable {
     ) -> TCServiceEndpointProvider {
         TCServiceEndpointProvider(placeholder, provider: provider)
     }
+
+    /// Choose an endpoint provider based on service configuration.
+    ///
+    /// - Parameters:
+    ///   - factory: Callback closure which returns an endpoint provider.
+    ///   - placeholder: Placeholder description for the provider.
+    public static func factory(
+        _ factory: @escaping @Sendable (String, TCRegion?) -> TCServiceEndpointProvider,
+        placeholder: String = "<custom endpoint provider>"
+    ) -> TCServiceEndpointProvider {
+        TCServiceEndpointProvider(placeholder) { service, region in
+            factory(service, region).getEndpoint(for: service, region: region)
+        }
+    }
 }
 
 extension TCServiceEndpointProvider: LosslessStringConvertible {
