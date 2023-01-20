@@ -11,98 +11,75 @@
 //
 //===----------------------------------------------------------------------===//
 
-import struct Foundation.URL
-
-/// Endpoint provider for the Tencent Cloud service.
-public struct EndpointProvider: Sendable {
-    private static let defaultDomain = "tencentcloudapi.com"
-
-    private let provider: @Sendable (String, TCRegion?) -> String
-    private let placeholder: String
-
-    private init(_ description: String, provider: @escaping @Sendable (String, TCRegion?) -> String) {
-        self.provider = provider
-        self.placeholder = description
-    }
-
-    /// Returns the endpoint URL for provided service and region.
-    internal func getEndpoint(for service: String, region: TCRegion?) -> String {
-        self.provider(service, region)
-    }
+/// Creates an ``EndpointProvider`` for ``TCService`` to use.
+public struct EndpointProviderFactory {
+    public let endpointProvider: EndpointProvider
 
     /// Prefer to use the endpoint of service region.
-    public static var service: EndpointProvider {
-        EndpointProvider("https://<service>.<region>.\(Self.defaultDomain)") { service, region in
-            if let region = region {
-                return "https://\(service).\(region.rawValue).\(Self.defaultDomain)"
-            } else {
-                return "https://\(service).\(Self.defaultDomain)"
-            }
-        }
+    public static var service: EndpointProviderFactory {
+        .init(endpointProvider: ServiceEndpointFirst())
     }
 
     /// Prefer to use the global endpoint.
-    public static var global: EndpointProvider {
-        EndpointProvider("https://<service>.\(Self.defaultDomain)") { service, region in
-            if let region = region, region.kind != .global {
-                return "https://\(service).\(region.rawValue).\(Self.defaultDomain)"
-            } else {
-                return "https://\(service).\(Self.defaultDomain)"
-            }
-        }
+    public static var global: EndpointProviderFactory {
+        .init(endpointProvider: GlobalEndpointFirst())
     }
 
     /// Use the endpoint of provided region.
-    public static func regional(_ region: TCRegion) -> EndpointProvider {
-        EndpointProvider("https://<service>.\(region).\(Self.defaultDomain)") { service, _ in
-            "https://\(service).\(region.rawValue).\(Self.defaultDomain)"
-        }
+    public static func regional(_ region: TCRegion) -> EndpointProviderFactory {
+        .init(endpointProvider: RegionalEndpoint(region: region))
     }
 
     /// Provide a static endpoint.
-    public static func `static`(_ url: String) -> EndpointProvider {
-        EndpointProvider(url, provider: { _, _ in url })
+    public static func `static`(_ url: String) -> EndpointProviderFactory {
+        .init(endpointProvider: StaticEndpoint(url: url))
     }
+}
 
-    /// Provide an endpoint based on service configuration.
-    ///
-    /// - Parameters:
-    ///   - provider: Callback closure which calculates the endpoint URL from service name and region.
-    ///   - placeholder: Placeholder description for the provider.
-    public static func provider(
-        _ provider: @escaping @Sendable (String, TCRegion?) -> String,
-        placeholder: String = "<custom endpoint provider>"
-    ) -> EndpointProvider {
-        EndpointProvider(placeholder, provider: provider)
-    }
+/// Provider for Tencent Cloud service endpoint.
+public protocol EndpointProvider: Sendable, CustomStringConvertible {
+    /// Returns the endpoint URL for provided service and region.
+    func getEndpoint(for service: String, region: TCRegion?) -> String
+}
 
-    /// Choose an endpoint provider based on service configuration.
-    ///
-    /// - Parameters:
-    ///   - factory: Callback closure which returns an endpoint provider.
-    ///   - placeholder: Placeholder description for the provider.
-    public static func factory(
-        _ factory: @escaping @Sendable (String, TCRegion?) -> EndpointProvider,
-        placeholder: String = "<custom endpoint provider>"
-    ) -> EndpointProvider {
-        EndpointProvider(placeholder) { service, region in
-            factory(service, region).getEndpoint(for: service, region: region)
+private struct ServiceEndpointFirst: EndpointProvider {
+    var description: String { "https://<service>.<region>.tencentcloudapi.com" }
+
+    func getEndpoint(for service: String, region: TCRegion?) -> String {
+        if let region = region {
+            return "https://\(service).\(region.rawValue).tencentcloudapi.com"
+        } else {
+            return "https://\(service).tencentcloudapi.com"
         }
     }
 }
 
-extension EndpointProvider: LosslessStringConvertible {
-    /// Create a ``TCServiceEndpointProvider`` from URL string.
-    ///
-    /// - Parameter url: The endpoint URL string.
-    public init?(_ url: String) {
-        guard let url = URL(string: url), url.scheme == "http" || url.scheme == "https" else {
-            return nil
-        }
-        self = .static(url.standardized.absoluteString)
-    }
+private struct GlobalEndpointFirst: EndpointProvider {
+    var description: String { "https://<service>.tencentcloudapi.com" }
 
-    public var description: String {
-        self.placeholder
+    func getEndpoint(for service: String, region: TCRegion?) -> String {
+        if let region = region, region.kind != .global {
+            return "https://\(service).\(region.rawValue).tencentcloudapi.com"
+        } else {
+            return "https://\(service).tencentcloudapi.com"
+        }
+    }
+}
+
+private struct StaticEndpoint: EndpointProvider {
+    let url: String
+    var description: String { self.url }
+
+    func getEndpoint(for service: String, region: TCRegion?) -> String {
+        return self.url
+    }
+}
+
+private struct RegionalEndpoint: EndpointProvider {
+    let region: TCRegion
+    var description: String { "https://<service>.\(self.region.rawValue).tencentcloudapi.com" }
+
+    func getEndpoint(for service: String, region: TCRegion?) -> String {
+        "https://<service>.\(self.region.rawValue).tencentcloudapi.com"
     }
 }

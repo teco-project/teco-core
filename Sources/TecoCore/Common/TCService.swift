@@ -86,7 +86,7 @@ extension TCService {
     /// Returns a new version of service with edited parameters.
     ///
     /// - Parameters:
-    ///   - region: Region of the service you want to operate on.
+    ///   - region: Default region of the service to operate on.
     ///   - language: Preferred language for API response.
     ///   - endpoint: Endpoint provider for API request.
     ///   - timeout: Timeout value for HTTP requests.
@@ -95,7 +95,7 @@ extension TCService {
     public func with(
         region: TCRegion? = nil,
         language: TCServiceConfig.Language? = nil,
-        endpoint: EndpointProvider? = nil,
+        endpoint: EndpointProviderFactory? = nil,
         timeout: TimeAmount? = nil,
         byteBufferAllocator: ByteBufferAllocator? = nil
     ) -> Self {

@@ -52,7 +52,7 @@ public struct TCServiceConfig: Sendable {
     /// - Parameters:
     ///   - service: Name of the service endpoint.
     ///   - version: Service API version.
-    ///   - region: Region of the service you want to operate on.
+    ///   - region: Default region of the service to operate on.
     ///   - language: Preferred language for API response.
     ///   - endpoint: Endpoint provider for API request.
     ///   - errorType: Base error type that the client may throw.
@@ -63,7 +63,7 @@ public struct TCServiceConfig: Sendable {
         version: String,
         region: TCRegion? = nil,
         language: Language? = nil,
-        endpoint: EndpointProvider = .global,
+        endpoint endpointProviderFactory: EndpointProviderFactory = .global,
         errorType: TCErrorType.Type? = nil,
         timeout: TimeAmount? = nil,
         byteBufferAllocator: ByteBufferAllocator = ByteBufferAllocator()
@@ -75,6 +75,7 @@ public struct TCServiceConfig: Sendable {
         } else {
             self.region = nil
         }
+
         self.service = service
         self.version = version
         self.language = language
@@ -82,8 +83,8 @@ public struct TCServiceConfig: Sendable {
         self.timeout = timeout ?? .seconds(20)
         self.byteBufferAllocator = byteBufferAllocator
 
-        self.endpointProvider = endpoint
-        self.endpoint = endpoint.getEndpoint(for: service, region: self.region)
+        self.endpointProvider = endpointProviderFactory.endpointProvider
+        self.endpoint = self.endpointProvider.getEndpoint(for: service, region: self.region)
     }
 
     /// Languges supported by Tencent Cloud services.
@@ -117,13 +118,13 @@ public struct TCServiceConfig: Sendable {
         init(
             region: TCRegion? = nil,
             language: TCServiceConfig.Language? = nil,
-            endpoint: EndpointProvider? = nil,
+            endpoint: EndpointProviderFactory? = nil,
             timeout: TimeAmount? = nil,
             byteBufferAllocator: ByteBufferAllocator? = nil
         ) {
             self.region = region
             self.language = language
-            self.endpoint = endpoint
+            self.endpoint = endpoint?.endpointProvider
             self.timeout = timeout
             self.byteBufferAllocator = byteBufferAllocator
         }

@@ -233,7 +233,7 @@ extension TCClient {
     /// - Parameters:
     ///    - action: Name of the Tencent Cloud action.
     ///    - path: Path to append to endpoint URL.
-    ///    - region: Region of the service you want to operate on.
+    ///    - region: Region of the service to operate on.
     ///    - httpMethod: HTTP method to use. Defaults to`.POST`.
     ///    - serviceConfig: Tencent Cloud service configuration.
     ///    - skipAuthorization: If authorization should be set to `SKIP`.
@@ -281,7 +281,7 @@ extension TCClient {
     /// - Parameters:
     ///    - action: Name of the Tencent Cloud action.
     ///    - path: Path to append to endpoint URL.
-    ///    - region: Region of the service you want to operate on.
+    ///    - region: Region of the service to operate on.
     ///    - httpMethod: HTTP method to use. Defaults to`.GET`.
     ///    - serviceConfig: Tencent Cloud service configuration.
     ///    - skipAuthorization: If authorization should be set to `SKIP`.

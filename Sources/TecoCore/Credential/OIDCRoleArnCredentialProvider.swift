@@ -85,7 +85,7 @@ struct OIDCRoleArnCredentialProvider: CredentialProviderWithClient {
         requestProvider: @escaping (EventLoop) -> EventLoopFuture<STSAssumeRoleWithWebIdentityRequest>,
         region: TCRegion? = nil,
         httpClient: HTTPClient,
-        endpoint: EndpointProvider = .global
+        endpoint: EndpointProviderFactory = .global
     ) {
         let region: TCRegion? = {
             if let regionId = Environment["TKE_REGION"] {

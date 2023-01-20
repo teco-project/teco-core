@@ -31,14 +31,14 @@ public struct RetryPolicyFactory {
     public let retryPolicy: RetryPolicy
 
     /// The default ``RetryPolicy``.
-    public static var `default`: RetryPolicyFactory { return .jitter() }
+    public static var `default`: RetryPolicyFactory { .jitter() }
 
     /// Never ask for retry.
-    public static var noRetry: RetryPolicyFactory { return .init(retryPolicy: NoRetry()) }
+    public static var noRetry: RetryPolicyFactory { .init(retryPolicy: NoRetry()) }
 
     /// Retry with an exponentially increasing wait time.
     public static func exponential(base: TimeAmount = .seconds(1), maxRetries: Int = 4) -> RetryPolicyFactory {
-        return .init(retryPolicy: ExponentialRetry(base: base, maxRetries: maxRetries))
+        .init(retryPolicy: ExponentialRetry(base: base, maxRetries: maxRetries))
     }
 
     /// Exponential jitter retry.
@@ -46,7 +46,7 @@ public struct RetryPolicyFactory {
     /// Instead of returning an exponentially increasing retry time it returns a jittered version.
     /// In a heavy load situation where a large number of clients all hit the servers at the same time, jitter helps to smooth out the server response.
     public static func jitter(base: TimeAmount = .seconds(1), maxRetries: Int = 4) -> RetryPolicyFactory {
-        return .init(retryPolicy: JitterRetry(base: base, maxRetries: maxRetries))
+        .init(retryPolicy: JitterRetry(base: base, maxRetries: maxRetries))
     }
 }
 
@@ -79,12 +79,12 @@ private struct NoRetry: RetryPolicy {
 }
 
 /// Protocol for standard retry response.
-protocol StandardRetryPolicy: RetryPolicy {
+private protocol StandardRetryPolicy: RetryPolicy {
     var maxRetries: Int { get }
     func calculateRetryWaitTime(attempt: Int) -> TimeAmount
 }
 
-extension StandardRetryPolicy {
+private extension StandardRetryPolicy {
     func getRetryWaitTime(error: Error, attempt: Int) -> RetryStatus? {
         guard attempt < maxRetries else { return .dontRetry }
 
@@ -115,7 +115,7 @@ extension StandardRetryPolicy {
 }
 
 /// Retry with an exponentially increasing wait time.
-struct ExponentialRetry: StandardRetryPolicy {
+private struct ExponentialRetry: StandardRetryPolicy {
     let base: TimeAmount
     let maxRetries: Int
 
@@ -134,7 +134,7 @@ struct ExponentialRetry: StandardRetryPolicy {
 ///
 /// Instead of returning an exponentially increasing retry time it returns a jittered version.
 /// In a heavy load situation where a large number of clients all hit the servers at the same time, jitter helps to smooth out the server response.
-struct JitterRetry: StandardRetryPolicy {
+private struct JitterRetry: StandardRetryPolicy {
     let base: TimeAmount
     let maxRetries: Int
 
