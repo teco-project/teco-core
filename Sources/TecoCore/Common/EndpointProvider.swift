@@ -80,6 +80,6 @@ private struct RegionalEndpoint: EndpointProvider {
     var description: String { "https://<service>.\(self.region.rawValue).tencentcloudapi.com" }
 
     func getEndpoint(for service: String, region: TCRegion?) -> String {
-        "https://<service>.\(self.region.rawValue).tencentcloudapi.com"
+        return "https://\(service).\(self.region.rawValue).tencentcloudapi.com"
     }
 }
