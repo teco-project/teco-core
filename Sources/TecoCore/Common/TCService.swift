@@ -56,8 +56,8 @@ extension TCService {
     public var defaultRegion: TCRegion? { config.region }
     /// ``EventLoopGroup`` the service is using.
     public var eventLoopGroup: EventLoopGroup { client.eventLoopGroup }
-
-    /// Returns the service endpoint URL.
+ 
+    /// Service endpoint URL for provided region.
     public func endpoint(for region: TCRegion? = nil) -> String {
         self.config.getEndpoint(for: region)
     }
@@ -66,7 +66,7 @@ extension TCService {
     ///
     /// - Parameters:
     ///    - url : URL to sign.
-    ///    - httpMethod: HTTP method to use (`POST` by default).
+    ///    - httpMethod: HTTP method to use.
     ///    - headers: Headers that are to be sent with this URL.
     ///    - body: Payload to sign.
     ///    - logger: Logger to output to.

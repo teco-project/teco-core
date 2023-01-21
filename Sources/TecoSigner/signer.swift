@@ -97,7 +97,7 @@ public struct TCSigner: _SignerSendable {
         return urlComponents.url
     }
 
-    /// Generate signed headers, for a HTTP request.
+    /// Generate signed headers, for an HTTP request.
     ///
     /// - Parameters:
     ///   - url: Request URL.

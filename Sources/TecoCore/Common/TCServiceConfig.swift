@@ -94,7 +94,7 @@ public struct TCServiceConfig: Sendable {
     /// Endpoint provider for Tencent Cloud APIs.
     public typealias Endpoint = EndpointProviderFactory
 
-    /// Returns the service endpoint URL.
+    /// Returns the endpoint URL for provided region.
     public func getEndpoint(for region: TCRegion? = nil) -> String {
         if let region = region {
             return self.endpointProvider.getEndpoint(for: self.service, region: region)

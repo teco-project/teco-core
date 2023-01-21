@@ -39,7 +39,7 @@ struct TCResponse {
     /// Response body.
     private let body: Body
 
-    /// Initialize an ``TCResponse`` object.
+    /// Initialize a ``TCResponse`` object.
     ///
     /// - Parameters:
     ///    - response: Raw HTTP response.

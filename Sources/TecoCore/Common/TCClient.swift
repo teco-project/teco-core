@@ -70,7 +70,7 @@ public final class TCClient: TecoSendable {
 
     // MARK: Initialization
 
-    /// Initialize an `TCClient`.
+    /// Initialize a ``TCClient``.
     ///
     /// - Parameters:
     ///    - credentialProvider: An object that returns valid signing credentials for request signing.
@@ -113,9 +113,9 @@ public final class TCClient: TecoSendable {
 
     // MARK: Shutdown
 
-    /// Shutdown client synchronously.
+    /// Shutdown the client synchronously.
     ///
-    /// Before an `TCClient` is deleted, you need to call this function or the async version ``shutdown(queue:_:)`` to do a clean shutdown of the client.
+    /// Before a `TCClient` is deleted, you need to call this function or the async version ``shutdown(queue:_:)`` to do a clean shutdown of the client.
     /// It cleans up ``CredentialProvider`` tasks and shuts down the HTTP client if it was created by the `TCClient`.
     ///
     /// - Throws: `ClientError.alreadyShutdown`: You have already shutdown the client.
@@ -139,9 +139,9 @@ public final class TCClient: TecoSendable {
         }
     }
 
-    /// Shutdown `TCClient` asynchronously.
+    /// Shutdown the client asynchronously.
     ///
-    /// Before an `TCClient` is deleted, you need to call this function or the synchronous version ``syncShutdown()`` to do a clean shutdown of the client.
+    /// Before a `TCClient` is deleted, you need to call this function or the synchronous version ``syncShutdown()`` to do a clean shutdown of the client.
     /// It cleans up ``CredentialProvider`` tasks and shuts down the HTTP client if it was created by the `TCClient`.
     ///
     /// Given we could be destroying the `EventLoopGroup` the client uses, we have to use a `DispatchQueue` to run some of this work on.
@@ -179,7 +179,7 @@ public final class TCClient: TecoSendable {
 
     // MARK: Member structs/enums
 
-    /// Errors returned by `TCClient` code.
+    /// Errors returned by ``TCClient`` code.
     public enum ClientError: Error, Equatable {
         /// Client has already been shutdown.
         case alreadyShutdown
@@ -210,7 +210,7 @@ public final class TCClient: TecoSendable {
         /// Log level used for error logging
         let errorLogLevel: Logger.Level
 
-        /// Initialize `TCClient.Options`.
+        /// Initialize ``TCClient/Options``.
         ///
         /// - Parameters:
         ///   - requestLogLevel: Log level used for request logging.
