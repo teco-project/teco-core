@@ -6,7 +6,6 @@
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of Soto project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -139,10 +138,12 @@ extension TCRequest {
     private mutating func addStandardHeaders() {
         httpHeaders.add(name: "user-agent", value: "Teco/0.1")
 
-        switch httpMethod {
-        case .GET:
+        switch (httpMethod, body) {
+        case (.GET, _):
             httpHeaders.replaceOrAdd(name: "content-type", value: "application/x-www-form-urlencoded")
-        case .POST:
+        case (.POST, .text):
+            httpHeaders.replaceOrAdd(name: "content-type", value: "plain/text")
+        case (.POST, .json):
             httpHeaders.replaceOrAdd(name: "content-type", value: "application/json")
         default:
             return

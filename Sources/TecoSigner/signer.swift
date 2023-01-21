@@ -1,6 +1,6 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the Teco open source project.
+// This source file is part of the Teco open source project
 //
 // Copyright (c) 2022-2023 the Teco project authors
 // Licensed under Apache License v2.0
@@ -65,7 +65,7 @@ public struct TCSigner: _SignerSendable {
         self.service = service
     }
 
-    /// Enum for holding request payload.
+    /// Enumeration for holding request payload.
     public enum BodyData: _SignerSendable {
         /// String
         case string(String)

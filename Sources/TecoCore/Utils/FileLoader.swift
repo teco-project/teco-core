@@ -1,6 +1,6 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the Teco open source project.
+// This source file is part of the Teco open source project
 //
 // Copyright (c) 2023 the Teco project authors
 // Licensed under Apache License v2.0
@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the Soto for AWS open source project
+// This source file was part of the Soto for AWS open source project
 //
 // Copyright (c) 2017-2020 the Soto project authors
 // Licensed under Apache License v2.0
