@@ -47,7 +47,7 @@ final class TCSignerTests: XCTestCase {
             method: .POST,
             headers: ["Content-Type": "application/json"],
             body: .string("{}"),
-            minimalSigning: true,
+            mode: .minimal,
             date: Date(timeIntervalSince1970: 1_000_000_000)
         )
         XCTAssertEqual(
@@ -62,7 +62,7 @@ final class TCSignerTests: XCTestCase {
             url: URL(string: "https://cvm.tencentcloudapi.com/?InstanceIds.0=ins-000000&InstanceIds.1=ins-000001")!,
             method: .GET,
             headers: ["Content-Type": "application/x-www-form-urlencoded"],
-            minimalSigning: true,
+            mode: .minimal,
             date: Date(timeIntervalSince1970: 1_000_000_000)
         )
         XCTAssertEqual(
@@ -158,7 +158,7 @@ final class TCSignerTests: XCTestCase {
             url: URL(string: "https://cvm.tencentcloudapi.com/?InstanceIds.0=ins-000000")!,
             method: .GET,
             headers: ["Content-Type": "application/x-www-form-urlencoded"],
-            skipAuthorization: true,
+            mode: .skip,
             date: Date(timeIntervalSince1970: 1_000_000_000)
         )
         XCTAssertEqual(headers["Authorization"].first, "SKIP")
@@ -180,7 +180,7 @@ final class TCSignerTests: XCTestCase {
         ]
         let body: TCSigner.BodyData = .string(#"{"Limit": 1, "Filters": [{"Values": ["\u672a\u547d\u540d"], "Name": "instance-name"}]}"#)
         let signedHeaders = signer.signHeaders(
-            url: url, method: .POST, headers: headers, body: body, minimalSigning: true, date: tcSampleDate
+            url: url, method: .POST, headers: headers, body: body, mode: .minimal, date: tcSampleDate
         )
         XCTAssertEqual(
             signedHeaders["Authorization"].first,

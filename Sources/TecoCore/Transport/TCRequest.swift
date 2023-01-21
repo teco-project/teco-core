@@ -54,7 +54,15 @@ struct TCRequest {
             return self.toHTTPRequest(byteBufferAllocator: serviceConfig.byteBufferAllocator)
         }
 
-        return self.toHTTPRequestWithSignedHeader(signer: signer, serviceConfig: serviceConfig, minimalSigning: minimalSigning, skipAuthorization: skipAuthorization)
+        let signingMode: TCSigner.SigningMode
+        if skipAuthorization {
+            signingMode = .skip
+        } else if minimalSigning {
+            signingMode = .minimal
+        } else {
+            signingMode = .default
+        }
+        return self.toHTTPRequestWithSignedHeader(signer: signer, serviceConfig: serviceConfig, signingMode: signingMode)
     }
 
     /// Create HTTP Client request from ``TCRequest``.
@@ -63,7 +71,7 @@ struct TCRequest {
     }
 
     /// Create HTTP Client request with signed headers from ``TCRequest``.
-    private func toHTTPRequestWithSignedHeader(signer: TCSigner, serviceConfig: TCServiceConfig, minimalSigning: Bool, skipAuthorization: Bool) -> TCHTTPRequest {
+    private func toHTTPRequestWithSignedHeader(signer: TCSigner, serviceConfig: TCServiceConfig, signingMode: TCSigner.SigningMode) -> TCHTTPRequest {
         let payload = self.body.asPayload(byteBufferAllocator: serviceConfig.byteBufferAllocator)
         let bodyDataForSigning: TCSigner.BodyData?
         switch payload.payload {
@@ -72,7 +80,7 @@ struct TCRequest {
         case .empty:
             bodyDataForSigning = nil
         }
-        let signedHeaders = signer.signHeaders(url: url, method: httpMethod, headers: httpHeaders, body: bodyDataForSigning, minimalSigning: minimalSigning, skipAuthorization: skipAuthorization, date: Date())
+        let signedHeaders = signer.signHeaders(url: url, method: httpMethod, headers: httpHeaders, body: bodyDataForSigning, mode: signingMode, date: Date())
         return TCHTTPRequest(url: url, method: httpMethod, headers: signedHeaders, body: payload)
     }
 }

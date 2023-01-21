@@ -65,7 +65,7 @@ public struct TCSigner: _SignerSendable {
         self.service = service
     }
 
-    /// Enum for holding request payload
+    /// Enum for holding request payload.
     public enum BodyData: _SignerSendable {
         /// String
         case string(String)
@@ -75,6 +75,16 @@ public struct TCSigner: _SignerSendable {
         case byteBuffer(ByteBuffer)
         /// Don't use body when signing request
         case unsignedPayload
+    }
+
+    /// Signing mode configuration.
+    public enum SigningMode: _SignerSendable {
+        /// Use the maximal available headers for signature.
+        case `default`
+        /// Use the minimal required headers for signature.
+        case minimal
+        /// Set "Authorization" header to `SKIP` without actually performing the sign.
+        case skip
     }
 
     /// Process URL before signing.
@@ -104,9 +114,8 @@ public struct TCSigner: _SignerSendable {
     ///   - method: Request HTTP method.
     ///   - headers: Request headers.
     ///   - body: Request body.
+    ///   - mode: Signing mode.
     ///   - omitSecurityToken: Should we include security token in the canonical headers.
-    ///   - minimalSigning: Use only the minimal required headers for signature.
-    ///   - skipAuthorization: Set "Authorization" header to `SKIP` without actually performing the sign.
     ///   - date: Date that URL is valid from, defaults to now.
     /// - Returns: Request headers with added "Authorization" header that contains request signature.
     public func signHeaders(
@@ -114,9 +123,8 @@ public struct TCSigner: _SignerSendable {
         method: HTTPMethod = .POST,
         headers: HTTPHeaders = HTTPHeaders(),
         body: BodyData? = nil,
+        mode: SigningMode = .default,
         omitSessionToken: Bool = false,
-        minimalSigning: Bool = false,
-        skipAuthorization: Bool = false,
         date: Date = Date()
     ) -> HTTPHeaders {
         let bodyHash = TCSigner.hashedPayload(body)
@@ -130,7 +138,7 @@ public struct TCSigner: _SignerSendable {
         headers.replaceOrAdd(name: "X-TC-Content-SHA256", value: bodyHash)
 
         // set authorization to SKIP without actually signing if requested
-        if skipAuthorization {
+        if mode == .skip {
             headers.replaceOrAdd(name: "Authorization", value: "SKIP")
             return headers
         }
@@ -141,7 +149,7 @@ public struct TCSigner: _SignerSendable {
         }
 
         // construct signing data. Do this after adding the headers as it uses data from the headers
-        let signingData = TCSigner.SigningData(url: url, method: method, headers: headers, body: body, bodyHash: bodyHash, timestamp: timestamp, date: dateString, signer: self, minimal: minimalSigning)
+        let signingData = TCSigner.SigningData(url: url, method: method, headers: headers, body: body, bodyHash: bodyHash, timestamp: timestamp, date: dateString, signer: self, minimal: mode == .minimal)
 
         // construct authorization string as in https://cloud.tencent.com/document/api/213/30654#4.-.E6.8B.BC.E6.8E.A5-Authorization
         let authorization = "TC3-HMAC-SHA256 " +
