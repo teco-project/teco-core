@@ -38,16 +38,16 @@ final class TCSignerTests: XCTestCase {
     let tcSampleCredential: Credential = StaticCredential(secretId: "AKIDz8krbsJ5yKBZQpn74WFkmLPx3EXAMPLE", secretKey: "Gu5t9xGARNpq86cd98joQYCN3EXAMPLE")
     let tcSampleDate: Date = Date(timeIntervalSince1970: 1551113065)
 
-    // - MARK: Basic signing by API Explorer - https://console.cloud.tencent.com/api/explorer
+    // - MARK: Minimal signing by API Explorer - https://console.cloud.tencent.com/api/explorer
 
-    func testBasicSignPostRequest() {
+    func testMinimalSignPostRequest() {
         let signer = TCSigner(credential: credential, service: "cvm")
         let headers = signer.signHeaders(
             url: URL(string: "https://cvm.tencentcloudapi.com")!,
             method: .POST,
             headers: ["Content-Type": "application/json"],
             body: .string("{}"),
-            basicSigning: true,
+            minimalSigning: true,
             date: Date(timeIntervalSince1970: 1_000_000_000)
         )
         XCTAssertEqual(
@@ -56,13 +56,13 @@ final class TCSignerTests: XCTestCase {
         )
     }
 
-    func testBasicSignGetRequest() {
+    func testMinimalSignGetRequest() {
         let signer = TCSigner(credential: credential, service: "cvm")
         let headers = signer.signHeaders(
             url: URL(string: "https://cvm.tencentcloudapi.com/?InstanceIds.0=ins-000000&InstanceIds.1=ins-000001")!,
             method: .GET,
             headers: ["Content-Type": "application/x-www-form-urlencoded"],
-            basicSigning: true,
+            minimalSigning: true,
             date: Date(timeIntervalSince1970: 1_000_000_000)
         )
         XCTAssertEqual(
@@ -167,7 +167,7 @@ final class TCSignerTests: XCTestCase {
     // MARK: - Tencent Cloud Signer samples
 
     // https://cloud.tencent.com/document/api/213/30654
-    func testTCSample() {
+    func testTencentCloudSample() {
         let signer = TCSigner(credential: tcSampleCredential, service: "cvm")
         let url = URL(string: "https://cvm.tencentcloudapi.com")!
         let headers: HTTPHeaders = [
@@ -180,7 +180,7 @@ final class TCSignerTests: XCTestCase {
         ]
         let body: TCSigner.BodyData = .string(#"{"Limit": 1, "Filters": [{"Values": ["\u672a\u547d\u540d"], "Name": "instance-name"}]}"#)
         let signedHeaders = signer.signHeaders(
-            url: url, method: .POST, headers: headers, body: body, basicSigning: true, date: tcSampleDate
+            url: url, method: .POST, headers: headers, body: body, minimalSigning: true, date: tcSampleDate
         )
         XCTAssertEqual(
             signedHeaders["Authorization"].first,

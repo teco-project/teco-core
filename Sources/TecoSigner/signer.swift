@@ -105,7 +105,7 @@ public struct TCSigner: _SignerSendable {
     ///   - headers: Request headers.
     ///   - body: Request body.
     ///   - omitSecurityToken: Should we include security token in the canonical headers.
-    ///   - basicSigning: Use only the minimal required headers for signature.
+    ///   - minimalSigning: Use only the minimal required headers for signature.
     ///   - skipAuthorization: Set "Authorization" header to `SKIP` without actually performing the sign.
     ///   - date: Date that URL is valid from, defaults to now.
     /// - Returns: Request headers with added "Authorization" header that contains request signature.
@@ -115,7 +115,7 @@ public struct TCSigner: _SignerSendable {
         headers: HTTPHeaders = HTTPHeaders(),
         body: BodyData? = nil,
         omitSessionToken: Bool = false,
-        basicSigning: Bool = false,
+        minimalSigning: Bool = false,
         skipAuthorization: Bool = false,
         date: Date = Date()
     ) -> HTTPHeaders {
@@ -141,7 +141,7 @@ public struct TCSigner: _SignerSendable {
         }
 
         // construct signing data. Do this after adding the headers as it uses data from the headers
-        let signingData = TCSigner.SigningData(url: url, method: method, headers: headers, body: body, bodyHash: bodyHash, timestamp: timestamp, date: dateString, signer: self, basic: basicSigning)
+        let signingData = TCSigner.SigningData(url: url, method: method, headers: headers, body: body, bodyHash: bodyHash, timestamp: timestamp, date: dateString, signer: self, minimal: minimalSigning)
 
         // construct authorization string as in https://cloud.tencent.com/document/api/213/30654#4.-.E6.8B.BC.E6.8E.A5-Authorization
         let authorization = "TC3-HMAC-SHA256 " +
@@ -171,7 +171,7 @@ public struct TCSigner: _SignerSendable {
         let signedHeaders: String
         var unsignedURL: URL
 
-        init(url: URL, method: HTTPMethod, headers: HTTPHeaders = HTTPHeaders(), body: BodyData? = nil, bodyHash: String? = nil, timestamp: String, date: String, signer: TCSigner, basic: Bool = false) {
+        init(url: URL, method: HTTPMethod, headers: HTTPHeaders = HTTPHeaders(), body: BodyData? = nil, bodyHash: String? = nil, timestamp: String, date: String, signer: TCSigner, minimal: Bool = false) {
             self.url = url
             self.method = method
             self.timestamp = timestamp
@@ -184,7 +184,7 @@ public struct TCSigner: _SignerSendable {
                 self.hashedPayload = TCSigner.hashedPayload(body)
             }
 
-            self.headersToSign = TCSigner.headersToSign(headers, basicSigning: basic)
+            self.headersToSign = TCSigner.headersToSign(headers, minimal: minimal)
             self.signedHeaders = headersToSign.keys.joined(separator: ";")
         }
     }
@@ -262,13 +262,13 @@ public struct TCSigner: _SignerSendable {
     }
 
     /// return the string formatted for signing requests
-    static func headersToSign(_ headers: HTTPHeaders, basicSigning: Bool) -> OrderedDictionary<String, String> {
+    static func headersToSign(_ headers: HTTPHeaders, minimal: Bool) -> OrderedDictionary<String, String> {
         var headersToSign: OrderedDictionary<String, String> = [:]
 
         let headersMustSign: Set<String> = ["content-type", "host"]
         let headersNotToSign: Set<String> = ["authorization", "content-length", "expect", "user-agent"]
 
-        if basicSigning {
+        if minimal {
             for header in headersMustSign {
                 headersToSign[header] = headers.first(name: header)
             }
