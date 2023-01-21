@@ -209,18 +209,23 @@ public final class TCClient: TecoSendable {
         let requestLogLevel: Logger.Level
         /// Log level used for error logging
         let errorLogLevel: Logger.Level
+        /// Use only the minimal required headers for signature.
+        let minimalSigning: Bool
 
         /// Initialize ``TCClient/Options``.
         ///
         /// - Parameters:
         ///   - requestLogLevel: Log level used for request logging.
         ///   - errorLogLevel: Log level used for error logging.
+        ///   - minimalSigning: Use only the minimal required headers for signature.
         public init(
             requestLogLevel: Logger.Level = .debug,
-            errorLogLevel: Logger.Level = .debug
+            errorLogLevel: Logger.Level = .debug,
+            minimalSigning: Bool = false
         ) {
             self.requestLogLevel = requestLogLevel
             self.errorLogLevel = errorLogLevel
+            self.minimalSigning = minimalSigning
         }
     }
 }
@@ -236,7 +241,7 @@ extension TCClient {
     ///    - region: Region of the service to operate on.
     ///    - httpMethod: HTTP method to use. Defaults to`.POST`.
     ///    - serviceConfig: Tencent Cloud service configuration.
-    ///    - skipAuthorization: If authorization should be set to `SKIP`.
+    ///    - skipAuthorization: If "Authorization" header should be set to `SKIP`.
     ///    - input: API request payload.
     ///    - logger: Logger to log request details to.
     ///    - eventLoop: `EventLoop` to run request on.
@@ -284,7 +289,7 @@ extension TCClient {
     ///    - region: Region of the service to operate on.
     ///    - httpMethod: HTTP method to use. Defaults to`.GET`.
     ///    - serviceConfig: Tencent Cloud service configuration.
-    ///    - skipAuthorization: If authorization should be set to `SKIP`.
+    ///    - skipAuthorization: If "Authorization" header should be set to `SKIP`.
     ///    - logger: Logger to log request details to.
     ///    - eventLoop: `EventLoop` to run request on.
     /// - Returns: ``EventLoopFuture`` containing output object that completes when response is received.
@@ -342,7 +347,8 @@ extension TCClient {
     ///    - httpMethod: HTTP method to use (`.GET` or `.POST`).
     ///    - httpHeaders: Headers that are to be sent with this URL.
     ///    - body: Payload to sign.
-    ///    - serviceConfig: Additional Tencent Cloud service configuration used to sign the URL.
+    ///    - serviceConfig: Tencent Cloud service configuration used to sign the URL.
+    ///    - skipAuthorization: If "Authorization" header should be set to `SKIP`.
     ///    - logger: Logger to output to.
     /// - Returns: A set of signed headers that include the original headers supplied.
     public func signHeaders(
@@ -351,6 +357,7 @@ extension TCClient {
         headers: HTTPHeaders = HTTPHeaders(),
         body: TCPayload,
         serviceConfig: TCServiceConfig,
+        skipAuthorization: Bool = false,
         logger: Logger = TCClient.loggingDisabled
     ) -> EventLoopFuture<HTTPHeaders> {
         let logger = logger.attachingRequestId(
@@ -429,7 +436,9 @@ extension TCClient {
             .flatMapThrowing { signer -> TCHTTPRequest in
                 // create request and sign with signer
                 let tcRequest = try createRequest()
-                return tcRequest.createHTTPRequest(signer: signer, serviceConfig: config, skipAuthorization: skipAuthorization)
+                return tcRequest.createHTTPRequest(signer: signer, serviceConfig: config,
+                                                   minimalSigning: self.options.minimalSigning,
+                                                   skipAuthorization: skipAuthorization)
             }.flatMap { request -> EventLoopFuture<Output> in
                 self.invoke(
                     with: config,

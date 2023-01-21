@@ -48,13 +48,13 @@ struct TCRequest {
     /// Create HTTP Client request from ``TCRequest``.
     ///
     /// If the signer's credentials are available the request will be signed. Otherwise defaults to an unsigned request.
-    internal func createHTTPRequest(signer: TCSigner, serviceConfig: TCServiceConfig, skipAuthorization: Bool) -> TCHTTPRequest {
+    internal func createHTTPRequest(signer: TCSigner, serviceConfig: TCServiceConfig, minimalSigning: Bool, skipAuthorization: Bool) -> TCHTTPRequest {
         // if credentials are empty don't sign request
         if !skipAuthorization && signer.credential.isEmpty {
             return self.toHTTPRequest(byteBufferAllocator: serviceConfig.byteBufferAllocator)
         }
 
-        return self.toHTTPRequestWithSignedHeader(signer: signer, serviceConfig: serviceConfig, skipAuthorization: skipAuthorization)
+        return self.toHTTPRequestWithSignedHeader(signer: signer, serviceConfig: serviceConfig, minimalSigning: minimalSigning, skipAuthorization: skipAuthorization)
     }
 
     /// Create HTTP Client request from ``TCRequest``.
@@ -63,7 +63,7 @@ struct TCRequest {
     }
 
     /// Create HTTP Client request with signed headers from ``TCRequest``.
-    private func toHTTPRequestWithSignedHeader(signer: TCSigner, serviceConfig: TCServiceConfig, skipAuthorization: Bool) -> TCHTTPRequest {
+    private func toHTTPRequestWithSignedHeader(signer: TCSigner, serviceConfig: TCServiceConfig, minimalSigning: Bool, skipAuthorization: Bool) -> TCHTTPRequest {
         let payload = self.body.asPayload(byteBufferAllocator: serviceConfig.byteBufferAllocator)
         let bodyDataForSigning: TCSigner.BodyData?
         switch payload.payload {
@@ -72,7 +72,7 @@ struct TCRequest {
         case .empty:
             bodyDataForSigning = nil
         }
-        let signedHeaders = signer.signHeaders(url: url, method: httpMethod, headers: httpHeaders, body: bodyDataForSigning, skipAuthorization: skipAuthorization, date: Date())
+        let signedHeaders = signer.signHeaders(url: url, method: httpMethod, headers: httpHeaders, body: bodyDataForSigning, minimalSigning: minimalSigning, skipAuthorization: skipAuthorization, date: Date())
         return TCHTTPRequest(url: url, method: httpMethod, headers: signedHeaders, body: payload)
     }
 }
