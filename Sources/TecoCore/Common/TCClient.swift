@@ -58,11 +58,13 @@ public final class TCClient: TecoSendable {
     /// Keeps a record of how we obtained the HTTP client.
     private let httpClientProvider: HTTPClientProvider
     /// `EventLoopGroup` used by `TCClient`.
-    public var eventLoopGroup: EventLoopGroup { return httpClient.eventLoopGroup }
+    public var eventLoopGroup: EventLoopGroup { self.httpClient.eventLoopGroup }
     /// Retry policy specifying what to do when a request fails.
     public let retryPolicy: RetryPolicy
     /// Logger used for non-request based output.
     private let clientLogger: Logger
+    /// Default signing mode.
+    private let signingMode: TCSigner.SigningMode
     /// Custom client options.
     private let options: Options
     /// Holds the client shutdown state.
@@ -105,6 +107,7 @@ public final class TCClient: TecoSendable {
         self.retryPolicy = retryPolicyFactory.retryPolicy
         self.clientLogger = clientLogger
         self.options = options
+        self.signingMode = options.minimalSigning ? .minimal : .default
     }
 
     deinit {
@@ -437,8 +440,7 @@ extension TCClient {
                 // create request and sign with signer
                 let tcRequest = try createRequest()
                 return tcRequest.createHTTPRequest(signer: signer, serviceConfig: config,
-                                                   minimalSigning: self.options.minimalSigning,
-                                                   skipAuthorization: skipAuthorization)
+                                                   signingMode: skipAuthorization ? .skip : self.signingMode)
             }.flatMap { request -> EventLoopFuture<Output> in
                 self.invoke(
                     with: config,
