@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-/// Credential provider that holds a ``TCClient``.``
+/// Credential provider that holds a ``TCClient``.
 protocol CredentialProviderWithClient: CredentialProvider {
     var client: TCClient { get }
 }

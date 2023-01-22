@@ -143,12 +143,14 @@ extension CredentialProviderFactory {
     ///   - roleArn: Resource descriptions of a role, which can be obtained by clicking the role name in the CAM console. Defaults to look in environment variable `TENCENTCLOUD_ROLE_ARN`.
     ///   - roleSessionName: Temporary session name. Defaults to look in environment variable `TENCENTCLOUD_ROLE_SESSION_NAME`.
     ///   - policy: Policy description using CAM's [Syntax Logic](https://www.tencentcloud.com/document/product/598/10603). The policy cannot contain the `principal` element.
+    ///   - region: Region of Security Token Service to operate on. Must have value unless environment variable `TENCENTCLOUD_REGION` is set.
     ///   - credentialProvider: Credential provider that gives the initial credential.
     public static func sts(
         roleArn: String? = nil,
         roleSessionName: String? = nil,
         policy: String? = nil,
-        credentialProvider: CredentialProviderFactory = .`default`
+        region: TCRegion? = nil,
+        credentialProvider: CredentialProviderFactory = .default
     ) -> CredentialProviderFactory {
         Self { context in
             guard let roleArn = roleArn ?? Environment["TENCENTCLOUD_ROLE_ARN"],
@@ -156,7 +158,7 @@ extension CredentialProviderFactory {
                 return NullCredentialProvider()
             }
             let request = STSAssumeRoleRequest(roleArn: roleArn, roleSessionName: roleSessionName, policy: policy)
-            let provider = STSCredentialProvider(request: request, credentialProvider: credentialProvider, httpClient: context.httpClient)
+            let provider = STSCredentialProvider(request: request, credentialProvider: credentialProvider, region: region, httpClient: context.httpClient)
             return TemporaryCredentialProvider(context: context, provider: provider)
         }
     }
