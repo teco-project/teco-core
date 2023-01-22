@@ -82,12 +82,12 @@ public struct TCCommonError: TCServiceErrorType {
         self.context = context
     }
 
-    /// 接口已下线。
+    /// This API has been deprecated. / 接口已下线。
     public static var actionOffline: TCCommonError {
         TCCommonError(.actionOffline)
     }
 
-    /// 请求头部的Authorization不符合腾讯云标准。
+    /// `Authorization` in the request header is invalid. / 请求头部的`Authorization`不符合腾讯云标准。
     public static var authFailure_InvalidAuthorization: TCCommonError {
         TCCommonError(.authFailure_InvalidAuthorization)
     }
@@ -97,22 +97,22 @@ public struct TCCommonError: TCServiceErrorType {
         TCCommonError(.authFailure_InvalidSecretId)
     }
 
-    /// MFA failed. / MFA错误。
+    /// MFA failed. / [MFA](https://cloud.tencent.com/document/product/378/12036)错误。
     public static var authFailure_MFAFailure: TCCommonError {
         TCCommonError(.authFailure_MFAFailure)
     }
 
-    /// The key does not exist. / 密钥不存在。请在控制台检查密钥是否已被删除或者禁用，如状态正常，请检查密钥是否填写正确，注意前后不得有空格。
+    /// Key does not exist. Check if the key has been deleted or disabled in the console, and if not, check if the key is correctly entered. Note that whitespaces should not exist before or after the key. / 密钥不存在。请在[控制台](https://console.cloud.tencent.com/cam/capi)检查密钥是否已被删除或者禁用，如状态正常，请检查密钥是否填写正确，注意前后不得有空格。
     public static var authFailure_SecretIdNotFound: TCCommonError {
         TCCommonError(.authFailure_SecretIdNotFound)
     }
 
-    /// Signature expired. / 签名过期。Timestamp和服务器时间相差不得超过五分钟，请检查本地时间是否和标准时间同步。
+    /// Signature expired. Timestamp and server time cannot differ by more than five minutes. Please ensure your current local time matches the standard time. / 签名过期。Timestamp和服务器时间相差不得超过五分钟，请检查本地时间是否和标准时间同步。
     public static var authFailure_SignatureExpire: TCCommonError {
         TCCommonError(.authFailure_SignatureExpire)
     }
 
-    /// Signature error. / 签名错误。签名计算错误，请对照调用方式中的签名方法文档检查签名计算过程。
+    /// Invalid signature. Signature calculation error. Please ensure you’ve followed the signature calculation process described in the Signature API documentation. / 签名错误。签名计算错误，请对照调用方式中的签名方法文档检查签名计算过程。
     public static var authFailure_SignatureFailure: TCCommonError {
         TCCommonError(.authFailure_SignatureFailure)
     }
@@ -122,7 +122,7 @@ public struct TCCommonError: TCServiceErrorType {
         TCCommonError(.authFailure_TokenFailure)
     }
 
-    /// The request does not have CAM authorization. / 请求未授权。请参考CAM文档对鉴权的说明。
+    /// The request is not authorized. For more information, see the [CAM](https://www.tencentcloud.com/document/product/598) documentation. / 请求未授权。请参考[CAM](https://cloud.tencent.com/document/product/598)文档对鉴权的说明。
     public static var authFailure_UnauthorizedOperation: TCCommonError {
         TCCommonError(.authFailure_UnauthorizedOperation)
     }
@@ -157,17 +157,17 @@ public struct TCCommonError: TCServiceErrorType {
         TCCommonError(.invalidParameterValue)
     }
 
-    /// 请求body的multipart格式错误。
+    /// The multipart format of the request body is incorrect. / 请求body的multipart格式错误。
     public static var invalidRequest: TCCommonError {
         TCCommonError(.invalidRequest)
     }
 
-    /// IP地址在黑名单中。
+    /// Your IP is in uin IP blacklist. / IP地址在黑名单中。
     public static var ipInBlacklist: TCCommonError {
         TCCommonError(.ipInBlacklist)
     }
 
-    /// IP地址不在白名单中。
+    /// Your IP is not in uin IP whitelist. / IP地址不在白名单中。
     public static var ipNotInWhitelist: TCCommonError {
         TCCommonError(.ipNotInWhitelist)
     }
@@ -182,7 +182,7 @@ public struct TCCommonError: TCServiceErrorType {
         TCCommonError(.missingParameter)
     }
 
-    /// 产品不存在。
+    /// The product does not exist. / 产品不存在。
     public static var noSuchProduct: TCCommonError {
         TCCommonError(.noSuchProduct)
     }
@@ -197,22 +197,22 @@ public struct TCCommonError: TCServiceErrorType {
         TCCommonError(.requestLimitExceeded)
     }
 
-    /// 主账号超过频率限制。
+    /// Uin exceeds the frequency limit. / 主账号超过频率限制。
     public static var requestLimitExceeded_GlobalRegionUinLimitExceeded: TCCommonError {
         TCCommonError(.requestLimitExceeded_GlobalRegionUinLimitExceeded)
     }
 
-    /// IP限频。
+    /// The number of ip requests exceeds the frequency limit. / IP限频。
     public static var requestLimitExceeded_IPLimitExceeded: TCCommonError {
         TCCommonError(.requestLimitExceeded_IPLimitExceeded)
     }
 
-    /// 主账号限频。
+    /// The number of uin requests exceeds the frequency limit. / 主账号限频。
     public static var requestLimitExceeded_UinLimitExceeded: TCCommonError {
         TCCommonError(.requestLimitExceeded_UinLimitExceeded)
     }
 
-    /// 请求包超过限制大小。
+    /// The request size exceeds the upper limit. / 请求包超过限制大小。
     public static var requestSizeLimitExceeded: TCCommonError {
         TCCommonError(.requestSizeLimitExceeded)
     }
@@ -237,12 +237,12 @@ public struct TCCommonError: TCServiceErrorType {
         TCCommonError(.resourceUnavailable)
     }
 
-    /// 返回包超过限制大小。
+    /// The response size exceeds the upper limit. / 返回包超过限制大小。
     public static var responseSizeLimitExceeded: TCCommonError {
         TCCommonError(.responseSizeLimitExceeded)
     }
 
-    /// 当前服务暂时不可用。
+    /// Service is unavailable now. / 当前服务暂时不可用。
     public static var serviceUnavailable: TCCommonError {
         TCCommonError(.serviceUnavailable)
     }
@@ -262,7 +262,7 @@ public struct TCCommonError: TCServiceErrorType {
         TCCommonError(.unsupportedOperation)
     }
 
-    /// HTTPS request method error. Only GET and POST requests are supported. / http(s)请求协议错误，只支持GET和POST请求。
+    /// HTTP(S) request protocol error; only GET and POST requests are supported. / http(s)请求协议错误，只支持GET和POST请求。
     public static var unsupportedProtocol: TCCommonError {
         TCCommonError(.unsupportedProtocol)
     }
