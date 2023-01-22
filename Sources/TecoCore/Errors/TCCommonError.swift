@@ -103,6 +103,11 @@ public struct TCCommonError: TCServiceErrorType {
     }
 
     /// Key does not exist. Check if the key has been deleted or disabled in the console, and if not, check if the key is correctly entered. Note that whitespaces should not exist before or after the key. / 密钥不存在。请在[控制台](https://console.cloud.tencent.com/cam/capi)检查密钥是否已被删除或者禁用，如状态正常，请检查密钥是否填写正确，注意前后不得有空格。
+    ///
+    /// - The SecretId is not found, please ensure that your SecretId is correct.
+    ///   SecretId不存在，请输入正确的密钥。
+    ///
+    /// 当您接口返回这些错误时，说明您调接口时用的密钥信息不存在，请在控制台检查密钥是否已被删除或者禁用，如状态正常，请检查密钥是否填写正确，注意前后不得有空格。
     public static var authFailure_SecretIdNotFound: TCCommonError {
         TCCommonError(.authFailure_SecretIdNotFound)
     }
@@ -113,6 +118,16 @@ public struct TCCommonError: TCServiceErrorType {
     }
 
     /// Invalid signature. Signature calculation error. Please ensure you’ve followed the signature calculation process described in the Signature API documentation. / 签名错误。签名计算错误，请对照调用方式中的签名方法文档检查签名计算过程。
+    ///
+    /// - The provided credentials could not be validated. Please check your signature is correct.
+    ///   请求签名验证失败，请检查您的签名计算是否正确。
+    /// - The provided credentials could not be validated because of exceeding request size limit, please use new signature method `TC3-HMAC-SHA256`.
+    ///   由于请求包大小超过限制，请求签名验证失败，请使用新的签名方法 `TC3-HMAC-SHA256`。
+    ///
+    /// 当您看到此类错误信息，说明此次请求签名计算错误，强烈建议使用官网提供的 SDK 调用，自己计算签名比较容易出错，SDK 屏蔽了计算签名的细节，调用者只需关注接口参数。
+    /// 如果仍然想自己计算签名，参照官网签名文档，可以在API Explorer【签名串生成】处进行签名验证。
+    /// 此外，SecretKey输入错误也可能会导致签名计算错误。
+    /// 如果报错信息是请求包大小超过了限制，请求签名验证失败，需要使用签名方法 `TC3-HMAC-SHA256`。注意：GET 请求的请求包大小不得超过32KB。POST 请求使用签名方法 v1（HmacSHA1、HmacSHA256）时不得超过1MB。POST 请求使用签名方法 v3（TC3-HMAC-SHA256）时支持10MB。
     public static var authFailure_SignatureFailure: TCCommonError {
         TCCommonError(.authFailure_SignatureFailure)
     }
@@ -148,11 +163,58 @@ public struct TCCommonError: TCServiceErrorType {
     }
 
     /// Incorrect parameter. / 参数错误（包括参数格式、类型等错误）。
+    ///
+    /// - Parameter `xxx` format invalid.
+    ///   参数 `xxx` 格式非法。
+    /// - Parameter `xxx` input repeated.
+    ///   参数 `xxx` 重复输入。
+    /// - Parameter `xxx` invalid json format.
+    ///   参数 `xxx` 是非法的Json格式。
+    /// - Parameter `xxx` invalid array format, array index must be continuous and starts with 0.
+    ///   参数 `xxx` 是非法是数组格式，数组下标必须是连续的而且从0下标开始。
+    /// - The value type of parameter `xxx` is not valid.
+    ///   参数 `xxx` 取值类型错误。
+    /// - Url key and value should be splited by `=`.
+    ///   参数错误，请求URL中参数key和value必须以 `=` 分隔。
+    /// - The request has a parameter key which is empty string.
+    ///   参数错误，请求参数key不能为空字符串。
+    /// - The request content not valid json format for specified content-type=application/json.
+    ///   对于指定content-type=application/json协议下，请求内容不是合法的Json格式。
+    /// - The value type of parameter `xxx` is not valid, input value is `yyy`.
+    ///   参数 `xxx` 取值类型错误。传入值 `yyy`。
+    ///
+    /// 当您接口返回这些错误时，说明您在调用接口时，有参数格式、类型等错误。
+    /// 比如：参数重复，
+    /// 入参类型错误，
+    /// 对于指定content-type=application/x-www-form-urlencoded，请求URL中参数key和value必须以 `=` 分隔，请求参数key不能为空字符串；数组类型下标必须从0开始，依次递增；参数值类型不能搞错，比如时间类型，整型等。
+    /// 对于指定content-type=application/json协议下，请求内容不是合法的Json格式，等等。
+    ///
+    /// 请确保您在调用时遵循如下原则，可以有效避免此类的错误：
+    /// 1、使用API Explorer调试，结合官网文档，熟悉接口参数类型，避免在使用时出错。
+    /// 2、使用官方提供的 SDK，同时可以参考API Explorer生成的sdk调用代码，
+    /// 3、注意区分v1签名和v3签名的区别，content-type取不同值时的传值区别。
     public static var invalidParameter: TCCommonError {
         TCCommonError(.invalidParameter)
     }
 
     /// Invalid parameter value. / 参数取值错误。
+    ///
+    /// - A value specified in XXX is not valid, is unsupported, or cannot be used.
+    ///   参数 XXX 取值错误。
+    /// - The value specified in `X-TC-Content-SHA256` is not correct.
+    ///   参数 `X-TC-Content-SHA256` 计算值不正确。
+    ///
+    /// 当您接口返回这些报错时，说明您在调用接口时，参数取值不对，有些参数值只能取特定值，如：Region，签名方法，Language等。
+    /// 例如：A value specified in `X-TC-Region` is not valid, is unsupported, or cannot be used.
+    ///
+    /// 请确保您在调用时遵循如下原则，可以有效避免此类的错误：
+    /// 1、使用官方提供的 SDK，
+    /// 2、查询接口官网文档，查看公共参数可以取哪些值，
+    ///
+    /// 注意：
+    /// Region 可取值查看对应接口入参中的Region参数，
+    /// 签名方法：可查看官网签名对应文档，
+    /// Language：目前仅能取之zh-CN，en-US
     public static var invalidParameterValue: TCCommonError {
         TCCommonError(.invalidParameterValue)
     }
@@ -178,6 +240,27 @@ public struct TCCommonError: TCServiceErrorType {
     }
 
     /// A parameter is missing. / 缺少参数。
+    ///
+    /// - The request is missing a required parameter XXX.
+    ///   请求缺少必传参数 XXX。
+    /// - The request header is missing a required common parameter X-TC-XXX.
+    ///   请求头部缺少必传的公共参数 XXX。
+    ///
+    /// 当您看到此类错误信息，说明您在调用接口时，缺少了必填参数;
+    /// 其中 XXX 是必填参数名，您在调用接口的时候添加 XXX 参数，重新发起请求即可;
+    /// X-TC-XXX是使用V3签名时的公共参数，例如：X-TC-Action，放在请求头中;
+    /// 例如: The request is missing a required parameter `ImageId`. 则说明 ImageId 参数是必填项，您在调用接口的时候指定 ImageId 参数即可。
+    /// The request header is missing a required common parameter `X-TC-Action`. 则说明 Action 参数是公共必填参数，您在调用接口的时候在请求头部添加 X-TC-Action 参数即可。
+    ///
+    /// 必填参数包含：公共必填参数、业务必填参数。
+    /// 请确保您在调用时遵循如下原则，可以有效避免此类的错误：
+    ///
+    ///  - 使用API Explorer工具调式接口；
+    ///  - 使用官方提供的 SDK，它会保障系统必填参数的完整；
+    ///  - 对照接口官网文档，确保业务必填参数填写正确；
+    ///  - 参数是否必填可能存在依赖，比如当A参数的取值为Value时，C参数会成为必填项；
+    ///
+    /// 特别提醒：强烈建议您使用官方提供的 SDK 来进行调用，SDK 中封装了调用的过程，使您可以不用关心细节问题。
     public static var missingParameter: TCCommonError {
         TCCommonError(.missingParameter)
     }
@@ -193,6 +276,13 @@ public struct TCCommonError: TCServiceErrorType {
     }
 
     /// The number of requests exceeds the frequency limit. / 请求的次数超过了频率限制。
+    ///
+    /// - Your current request times equals to `X` in a second, which exceeds the frequency limit `Y` for a second. Please reduce the frequency of calls.
+    ///   您当前每秒请求 `X` 次，超过了每秒频率上限 `Y`，请稍后重试。
+    /// - Your current request times in a second exceeds the frequency limit. Please reduce the frequency of calls.
+    ///   您当前每秒请求次数超过了频率上限，请稍后重试。
+    ///
+    /// 当您接口返回这些错误时，说明您当前请求频率超过了上限值，请降低调用频率。
     public static var requestLimitExceeded: TCCommonError {
         TCCommonError(.requestLimitExceeded)
     }
