@@ -109,7 +109,8 @@ extension CredentialProviderFactory {
         Self { context in
             let provider = OIDCRoleArnCredentialProvider(
                 requestProvider: OIDCRoleArnCredentialProvider.makeRequestForTKE,
-                httpClient: context.httpClient
+                httpClient: context.httpClient,
+                endpoint: .service
             )
             return TemporaryCredentialProvider(context: context, provider: provider)
         }
