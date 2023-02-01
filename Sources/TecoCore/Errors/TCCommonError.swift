@@ -82,27 +82,32 @@ public struct TCCommonError: TCServiceErrorType {
         self.context = context
     }
 
-    /// This API has been deprecated. / 接口已下线。
+    /// This API has been deprecated.
+    /// 接口已下线。
     public static var actionOffline: TCCommonError {
         TCCommonError(.actionOffline)
     }
 
-    /// `Authorization` in the request header is invalid. / 请求头部的`Authorization`不符合腾讯云标准。
+    /// `Authorization` in the request header is invalid.
+    /// 请求头部的`Authorization`不符合腾讯云标准。
     public static var authFailure_InvalidAuthorization: TCCommonError {
         TCCommonError(.authFailure_InvalidAuthorization)
     }
 
-    /// Invalid key (not a TencentCloud API key type). / 密钥非法（不是云API密钥类型）。
+    /// Invalid key (not a TencentCloud API key type).
+    /// 密钥非法（不是云API密钥类型）。
     public static var authFailure_InvalidSecretId: TCCommonError {
         TCCommonError(.authFailure_InvalidSecretId)
     }
 
-    /// MFA failed. / [MFA](https://cloud.tencent.com/document/product/378/12036)错误。
+    /// MFA failed.
+    /// [MFA](https://cloud.tencent.com/document/product/378/12036)错误。
     public static var authFailure_MFAFailure: TCCommonError {
         TCCommonError(.authFailure_MFAFailure)
     }
 
-    /// Key does not exist. Check if the key has been deleted or disabled in the console, and if not, check if the key is correctly entered. Note that whitespaces should not exist before or after the key. / 密钥不存在。请在[控制台](https://console.cloud.tencent.com/cam/capi)检查密钥是否已被删除或者禁用，如状态正常，请检查密钥是否填写正确，注意前后不得有空格。
+    /// Key does not exist. Check if the key has been deleted or disabled in the console, and if not, check if the key is correctly entered. Note that whitespaces should not exist before or after the key.
+    /// 密钥不存在。请在[控制台](https://console.cloud.tencent.com/cam/capi)检查密钥是否已被删除或者禁用，如状态正常，请检查密钥是否填写正确，注意前后不得有空格。
     ///
     /// - The SecretId is not found, please ensure that your SecretId is correct.
     ///   SecretId不存在，请输入正确的密钥。
@@ -112,12 +117,14 @@ public struct TCCommonError: TCServiceErrorType {
         TCCommonError(.authFailure_SecretIdNotFound)
     }
 
-    /// Signature expired. Timestamp and server time cannot differ by more than five minutes. Please ensure your current local time matches the standard time. / 签名过期。Timestamp和服务器时间相差不得超过五分钟，请检查本地时间是否和标准时间同步。
+    /// Signature expired. Timestamp and server time cannot differ by more than five minutes. Please ensure your current local time matches the standard time.
+    /// 签名过期。Timestamp和服务器时间相差不得超过五分钟，请检查本地时间是否和标准时间同步。
     public static var authFailure_SignatureExpire: TCCommonError {
         TCCommonError(.authFailure_SignatureExpire)
     }
 
-    /// Invalid signature. Signature calculation error. Please ensure you’ve followed the signature calculation process described in the Signature API documentation. / 签名错误。签名计算错误，请对照调用方式中的签名方法文档检查签名计算过程。
+    /// Invalid signature. Signature calculation error. Please ensure you’ve followed the signature calculation process described in the Signature API documentation.
+    /// 签名错误。签名计算错误，请对照调用方式中的签名方法文档检查签名计算过程。
     ///
     /// - The provided credentials could not be validated. Please check your signature is correct.
     ///   请求签名验证失败，请检查您的签名计算是否正确。
@@ -132,37 +139,44 @@ public struct TCCommonError: TCServiceErrorType {
         TCCommonError(.authFailure_SignatureFailure)
     }
 
-    /// Token error. / token错误。
+    /// Token error.
+    /// token错误。
     public static var authFailure_TokenFailure: TCCommonError {
         TCCommonError(.authFailure_TokenFailure)
     }
 
-    /// The request is not authorized. For more information, see the [CAM](https://www.tencentcloud.com/document/product/598) documentation. / 请求未授权。请参考[CAM](https://cloud.tencent.com/document/product/598)文档对鉴权的说明。
+    /// The request is not authorized. For more information, see the [CAM](https://www.tencentcloud.com/document/product/598) documentation.
+    /// 请求未授权。请参考[CAM](https://cloud.tencent.com/document/product/598)文档对鉴权的说明。
     public static var authFailure_UnauthorizedOperation: TCCommonError {
         TCCommonError(.authFailure_UnauthorizedOperation)
     }
 
-    /// DryRun Operation. It means that the request would have succeeded, but the DryRun parameter was used. / DryRun操作，代表请求将会是成功的，只是多传了DryRun参数。
+    /// DryRun Operation. It means that the request would have succeeded, but the DryRun parameter was used.
+    /// DryRun操作，代表请求将会是成功的，只是多传了DryRun参数。
     public static var dryRunOperation: TCCommonError {
         TCCommonError(.dryRunOperation)
     }
 
-    /// Operation failed. / 操作失败。
+    /// Operation failed.
+    /// 操作失败。
     public static var failedOperation: TCCommonError {
         TCCommonError(.failedOperation)
     }
 
-    /// Internal error. / 内部错误。
+    /// Internal error.
+    /// 内部错误。
     public static var internalError: TCCommonError {
         TCCommonError(.internalError)
     }
 
-    /// The API does not exist. / 接口不存在。
+    /// The API does not exist.
+    /// 接口不存在。
     public static var invalidAction: TCCommonError {
         TCCommonError(.invalidAction)
     }
 
-    /// Incorrect parameter. / 参数错误（包括参数格式、类型等错误）。
+    /// Incorrect parameter.
+    /// 参数错误（包括参数格式、类型等错误）。
     ///
     /// - Parameter `xxx` format invalid.
     ///   参数 `xxx` 格式非法。
@@ -197,7 +211,8 @@ public struct TCCommonError: TCServiceErrorType {
         TCCommonError(.invalidParameter)
     }
 
-    /// Invalid parameter value. / 参数取值错误。
+    /// Invalid parameter value.
+    /// 参数取值错误。
     ///
     /// - A value specified in XXX is not valid, is unsupported, or cannot be used.
     ///   参数 XXX 取值错误。
@@ -219,27 +234,32 @@ public struct TCCommonError: TCServiceErrorType {
         TCCommonError(.invalidParameterValue)
     }
 
-    /// The multipart format of the request body is incorrect. / 请求body的multipart格式错误。
+    /// The multipart format of the request body is incorrect.
+    /// 请求body的multipart格式错误。
     public static var invalidRequest: TCCommonError {
         TCCommonError(.invalidRequest)
     }
 
-    /// Your IP is in uin IP blacklist. / IP地址在黑名单中。
+    /// Your IP is in uin IP blacklist.
+    /// IP地址在黑名单中。
     public static var ipInBlacklist: TCCommonError {
         TCCommonError(.ipInBlacklist)
     }
 
-    /// Your IP is not in uin IP whitelist. / IP地址不在白名单中。
+    /// Your IP is not in uin IP whitelist.
+    /// IP地址不在白名单中。
     public static var ipNotInWhitelist: TCCommonError {
         TCCommonError(.ipNotInWhitelist)
     }
 
-    /// Quota limit exceeded. / 超过配额限制。
+    /// Quota limit exceeded.
+    /// 超过配额限制。
     public static var limitExceeded: TCCommonError {
         TCCommonError(.limitExceeded)
     }
 
-    /// A parameter is missing. / 缺少参数。
+    /// A parameter is missing.
+    /// 缺少参数。
     ///
     /// - The request is missing a required parameter XXX.
     ///   请求缺少必传参数 XXX。
@@ -265,17 +285,20 @@ public struct TCCommonError: TCServiceErrorType {
         TCCommonError(.missingParameter)
     }
 
-    /// The product does not exist. / 产品不存在。
+    /// The product does not exist.
+    /// 产品不存在。
     public static var noSuchProduct: TCCommonError {
         TCCommonError(.noSuchProduct)
     }
 
-    /// The API version does not exist. / 接口版本不存在。
+    /// The API version does not exist.
+    /// 接口版本不存在。
     public static var noSuchVersion: TCCommonError {
         TCCommonError(.noSuchVersion)
     }
 
-    /// The number of requests exceeds the frequency limit. / 请求的次数超过了频率限制。
+    /// The number of requests exceeds the frequency limit.
+    /// 请求的次数超过了频率限制。
     ///
     /// - Your current request times equals to `X` in a second, which exceeds the frequency limit `Y` for a second. Please reduce the frequency of calls.
     ///   您当前每秒请求 `X` 次，超过了每秒频率上限 `Y`，请稍后重试。
@@ -287,77 +310,92 @@ public struct TCCommonError: TCServiceErrorType {
         TCCommonError(.requestLimitExceeded)
     }
 
-    /// Uin exceeds the frequency limit. / 主账号超过频率限制。
+    /// Uin exceeds the frequency limit.
+    /// 主账号超过频率限制。
     public static var requestLimitExceeded_GlobalRegionUinLimitExceeded: TCCommonError {
         TCCommonError(.requestLimitExceeded_GlobalRegionUinLimitExceeded)
     }
 
-    /// The number of ip requests exceeds the frequency limit. / IP限频。
+    /// The number of ip requests exceeds the frequency limit.
+    /// IP限频。
     public static var requestLimitExceeded_IPLimitExceeded: TCCommonError {
         TCCommonError(.requestLimitExceeded_IPLimitExceeded)
     }
 
-    /// The number of uin requests exceeds the frequency limit. / 主账号限频。
+    /// The number of uin requests exceeds the frequency limit.
+    /// 主账号限频。
     public static var requestLimitExceeded_UinLimitExceeded: TCCommonError {
         TCCommonError(.requestLimitExceeded_UinLimitExceeded)
     }
 
-    /// The request size exceeds the upper limit. / 请求包超过限制大小。
+    /// The request size exceeds the upper limit.
+    /// 请求包超过限制大小。
     public static var requestSizeLimitExceeded: TCCommonError {
         TCCommonError(.requestSizeLimitExceeded)
     }
 
-    /// Resource is in use. / 资源被占用。
+    /// Resource is in use.
+    /// 资源被占用。
     public static var resourceInUse: TCCommonError {
         TCCommonError(.resourceInUse)
     }
 
-    /// Insufficient resource. / 资源不足。
+    /// Insufficient resource.
+    /// 资源不足。
     public static var resourceInsufficient: TCCommonError {
         TCCommonError(.resourceInsufficient)
     }
 
-    /// The resource does not exist. / 资源不存在。
+    /// The resource does not exist.
+    /// 资源不存在。
     public static var resourceNotFound: TCCommonError {
         TCCommonError(.resourceNotFound)
     }
 
-    /// Resource is unavailable. / 资源不可用。
+    /// Resource is unavailable.
+    /// 资源不可用。
     public static var resourceUnavailable: TCCommonError {
         TCCommonError(.resourceUnavailable)
     }
 
-    /// The response size exceeds the upper limit. / 返回包超过限制大小。
+    /// The response size exceeds the upper limit.
+    /// 返回包超过限制大小。
     public static var responseSizeLimitExceeded: TCCommonError {
         TCCommonError(.responseSizeLimitExceeded)
     }
 
-    /// Service is unavailable now. / 当前服务暂时不可用。
+    /// Service is unavailable now.
+    /// 当前服务暂时不可用。
     public static var serviceUnavailable: TCCommonError {
         TCCommonError(.serviceUnavailable)
     }
 
-    /// Unauthorized operation. / 未授权操作。
+    /// Unauthorized operation.
+    /// 未授权操作。
     public static var unauthorizedOperation: TCCommonError {
         TCCommonError(.unauthorizedOperation)
     }
 
-    /// Unknown parameter. / 未知参数错误，用户多传未定义的参数会导致错误。
+    /// Unknown parameter.
+    /// 未知参数错误，用户多传未定义的参数会导致错误。
     public static var unknownParameter: TCCommonError {
         TCCommonError(.unknownParameter)
     }
 
-    /// Unsupported operation. / 操作不支持。
+    /// Unsupported operation.
+    /// 操作不支持。
     public static var unsupportedOperation: TCCommonError {
         TCCommonError(.unsupportedOperation)
     }
 
-    /// HTTP(S) request protocol error; only GET and POST requests are supported. / http(s)请求协议错误，只支持GET和POST请求。
+    /// HTTP(S) request protocol error; only GET and POST requests are supported.
+    /// http(s)请求协议错误，只支持GET和POST请求。
     public static var unsupportedProtocol: TCCommonError {
         TCCommonError(.unsupportedProtocol)
     }
 
-    /// API does not support the requested region. / 接口不支持所传地域。
+    /// API does not support the requested region.
+    /// 接口不支持所传地域。
     public static var unsupportedRegion: TCCommonError {
         TCCommonError(.unsupportedRegion)
     }
