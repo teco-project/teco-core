@@ -30,7 +30,7 @@ public protocol Credential: Codable, _SignerSendable {
     var token: String? { get }
 }
 
-/// Basic version of ``Credential`` where you supply the credentials.
+/// Basic implementation of a Tencent Cloud ``Credential``.
 public struct StaticCredential: Credential, Equatable {
     /// The credential key ID.
     public let secretId: String

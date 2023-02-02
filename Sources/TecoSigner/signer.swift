@@ -67,13 +67,13 @@ public struct TCSigner: _SignerSendable {
 
     /// Enumeration for holding request payload.
     public enum BodyData: _SignerSendable {
-        /// String
+        /// String.
         case string(String)
-        /// Data
+        /// Data.
         case data(Data)
-        /// SwiftNIO ByteBuffer
+        /// Byte buffer from NIO.
         case byteBuffer(ByteBuffer)
-        /// Don't use body when signing request
+        /// Don't use body when signing request.
         case unsignedPayload
     }
 
@@ -89,8 +89,9 @@ public struct TCSigner: _SignerSendable {
 
     /// Process URL before signing.
     ///
-    /// `signURL` and `signHeaders` make assumptions about the URLs they are provided, this function cleans up a URL so it is ready
-    /// to be signed by either of these functions. It sorts the query params and ensures they are properly percent encoded.
+    /// `signHeaders` makes assumptions about the URLs it is provided.
+    /// This function cleans up a URL so it is ready to be signed.
+    /// It sorts the query params and ensures they are properly percent encoded.
     public func processURL(url: URL) -> URL? {
         guard var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return nil }
         let urlQueryString = urlComponents.queryItems?
