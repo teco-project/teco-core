@@ -1,5 +1,9 @@
 #  ``TecoSigner``
 
+@Metadata {
+    @DisplayName("Teco Signer")
+}
+
 Signing helpers for Tencent Cloud API signature V3.
 
 ## Overview
@@ -12,6 +16,7 @@ It also defines the interface of Tencent Cloud security credentials.
 
 ### Signing
 
+- <doc:SignRequests>
 - <doc:TCSigner>
 
 ### Credentials
