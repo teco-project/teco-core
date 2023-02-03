@@ -11,6 +11,9 @@ let package = Package(
        .library(
            name: "TecoCore",
            targets: ["TecoCore", "TecoDateHelpers"]),
+       .library(
+           name: "TecoSigner",
+           targets: ["TecoSigner"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
