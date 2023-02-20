@@ -77,6 +77,72 @@ extension TCClient {
     }
 }
 
+// MARK: Async sequence
+
+extension TCClient {
+    /// Used to access paginated results.
+    public struct PaginatedResult<Input: TCPaginatedRequest, Output: TCPaginatedResponse>: AsyncSequence where Input.Response == Output {
+        public typealias Element = Output.Item
+        let input: Input
+        let region: TCRegion?
+        let command: (Input, TCRegion?, Logger, EventLoop?) async throws -> Output
+        let logger: Logger
+        let eventLoop: EventLoop?
+
+        /// Initialize ``PaginatedResult``.
+        ///
+        /// - Parameters:
+        ///   - input: Initial API request payload.
+        ///   - region: Region of the service to operate on.
+        ///   - command: Command to be paginated.
+        ///   - logger: Logger to log request details to.
+        ///   - eventLoop: `EventLoop` to run request on.
+        public init(
+            input: Input,
+            region: TCRegion? = nil,
+            command: @escaping (Input, TCRegion?, Logger, EventLoop?) async throws -> Output,
+            logger: Logger = TCClient.loggingDisabled,
+            on eventLoop: EventLoop? = nil
+        ) {
+            self.input = input
+            self.region = region
+            self.command = command
+            self.logger = logger
+            self.eventLoop = eventLoop
+        }
+
+        /// Iterator for iterating over ``PaginatedResult``.
+        public struct AsyncIterator: AsyncIteratorProtocol {
+            var input: Input?
+            var remainingElements: [Element] = []
+            let sequence: PaginatedResult
+
+            init(sequence: PaginatedResult) {
+                self.sequence = sequence
+                self.input = sequence.input
+            }
+
+            public mutating func next() async throws -> Element? {
+                if !remainingElements.isEmpty {
+                    return remainingElements.removeFirst()
+                }
+                if let input = input {
+                    let output = try await self.sequence.command(input, self.sequence.region, self.sequence.logger, self.sequence.eventLoop)
+                    let items = output.getItems()
+                    self.input = input.getNextPaginatedRequest(with: output)
+                    self.remainingElements += items.dropFirst()
+                    return items.first
+                }
+                return nil
+            }
+        }
+
+        public func makeAsyncIterator() -> AsyncIterator {
+            return AsyncIterator(sequence: self)
+        }
+    }
+}
+
 // MARK: Error
 
 extension TCClient {
