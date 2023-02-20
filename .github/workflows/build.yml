@@ -8,6 +8,7 @@ on:
       - 'Package.*'
       - 'Sources/**'
       - 'Tests/**'
+  merge_group:
   pull_request:
 
 jobs:

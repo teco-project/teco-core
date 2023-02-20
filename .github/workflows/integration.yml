@@ -7,6 +7,11 @@ on:
       - '.github/workflows/integration.yml'
       - 'Package.swift'
       - 'Sources/**'
+  merge_group:
+    types:
+      - checks_requested
+    branches:
+      - 'main'
   pull_request:
     branches:
       - 'main'
