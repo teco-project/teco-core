@@ -9,6 +9,7 @@ on:
       - 'Sources/**'
       - 'Tests/**'
       - '!**/*.docc/**'
+  merge_group:
   pull_request:
 
 jobs:

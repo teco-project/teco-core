@@ -8,6 +8,11 @@ on:
       - 'Package.swift'
       - 'Sources/**'
       - '!**/*.docc/**'
+  merge_group:
+    types:
+      - checks_requested
+    branches:
+      - 'main'
   pull_request:
     branches:
       - 'main'
