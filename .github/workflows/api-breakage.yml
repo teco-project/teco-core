@@ -6,6 +6,7 @@ on:
     paths:
       - 'Package.swift'
       - 'Sources/**'
+      - '!**/*.docc/**'
 
 jobs:
   api-breakage:
