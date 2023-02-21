@@ -16,14 +16,10 @@ import NIOCore
 import TecoCore
 
 extension TCClient {
-    /// Used to access paginated results.
+    /// Used to access paginated API results.
     public struct PaginatedList<Input: TCPaginatedRequest, Output: TCPaginatedResponse>: AsyncSequence where Input.Response == Output {
         public typealias Element = Output.Item
-        let input: Input
-        let region: TCRegion?
-        let command: (Input, TCRegion?, Logger, EventLoop?) async throws -> Output
-        let logger: Logger
-        let eventLoop: EventLoop?
+        let outputs: PaginatedOutput<Input, Output>
 
         /// Initialize ``PaginatedList``.
         ///
@@ -40,25 +36,17 @@ extension TCClient {
             logger: Logger = TCClient.loggingDisabled,
             on eventLoop: EventLoop? = nil
         ) {
-            self.input = input
-            self.region = region
-            self.command = command
-            self.logger = logger
-            self.eventLoop = eventLoop
+            self.outputs = PaginatedOutput(input: input, region: region, command: command, logger: logger, on: eventLoop)
         }
 
         /// Iterator for iterating over ``PaginatedList``.
         public struct AsyncIterator: AsyncIteratorProtocol {
-            var input: Input?
             var queue: [Element]
-            var totalCount: Output.Count?
-            let sequence: PaginatedList
+            var iterator: PaginatedOutput<Input, Output>.AsyncIterator
 
             init(sequence: PaginatedList) {
-                self.sequence = sequence
                 self.queue = []
-                self.totalCount = nil
-                self.input = sequence.input
+                self.iterator = sequence.outputs.makeAsyncIterator()
             }
 
             public mutating func next() async throws -> Element? {
@@ -66,24 +54,14 @@ extension TCClient {
                 guard queue.isEmpty else {
                     return queue.removeFirst()
                 }
-                if let input = input {
-                    // Get output
-                    let output = try await self.sequence.command(input, self.sequence.region, self.sequence.logger, self.sequence.eventLoop)
-                    let items = output.getItems()
-                    // Judge over total count
-                    if let oldTotalCount = totalCount, let totalCount = output.getTotalCount() {
-                        guard items.isEmpty || totalCount == oldTotalCount else {
-                            throw PaginationError.totalCountChanged
-                        }
-                    } else {
-                        self.totalCount = output.getTotalCount()
-                    }
-                    // Prepare the input and queue
-                    self.input = input.getNextPaginatedRequest(with: output)
-                    self.queue += items.dropFirst()
-                    return items.first
+                // If the response stream is ended, return nil
+                guard let response = try await iterator.next() else {
+                    return nil
                 }
-                return nil
+                // Returns the first element from response
+                let items = response.getItems()
+                self.queue += items.dropFirst()
+                return items.first
             }
         }
 
