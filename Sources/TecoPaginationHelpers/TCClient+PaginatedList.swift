@@ -17,7 +17,7 @@ import TecoCore
 
 extension TCClient {
     /// Used to access paginated results.
-    public struct PaginatedResult<Input: TCPaginatedRequest, Output: TCPaginatedResponse>: AsyncSequence where Input.Response == Output {
+    public struct PaginatedList<Input: TCPaginatedRequest, Output: TCPaginatedResponse>: AsyncSequence where Input.Response == Output {
         public typealias Element = Output.Item
         let input: Input
         let region: TCRegion?
@@ -25,7 +25,7 @@ extension TCClient {
         let logger: Logger
         let eventLoop: EventLoop?
 
-        /// Initialize ``PaginatedResult``.
+        /// Initialize ``PaginatedList``.
         ///
         /// - Parameters:
         ///   - input: Initial API request payload.
@@ -47,14 +47,14 @@ extension TCClient {
             self.eventLoop = eventLoop
         }
 
-        /// Iterator for iterating over ``PaginatedResult``.
+        /// Iterator for iterating over ``PaginatedList``.
         public struct AsyncIterator: AsyncIteratorProtocol {
             var input: Input?
             var queue: [Element]
             var totalCount: Output.Count?
-            let sequence: PaginatedResult
+            let sequence: PaginatedList
 
-            init(sequence: PaginatedResult) {
+            init(sequence: PaginatedList) {
                 self.sequence = sequence
                 self.queue = []
                 self.totalCount = nil
