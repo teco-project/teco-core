@@ -71,8 +71,8 @@ extension TCClient {
                     let output = try await self.sequence.command(input, self.sequence.region, self.sequence.logger, self.sequence.eventLoop)
                     let items = output.getItems()
                     // Judge over total count
-                    if let totalCount = totalCount {
-                        guard items.isEmpty || output.getTotalCount() == totalCount else {
+                    if let oldTotalCount = totalCount, let totalCount = output.getTotalCount() {
+                        guard items.isEmpty || totalCount == oldTotalCount else {
                             throw PaginationError.totalCountChanged
                         }
                     } else {

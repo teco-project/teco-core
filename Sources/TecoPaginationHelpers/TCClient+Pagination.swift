@@ -25,26 +25,28 @@ extension TCClient {
     ///   - logger: Logger to log request details to.
     ///   - eventLoop: `EventLoop` to run request on.
     /// - Returns: ``EventLoopFuture`` containing the total count and complete output object list from a series of requests.
-    public func paginate<Input: TCPaginatedRequest, Output: TCPaginatedResponse, Item: Sendable, Count: BinaryInteger>(
+    public func paginate<Input: TCPaginatedRequest, Output: TCPaginatedResponse, Item: Sendable, Count: Equatable>(
         input: Input,
         region: TCRegion? = nil,
         command: @escaping (Input, TCRegion?, Logger, EventLoop?) -> EventLoopFuture<Output>,
         logger: Logger = TCClient.loggingDisabled,
         on eventLoop: EventLoop? = nil
-    ) -> EventLoopFuture<(Count, [Item])> where Input.Response == Output, Output.Item == Item, Output.Count == Count {
+    ) -> EventLoopFuture<(totalCount: Count?, result: [Item])> where Input.Response == Output, Output.Item == Item, Output.Count == Count {
         let eventLoop = eventLoop ?? eventLoopGroup.next()
-        let promise = eventLoop.makePromise(of: (Count, [Item]).self)
+        let promise = eventLoop.makePromise(of: (Count?, [Item]).self)
 
         func paginatePart(_ id: Int, input: Input, result: [Item], recordedCount: Count? = nil) {
             let responseFuture = command(input, region, logger.attachingPaginationContext(id: id), eventLoop)
                 .map { response -> Void in
                     let items = response.getItems()
                     guard !items.isEmpty, let input = input.getNextPaginatedRequest(with: response) else {
-                        return promise.succeed((recordedCount ?? 0, result))
+                        return promise.succeed((recordedCount, result))
                     }
                     let totalCount = response.getTotalCount()
-                    if let recordedCount = recordedCount {
-                        guard totalCount == recordedCount else { return promise.fail(PaginationError.totalCountChanged) }
+                    if let totalCount = totalCount, let recordedCount = recordedCount {
+                        guard totalCount == recordedCount else {
+                            return promise.fail(PaginationError.totalCountChanged)
+                        }
                     }
                     paginatePart(id + 1, input: input, result: result + items, recordedCount: totalCount)
                 }
@@ -54,7 +56,7 @@ extension TCClient {
         }
         paginatePart(0, input: input, result: [])
 
-        return promise.futureResult
+        return promise.futureResult.map { $0 }
     }
 }
 

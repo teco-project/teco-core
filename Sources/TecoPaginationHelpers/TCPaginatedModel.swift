@@ -24,13 +24,20 @@ public protocol TCPaginatedRequest: TCRequestModel {
 
 /// Tencent Cloud API response model that contains a list of paginated result and a total count.
 public protocol TCPaginatedResponse: TCResponseModel {
-    /// Type of the `totalCount` field extracted from the response.
-    associatedtype Count: BinaryInteger
-    /// Type of the listed item.
+    /// The total count type to be extracted from the response.
+    associatedtype Count: Sendable, Equatable
+    /// The listed item type.
     associatedtype Item: Sendable
 
-    /// Extract the `totalCount` field from the paginated response.
-    func getTotalCount() -> Count
+    /// Extract the total count from the paginated response.
+    func getTotalCount() -> Count?
     /// Extract the returned item list from the paginated response.
     func getItems() -> [Item]
+}
+
+extension TCPaginatedResponse where Count == Never {
+    /// Default implementation where the response doesn't contain a total count field.
+    public func getTotalCount() -> Never? {
+        return nil
+    }
 }
