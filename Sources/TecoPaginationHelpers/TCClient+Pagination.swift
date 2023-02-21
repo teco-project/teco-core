@@ -63,6 +63,66 @@ extension TCClient {
 
         return promise.futureResult.map { $0 }
     }
+
+    /// Execute a series of request for paginated results.
+    ///
+    /// - Parameters:
+    ///   - input: Initial API request payload.
+    ///   - region: Region of the service to operate on.
+    ///   - command: Command to be paginated.
+    ///   - logger: Logger to log request details to.
+    ///   - eventLoop: `EventLoop` to run request on.
+    /// - Returns: ``EventLoopFuture`` containing the total count and complete output object list from a series of requests.
+    public func paginate<Input: TCPaginatedRequest, Output: TCPaginatedResponse>(
+        input: Input,
+        region: TCRegion? = nil,
+        command: @escaping (Input, TCRegion?, Logger, EventLoop?) -> EventLoopFuture<Output>,
+        logger: Logger = TCClient.loggingDisabled,
+        on eventLoop: EventLoop? = nil
+    ) -> EventLoopFuture<(Output.Count?, [Output.Item])> where Input.Response == Output {
+        self.paginate(
+            input: input,
+            region: region,
+            command: command,
+            initialValue: (nil, []),
+            reducer: { result, response, eventLoop in
+                let result = (result.0 ?? response.getTotalCount(), result.1 + response.getItems())
+                return eventLoop.makeSucceededFuture((true, result))
+            },
+            logger: logger,
+            on: eventLoop
+        )
+    }
+
+    /// Execute a series of request for paginated results.
+    ///
+    /// - Parameters:
+    ///   - input: Initial API request payload.
+    ///   - region: Region of the service to operate on.
+    ///   - command: Command to be paginated.
+    ///   - callback: Callback to run on every response. The return value indicates if the pagination should continue.
+    ///   - logger: Logger to log request details to.
+    ///   - eventLoop: `EventLoop` to run request on.
+    public func paginate<Input: TCPaginatedRequest, Output: TCPaginatedResponse>(
+        input: Input,
+        region: TCRegion? = nil,
+        command: @escaping (Input, TCRegion?, Logger, EventLoop?) -> EventLoopFuture<Output>,
+        callback: @escaping (Output, EventLoop) -> EventLoopFuture<Bool>,
+        logger: Logger = TCClient.loggingDisabled,
+        on eventLoop: EventLoop? = nil
+    ) -> EventLoopFuture<Void> where Input.Response == Output {
+        self.paginate(
+            input: input,
+            region: region,
+            command: command,
+            initialValue: (),
+            reducer: { _, response, eventLoop in
+                callback(response, eventLoop).map { ($0, ()) }
+            },
+            logger: logger,
+            on: eventLoop
+        )
+    }
 }
 
 extension Logger {
