@@ -10,7 +10,7 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
        .library(
            name: "TecoCore",
-           targets: ["TecoCore", "TecoDateHelpers"]),
+           targets: ["TecoCore", "TecoDateHelpers", "TecoPaginationHelpers"]),
        .library(
            name: "TecoSigner",
            targets: ["TecoSigner"]),
@@ -40,6 +40,8 @@ let package = Package(
                 .product(name: "NIOFoundationCompat", package: "swift-nio"),
                 .product(name: "NIOHTTP1", package: "swift-nio"),
             ]),
+        .target(name: "TecoPaginationHelpers",
+                dependencies: ["TecoCore"]),
         .target(name: "TecoDateHelpers"),
         .target(name: "INIParser"),
         .target(
