@@ -22,7 +22,7 @@ public protocol TCPaginatedRequest: TCRequestModel {
     func getNextPaginatedRequest(with response: Response) -> Self?
 }
 
-/// Tencent Cloud API response model that consists of a list of paginated result and a total count.
+/// Tencent Cloud API response model that contains a list of paginated result and a total count.
 public protocol TCPaginatedResponse: TCResponseModel {
     /// Type of the `totalCount` field extracted from the response.
     associatedtype Count: BinaryInteger
