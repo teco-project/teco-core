@@ -22,39 +22,44 @@ extension TCClient {
     ///   - input: Initial API request payload.
     ///   - region: Region of the service to operate on.
     ///   - command: Command to be paginated.
+    ///   - initialValue: The value to use as the initial accumulating value.
+    ///   - reducer: Function to combine responses into result value. This combined result is returned along with a boolean indicating if the pagination should continue.
     ///   - logger: Logger to log request details to.
     ///   - eventLoop: `EventLoop` to run request on.
-    /// - Returns: ``EventLoopFuture`` containing the total count and complete output object list from a series of requests.
-    public func paginate<Input: TCPaginatedRequest, Output: TCPaginatedResponse, Item: Sendable, Count: Equatable>(
+    /// - Returns: ``EventLoopFuture`` containing the combined result.
+    public func paginate<Result, Input: TCPaginatedRequest, Output: TCPaginatedResponse>(
         input: Input,
         region: TCRegion? = nil,
         command: @escaping (Input, TCRegion?, Logger, EventLoop?) -> EventLoopFuture<Output>,
+        initialValue: Result,
+        reducer: @escaping (Result, Output, EventLoop) -> EventLoopFuture<(Bool, Result)>,
         logger: Logger = TCClient.loggingDisabled,
         on eventLoop: EventLoop? = nil
-    ) -> EventLoopFuture<(totalCount: Count?, result: [Item])> where Input.Response == Output, Output.Item == Item, Output.Count == Count {
+    ) -> EventLoopFuture<Result> where Input.Response == Output {
         let eventLoop = eventLoop ?? eventLoopGroup.next()
-        let promise = eventLoop.makePromise(of: (Count?, [Item]).self)
+        let promise = eventLoop.makePromise(of: Result.self)
 
-        func paginatePart(_ id: Int, input: Input, result: [Item], recordedCount: Count? = nil) {
+        func paginatePart(_ id: Int, input: Input, result: Result, recordedCount: Output.Count? = nil) {
             let responseFuture = command(input, region, logger.attachingPaginationContext(id: id), eventLoop)
-                .map { response -> Void in
-                    let items = response.getItems()
-                    guard !items.isEmpty, let input = input.getNextPaginatedRequest(with: response) else {
-                        return promise.succeed((recordedCount, result))
-                    }
-                    let totalCount = response.getTotalCount()
-                    if let totalCount = totalCount, let recordedCount = recordedCount {
-                        guard totalCount == recordedCount else {
-                            return promise.fail(PaginationError.totalCountChanged)
+                .flatMapWithEventLoop { response, eventLoop in
+                    reducer(result, response, eventLoop).map { (continuePagination, result) -> Void in
+                        guard continuePagination, let input = input.getNextPaginatedRequest(with: response) else {
+                            return promise.succeed(result)
                         }
+                        let totalCount = response.getTotalCount()
+                        if let totalCount = totalCount, let recordedCount = recordedCount {
+                            guard totalCount == recordedCount else {
+                                return promise.fail(PaginationError.totalCountChanged)
+                            }
+                        }
+                        paginatePart(id + 1, input: input, result: result, recordedCount: totalCount)
                     }
-                    paginatePart(id + 1, input: input, result: result + items, recordedCount: totalCount)
                 }
             responseFuture.whenFailure { error in
                 promise.fail(error)
             }
         }
-        paginatePart(0, input: input, result: [])
+        paginatePart(0, input: input, result: initialValue)
 
         return promise.futureResult.map { $0 }
     }

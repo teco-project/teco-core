@@ -17,11 +17,11 @@ import TecoCore
 
 extension TCClient {
     /// Used to access paginated API results.
-    public struct PaginatedList<Input: TCPaginatedRequest, Output: TCPaginatedResponse>: AsyncSequence where Input.Response == Output {
+    public struct PaginatedResult<Input: TCPaginatedRequest, Output: TCPaginatedResponse>: AsyncSequence where Input.Response == Output {
         public typealias Element = Output.Item
-        let outputs: PaginatedOutput<Input, Output>
+        let paginator: PaginatorSequence<Input, Output>
 
-        /// Initialize ``PaginatedList``.
+        /// Initialize ``PaginatedResult``.
         ///
         /// - Parameters:
         ///   - input: Initial API request payload.
@@ -36,17 +36,17 @@ extension TCClient {
             logger: Logger = TCClient.loggingDisabled,
             on eventLoop: EventLoop? = nil
         ) {
-            self.outputs = PaginatedOutput(input: input, region: region, command: command, logger: logger, on: eventLoop)
+            self.paginator = PaginatorSequence(input: input, region: region, command: command, logger: logger, on: eventLoop)
         }
 
-        /// Iterator for iterating over ``PaginatedList``.
+        /// Iterator for iterating over ``PaginatedResult``.
         public struct AsyncIterator: AsyncIteratorProtocol {
             var queue: [Element]
-            var iterator: PaginatedOutput<Input, Output>.AsyncIterator
+            var iterator: PaginatorSequence<Input, Output>.AsyncIterator
 
-            init(sequence: PaginatedList) {
+            init(sequence: PaginatedResult) {
                 self.queue = []
-                self.iterator = sequence.outputs.makeAsyncIterator()
+                self.iterator = sequence.paginator.makeAsyncIterator()
             }
 
             public mutating func next() async throws -> Element? {
