@@ -25,7 +25,7 @@ extension TCClient {
     ///   - logger: Logger to log request details to.
     ///   - eventLoop: `EventLoop` to run request on.
     /// - Returns: ``EventLoopFuture`` containing the total count and complete output object list from a series of requests.
-    public func paginate<Input: TCPaginatedRequest, Output: TCPaginatedResponse, Item, Count: BinaryInteger>(
+    public func paginate<Input: TCPaginatedRequest, Output: TCPaginatedResponse, Item: Sendable, Count: BinaryInteger>(
         input: Input,
         region: TCRegion? = nil,
         command: @escaping (Input, TCRegion?, Logger, EventLoop?) -> EventLoopFuture<Output>,
@@ -35,7 +35,7 @@ extension TCClient {
         let eventLoop = eventLoop ?? eventLoopGroup.next()
         let promise = eventLoop.makePromise(of: (Count, [Item]).self)
 
-        func paginatePart(_ id: Int, input: Input, result: [Item], recordedCount: Output.Count? = nil) {
+        func paginatePart(_ id: Int, input: Input, result: [Item], recordedCount: Count? = nil) {
             let responseFuture = command(input, region, logger.attachingPaginationContext(id: id), eventLoop)
                 .map { response -> Void in
                     let items = response.getItems()
@@ -55,24 +55,6 @@ extension TCClient {
         paginatePart(0, input: input, result: [])
 
         return promise.futureResult
-    }
-}
-
-extension TCClient {
-    /// Errors returned by ``TCClient`` pagination helpers.
-    public enum PaginationError: Error, Equatable {
-        /// Total item count changed during pagination.
-        case totalCountChanged
-    }
-}
-
-extension TCClient.PaginationError: CustomStringConvertible {
-    /// Human readable description of ``TCClient/PaginationError``.
-    public var description: String {
-        switch self {
-        case .totalCountChanged:
-            return "Total item count changed during pagination."
-        }
     }
 }
 

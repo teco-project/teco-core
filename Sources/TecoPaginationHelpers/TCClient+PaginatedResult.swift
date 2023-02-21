@@ -51,21 +51,34 @@ extension TCClient {
         public struct AsyncIterator: AsyncIteratorProtocol {
             var input: Input?
             var queue: [Element]
+            var totalCount: Output.Count?
             let sequence: PaginatedResult
-            
+
             init(sequence: PaginatedResult) {
                 self.sequence = sequence
                 self.queue = []
+                self.totalCount = nil
                 self.input = sequence.input
             }
-            
+
             public mutating func next() async throws -> Element? {
+                // If there're elements left in the queue, return in sequence directly
                 guard queue.isEmpty else {
                     return queue.removeFirst()
                 }
                 if let input = input {
+                    // Get output
                     let output = try await self.sequence.command(input, self.sequence.region, self.sequence.logger, self.sequence.eventLoop)
                     let items = output.getItems()
+                    // Judge over total count
+                    if let totalCount = totalCount {
+                        guard items.isEmpty || output.getTotalCount() == totalCount else {
+                            throw PaginationError.totalCountChanged
+                        }
+                    } else {
+                        self.totalCount = output.getTotalCount()
+                    }
+                    // Prepare the input and queue
                     self.input = input.getNextPaginatedRequest(with: output)
                     self.queue += items.dropFirst()
                     return items.first

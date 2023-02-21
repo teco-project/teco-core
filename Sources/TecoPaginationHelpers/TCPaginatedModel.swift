@@ -27,7 +27,7 @@ public protocol TCPaginatedResponse: TCResponseModel {
     /// Type of the `totalCount` field extracted from the response.
     associatedtype Count: BinaryInteger
     /// Type of the listed item.
-    associatedtype Item
+    associatedtype Item: Sendable
 
     /// Extract the `totalCount` field from the paginated response.
     func getTotalCount() -> Count
