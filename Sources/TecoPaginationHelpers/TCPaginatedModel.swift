@@ -13,6 +13,12 @@
 
 import TecoCore
 
+#if swift(>=5.6)
+public typealias _PaginationSendable = Sendable
+#else
+public typealias _PaginationSendable = Any
+#endif
+
 /// Tencent Cloud API request model that represents a paginated query.
 public protocol TCPaginatedRequest: TCRequestModel {
     /// Paginated response type for the request.
@@ -25,9 +31,9 @@ public protocol TCPaginatedRequest: TCRequestModel {
 /// Tencent Cloud API response model that contains a list of paginated result and a total count.
 public protocol TCPaginatedResponse: TCResponseModel {
     /// The total count type to be extracted from the response.
-    associatedtype Count: Sendable, Equatable
+    associatedtype Count: _PaginationSendable, Equatable
     /// The listed item type.
-    associatedtype Item: Sendable
+    associatedtype Item: _PaginationSendable
 
     /// Extract the total count from the paginated response.
     func getTotalCount() -> Count?
