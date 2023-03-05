@@ -16,7 +16,7 @@ import Logging
 import TecoCore
 
 extension TCClient {
-    /// Execute a series of request for paginated results.
+    /// Execute a series of paginated requests and return a future with the combined result generated from the responses.
     ///
     /// - Parameters:
     ///   - input: Initial API request payload.
@@ -64,7 +64,7 @@ extension TCClient {
         return promise.futureResult.map { $0 }
     }
 
-    /// Execute a series of request for paginated results.
+    /// Execute a series of paginated requests and return a future with total item count and complete output object list generated from the responses.
     ///
     /// - Parameters:
     ///   - input: Initial API request payload.
@@ -72,14 +72,14 @@ extension TCClient {
     ///   - command: Command to be paginated.
     ///   - logger: Logger to log request details to.
     ///   - eventLoop: `EventLoop` to run request on.
-    /// - Returns: ``EventLoopFuture`` containing the total count and complete output object list from a series of requests.
+    /// - Returns: ``EventLoopFuture`` containing total item count and complete output object list from a series of requests.
     public func paginate<Input: TCPaginatedRequest, Output: TCPaginatedResponse>(
         input: Input,
         region: TCRegion? = nil,
         command: @escaping (Input, TCRegion?, Logger, EventLoop?) -> EventLoopFuture<Output>,
         logger: Logger = TCClient.loggingDisabled,
         on eventLoop: EventLoop? = nil
-    ) -> EventLoopFuture<(Output.Count?, [Output.Item])> where Input.Response == Output {
+    ) -> EventLoopFuture<(Output.Count?, [Output.Item])> where Input.Response == Output, Output.Count: BinaryInteger {
         self.paginate(
             input: input,
             region: region,
@@ -94,7 +94,36 @@ extension TCClient {
         )
     }
 
-    /// Execute a series of request for paginated results.
+    /// Execute a series of paginated requests and return a future with complete output object list generated from the responses.
+    ///
+    /// - Parameters:
+    ///   - input: Initial API request payload.
+    ///   - region: Region of the service to operate on.
+    ///   - command: Command to be paginated.
+    ///   - logger: Logger to log request details to.
+    ///   - eventLoop: `EventLoop` to run request on.
+    /// - Returns: ``EventLoopFuture`` containing the complete output object list from a series of requests.
+    public func paginate<Input: TCPaginatedRequest, Output: TCPaginatedResponse>(
+        input: Input,
+        region: TCRegion? = nil,
+        command: @escaping (Input, TCRegion?, Logger, EventLoop?) -> EventLoopFuture<Output>,
+        logger: Logger = TCClient.loggingDisabled,
+        on eventLoop: EventLoop? = nil
+    ) -> EventLoopFuture<[Output.Item]> where Input.Response == Output, Output.Count == Never {
+        self.paginate(
+            input: input,
+            region: region,
+            command: command,
+            initialValue: [],
+            reducer: { result, response, eventLoop in
+                eventLoop.makeSucceededFuture((true, result + response.getItems()))
+            },
+            logger: logger,
+            on: eventLoop
+        )
+    }
+
+    /// Execute a series of paginated requests with callback for the responses.
     ///
     /// - Parameters:
     ///   - input: Initial API request payload.

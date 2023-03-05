@@ -8,4 +8,4 @@ Some Tencent Cloud APIs provide query functionality and may return a list of obj
 
 This module provides experimental helpers on accessing the full paginated result either synchronously and asynchrously with `Teco`.
 
-> This module is work-in-progress and APIs are subject to change at the moment. Please use at your own risk, and do not use it in production at the moment.
+> This module is work-in-progress and APIs are subject to change at the moment. Please use at your own risk, and do not use it in production.
