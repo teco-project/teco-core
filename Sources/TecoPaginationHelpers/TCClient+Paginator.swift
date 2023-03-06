@@ -106,6 +106,10 @@ extension TCClient {
             /// Async sequence that returns paginated responses.
             let paginator: ResponseSequence
 
+            fileprivate init(_ paginator: ResponseSequence) {
+                self.paginator = paginator
+            }
+
             /// Initialize ``ResultSequence``.
             ///
             /// - Parameters:
@@ -157,6 +161,25 @@ extension TCClient {
             public func makeAsyncIterator() -> AsyncIterator {
                 return AsyncIterator(sequence: self)
             }
+        }
+
+        /// Returns async sequences containing results and responses from the input.
+        ///
+        /// - Parameters:
+        ///   - input: Initial API request payload.
+        ///   - region: Region of the service to operate on.
+        ///   - command: Command to be paginated.
+        ///   - logger: Logger to log request details to.
+        ///   - eventLoop: `EventLoop` to run request on.
+        public static func makeAsyncSequences(
+            input: Input,
+            region: TCRegion? = nil,
+            command: @escaping (Input, TCRegion?, Logger, EventLoop?) async throws -> Output,
+            logger: Logger = TCClient.loggingDisabled,
+            on eventLoop: EventLoop? = nil
+        ) -> (results: ResultSequence, responses: ResponseSequence) {
+            let paginator = ResponseSequence(input: input, region: region, command: command, logger: logger, on: eventLoop)
+            return (results: .init(paginator), responses: paginator)
         }
     }
 }
