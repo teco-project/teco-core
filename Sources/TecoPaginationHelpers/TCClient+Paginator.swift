@@ -16,6 +16,12 @@ import NIOCore
 import TecoCore
 
 extension TCClient {
+    /// Tuple consisting of async sequences returned by the paginator.
+    public typealias PaginatorSequences<Input: TCPaginatedRequest> = (
+        results: Paginator<Input, Input.Response>.ResultSequence,
+        responses: Paginator<Input, Input.Response>.ResponseSequence
+    )
+
     /// Helper types used to access paginated API results.
     public enum Paginator<Input: TCPaginatedRequest, Output: TCPaginatedResponse> where Input.Response == Output {
         /// Async sequence that returns paginated Tencent Cloud API responses.
@@ -177,9 +183,9 @@ extension TCClient {
             command: @escaping (Input, TCRegion?, Logger, EventLoop?) async throws -> Output,
             logger: Logger = TCClient.loggingDisabled,
             on eventLoop: EventLoop? = nil
-        ) -> (results: ResultSequence, responses: ResponseSequence) {
-            let paginator = ResponseSequence(input: input, region: region, command: command, logger: logger, on: eventLoop)
-            return (results: .init(paginator), responses: paginator)
+        ) -> PaginatorSequences<Input> {
+            let responses = ResponseSequence(input: input, region: region, command: command, logger: logger, on: eventLoop)
+            return (results: .init(responses), responses: responses)
         }
     }
 }
