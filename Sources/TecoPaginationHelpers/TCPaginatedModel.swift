@@ -21,18 +21,18 @@ public typealias _PaginationSendable = Any
 
 /// Tencent Cloud API request model that represents a paginated query.
 public protocol TCPaginatedRequest: TCRequestModel {
-    /// Paginated response type for the request.
+    /// Paginated response type associated with the request.
     associatedtype Response: TCPaginatedResponse
 
     /// Compute the next request based on API response.
-    func getNextPaginatedRequest(with response: Response) -> Self?
+    func makeNextRequest(with response: Response) -> Self?
 }
 
 /// Tencent Cloud API response model that contains a list of paginated result and a total count.
 public protocol TCPaginatedResponse: TCResponseModel {
     /// The total count type to be extracted from the response.
     associatedtype Count: _PaginationSendable, Equatable
-    /// The listed item type.
+    /// The queried item type.
     associatedtype Item: _PaginationSendable
 
     /// Extract the total count from the paginated response.
