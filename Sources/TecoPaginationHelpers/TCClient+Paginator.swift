@@ -81,7 +81,7 @@ extension TCClient {
                     if let input = input {
                         // Execute the request and prepare for the next
                         let output = try await self.sequence.command(input, self.sequence.region, self.sequence.logger, self.sequence.eventLoop)
-                        guard let nextInput = input.getNextPaginatedRequest(with: output) else {
+                        guard let nextInput = input.makeNextRequest(with: output) else {
                             self.input = nil
                             return output
                         }

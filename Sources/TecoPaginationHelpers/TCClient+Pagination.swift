@@ -43,7 +43,7 @@ extension TCClient {
             let responseFuture = command(input, region, logger.attachingPaginationContext(id: id), eventLoop)
                 .flatMapWithEventLoop { response, eventLoop in
                     reducer(result, response, eventLoop).map { (continuePagination, result) -> Void in
-                        guard continuePagination, let input = input.getNextPaginatedRequest(with: response) else {
+                        guard continuePagination, let input = input.makeNextRequest(with: response) else {
                             return promise.succeed(result)
                         }
                         let totalCount = response.getTotalCount()
