@@ -79,7 +79,7 @@ extension TCClient {
         command: @escaping (Input, TCRegion?, Logger, EventLoop?) -> EventLoopFuture<Output>,
         logger: Logger = TCClient.loggingDisabled,
         on eventLoop: EventLoop? = nil
-    ) -> EventLoopFuture<(Output.Count?, [Output.Item])> where Input.Response == Output, Output.Count: BinaryInteger {
+    ) -> EventLoopFuture<(Output.Count?, [Output.Item])> where Input.Response == Output {
         self.paginate(
             input: input,
             region: region,
@@ -88,35 +88,6 @@ extension TCClient {
             reducer: { result, response, eventLoop in
                 let result = (result.0 ?? response.getTotalCount(), result.1 + response.getItems())
                 return eventLoop.makeSucceededFuture((true, result))
-            },
-            logger: logger,
-            on: eventLoop
-        )
-    }
-
-    /// Execute a series of paginated requests and return a future with complete output object list generated from the responses.
-    ///
-    /// - Parameters:
-    ///   - input: Initial API request payload.
-    ///   - region: Region of the service to operate on.
-    ///   - command: Command to be paginated.
-    ///   - logger: Logger to log request details to.
-    ///   - eventLoop: `EventLoop` to run request on.
-    /// - Returns: ``EventLoopFuture`` containing the complete output object list from a series of requests.
-    public func paginate<Input: TCPaginatedRequest, Output: TCPaginatedResponse>(
-        input: Input,
-        region: TCRegion? = nil,
-        command: @escaping (Input, TCRegion?, Logger, EventLoop?) -> EventLoopFuture<Output>,
-        logger: Logger = TCClient.loggingDisabled,
-        on eventLoop: EventLoop? = nil
-    ) -> EventLoopFuture<[Output.Item]> where Input.Response == Output, Output.Count == Never {
-        self.paginate(
-            input: input,
-            region: region,
-            command: command,
-            initialValue: [],
-            reducer: { result, response, eventLoop in
-                eventLoop.makeSucceededFuture((true, result + response.getItems()))
             },
             logger: logger,
             on: eventLoop
