@@ -40,7 +40,6 @@ import enum NIOHTTP1.HTTPMethod
 @_implementationOnly import struct Crypto.HMAC
 @_implementationOnly import struct Crypto.SHA256
 @_implementationOnly import struct Crypto.SymmetricKey
-@_implementationOnly import struct OrderedCollections.OrderedDictionary
 
 /// Tencent Cloud API V3 signer (TC3).
 public struct TCSigner: _SignerSendable {
@@ -176,7 +175,7 @@ public struct TCSigner: _SignerSendable {
         let hashedPayload: String
         let timestamp: String
         let date: String
-        let headersToSign: OrderedDictionary<String, String>
+        let headersToSign: [HTTPHeaders.Element]
         let signedHeaders: String
         var unsignedURL: URL
 
@@ -194,7 +193,7 @@ public struct TCSigner: _SignerSendable {
             }
 
             self.headersToSign = TCSigner.headersToSign(headers, minimal: minimal)
-            self.signedHeaders = headersToSign.keys.joined(separator: ";")
+            self.signedHeaders = headersToSign.map(\.name).joined(separator: ";")
         }
     }
 
@@ -217,7 +216,7 @@ public struct TCSigner: _SignerSendable {
     /// Stage 1 Create the canonical request as in https://cloud.tencent.com/document/api/213/30654#1.-.E6.8B.BC.E6.8E.A5.E8.A7.84.E8.8C.83.E8.AF.B7.E6.B1.82.E4.B8.B2
     func canonicalRequest(signingData: SigningData) -> String {
         let canonicalHeaders = signingData.headersToSign
-            .map { (key, value) in "\(key):\(value)\n" }
+            .map { "\($0.name):\($0.value)\n" }
             .joined()
         let canonicalRequest = "\(signingData.method.rawValue)\n" +
             "/\n" +
@@ -270,28 +269,26 @@ public struct TCSigner: _SignerSendable {
         return String(UInt64(date.timeIntervalSince1970))
     }
 
-    /// return the string formatted for signing requests
-    static func headersToSign(_ headers: HTTPHeaders, minimal: Bool) -> OrderedDictionary<String, String> {
-        var headersToSign: OrderedDictionary<String, String> = [:]
-
-        let headersMustSign: Set<String> = ["content-type", "host"]
-        let headersNotToSign: Set<String> = ["authorization", "content-length", "expect", "user-agent"]
+    /// return the headers for signing requests
+    static func headersToSign(_ headers: HTTPHeaders, minimal: Bool) -> [HTTPHeaders.Element] {
+        var headersToSign: HTTPHeaders = [:]
 
         if minimal {
-            for header in headersMustSign {
-                headersToSign[header] = headers.first(name: header)
-            }
-        } else {
-            for (header, value) in headers {
-                let lowercasedHeaderName = header.lowercased()
-                if !headersNotToSign.contains(lowercasedHeaderName) {
-                    headersToSign[lowercasedHeaderName] = value
+            for header in ["content-type", "host"] {
+                if let value = headers.first(name: header) {
+                    headersToSign.add(name: header, value: value)
                 }
             }
+        } else {
+            headersToSign = headers
+            for header in ["authorization", "content-length", "expect", "user-agent"] {
+                headersToSign.remove(name: header)
+            }
         }
-        headersToSign.sort()
 
-        return headersToSign.mapValues { $0.trimmingCharacters(in: CharacterSet.whitespaces).lowercased() }
+        return headersToSign
+            .sorted { $0.name < $1.name }
+            .map { ($0.name.lowercased(), $0.value.trimmingCharacters(in: .whitespaces).lowercased()) }
     }
 
     /// returns port from URL. If port is set to 80 on an http url or 443 on an https url nil is returned
@@ -312,7 +309,6 @@ extension String {
         return addingPercentEncoding(withAllowedCharacters: String.uriAllowedCharacters) ?? self
     }
 
-    static let uriAllowedWithSlashCharacters = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~/")
     static let uriAllowedCharacters = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
 }
 
