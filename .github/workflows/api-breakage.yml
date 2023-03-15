@@ -16,23 +16,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.head_ref }}
           fetch-depth: 0
       - name: Git version
         id: version
         uses: codacy/git-version@2.8.0
         with:
           prefix: 'v'
-          release-branch: 'main'
+          release-branch: ${{ github.base_ref }}
       # https://github.com/actions/checkout/issues/766
       - name: Mark the workspace as safe
         run: git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: API breaking changes with last release
+      - name: API breaking changes
         continue-on-error: true
         id: diagnose
+        run: swift package diagnose-api-breaking-changes origin/${GITHUB_BASE_REF}
+      - name: API breaking changes with last release
+        if: ${{ steps.diagnose.outcome != 'success' }}
         env:
           TAG: ${{ steps.version.outputs.previous-version }}
         run: swift package diagnose-api-breaking-changes "${TAG}"
-      - name: API breaking changes with main
-        if: ${{ steps.diagnose.outcome != 'success' }}
-        run: swift package diagnose-api-breaking-changes main
