@@ -2,7 +2,7 @@
 //
 // This source file is part of the Teco open source project
 //
-// Copyright (c) 2022-2023 the Teco project authors
+// Copyright (c) 2023 the Teco project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -12,7 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 #if compiler(>=5.6)
-public typealias _TecoSendable = Sendable
+public typealias _TecoDateSendable = Sendable
 #else
-public typealias _TecoSendable = Any
+public typealias _TecoDateSendable = Any
 #endif

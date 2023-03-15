@@ -15,14 +15,14 @@ import struct Foundation.Date
 import class Foundation.DateFormatter
 import class Foundation.ISO8601DateFormatter
 
-public protocol TCDateValue: Sendable {
-    associatedtype Storage: Codable, Sendable
+public protocol TCDateValue: _TecoDateSendable {
+    associatedtype Storage: Codable, _TecoDateSendable
 
     func encode(formatter: TCDateFormatter) -> Storage
     static func decode<Wrapper: TCDateWrapper>(from storageValue: Storage, formatter: TCDateFormatter, container: SingleValueDecodingContainer, wrapper: Wrapper.Type) throws -> Self
 }
 
-extension Foundation.Date: TCDateValue, @unchecked Sendable {
+extension Foundation.Date: TCDateValue {
     public func encode(formatter: TCDateFormatter) -> String {
         return formatter.string(from: self)
     }
@@ -35,7 +35,7 @@ extension Foundation.Date: TCDateValue, @unchecked Sendable {
     }
 }
 
-extension Swift.Optional: TCDateValue, @unchecked Sendable where Wrapped == Foundation.Date {
+extension Swift.Optional: TCDateValue where Wrapped == Foundation.Date {
     public func encode(formatter: TCDateFormatter) -> String? {
         switch self {
         case .some(let date):
@@ -55,3 +55,8 @@ extension Swift.Optional: TCDateValue, @unchecked Sendable where Wrapped == Foun
         return date
     }
 }
+
+// work around the issue where retroactive Sendable conformance cannot be synthesized by '@preconcurrency'.
+#if os(Linux) && compiler(>=5.6)
+extension Foundation.Date: @unchecked Sendable {}
+#endif

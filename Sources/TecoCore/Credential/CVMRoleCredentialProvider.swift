@@ -24,8 +24,12 @@
 //===----------------------------------------------------------------------===//
 
 import AsyncHTTPClient
-import struct Foundation.Date
+#if os(Linux) && compiler(>=5.6)
+@preconcurrency import class Foundation.JSONDecoder
+#else
 import class Foundation.JSONDecoder
+#endif
+import struct Foundation.Date
 import struct Foundation.TimeInterval
 import struct Foundation.URL
 
