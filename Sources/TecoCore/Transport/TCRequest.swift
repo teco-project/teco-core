@@ -124,13 +124,13 @@ extension TCRequest {
 
     /// Add common header parameters to all requests: "Action", "Version", "Region" and "Language".
     private mutating func addCommonParameters(action: String, configuration: TCServiceConfig) {
-        httpHeaders.replaceOrAdd(name: "X-TC-Action", value: action)
-        httpHeaders.replaceOrAdd(name: "X-TC-Version", value: configuration.version)
+        httpHeaders.replaceOrAdd(name: "x-tc-action", value: action)
+        httpHeaders.replaceOrAdd(name: "x-tc-version", value: configuration.version)
         if let region = self.region {
-            httpHeaders.replaceOrAdd(name: "X-TC-Region", value: region.rawValue)
+            httpHeaders.replaceOrAdd(name: "x-tc-region", value: region.rawValue)
         }
         if let language = configuration.language {
-            httpHeaders.replaceOrAdd(name: "X-TC-Language", value: language.rawValue)
+            httpHeaders.replaceOrAdd(name: "x-tc-language", value: language.rawValue)
         }
     }
 
