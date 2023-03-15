@@ -26,7 +26,12 @@ jobs:
       # https://github.com/actions/checkout/issues/766
       - name: Mark the workspace as safe
         run: git config --global --add safe.directory ${GITHUB_WORKSPACE}
-      - name: Diagnose API breaking changes
+      - name: API breaking changes with last release
+        continue-on-error: true
+        id: diagnose
         env:
           TAG: ${{ steps.version.outputs.previous-version }}
         run: swift package diagnose-api-breaking-changes "${TAG}"
+      - name: API breaking changes with main
+        if: ${{ steps.diagnose.outcome != 'success' }}
+        run: swift package diagnose-api-breaking-changes main
