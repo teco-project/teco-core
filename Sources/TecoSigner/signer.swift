@@ -287,8 +287,8 @@ public struct TCSigner: _SignerSendable {
         }
 
         return headersToSign
-            .sorted { $0.name < $1.name }
             .map { ($0.name.lowercased(), $0.value.trimmingCharacters(in: .whitespaces).lowercased()) }
+            .sorted { $0.name < $1.name }
     }
 
     /// returns port from URL. If port is set to 80 on an http url or 443 on an https url nil is returned

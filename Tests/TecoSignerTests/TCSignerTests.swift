@@ -126,6 +126,25 @@ final class TCSignerTests: XCTestCase {
         XCTAssertEqual(headers2["authorization"].first, headers3["authorization"].first)
     }
 
+    func testUppercasedHeaderName() {
+        let signer = TCSigner(credential: credential, service: "region")
+        let headers = signer.signHeaders(
+            url: URL(string: "https://region.tencentcloudapi.com")!,
+            method: .POST,
+            headers: [
+                "Content-Type": "application/json",
+                "X-TC-ACTION": "DescribeRegions",
+                "X-TC-VERSION": "2022-06-27",
+            ],
+            body: .string(#"{"Product":"cvm"}"#),
+            date: Date(timeIntervalSince1970: 1_000_000_000)
+        )
+        XCTAssertEqual(
+            headers["Authorization"].first,
+            "TC3-HMAC-SHA256 Credential=MY_TC_SECRET_ID/2001-09-09/region/tc3_request, SignedHeaders=content-type;host;x-tc-action;x-tc-content-sha256;x-tc-requestclient;x-tc-timestamp;x-tc-version, Signature=2e9e6e2b803969ee22aa7297daa305cde69b30bc0720f3cf779cf69efa6f42cb"
+        )
+    }
+
     func testCanonicalRequest() throws {
         let url = URL(string: "https://test.com/?hello=true&item=apple")!
         let signer = TCSigner(credential: credential, service: "sns")
