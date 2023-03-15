@@ -132,20 +132,20 @@ public struct TCSigner: _SignerSendable {
         let dateString = TCSigner.dateString(date)
         var headers = headers
         // add timestamp, host and body hash to headers
-        headers.replaceOrAdd(name: "Host", value: Self.hostname(from: url))
-        headers.replaceOrAdd(name: "X-TC-RequestClient", value: "Teco")
-        headers.replaceOrAdd(name: "X-TC-Timestamp", value: timestamp)
-        headers.replaceOrAdd(name: "X-TC-Content-SHA256", value: bodyHash)
+        headers.replaceOrAdd(name: "host", value: Self.hostname(from: url))
+        headers.replaceOrAdd(name: "x-tc-requestclient", value: "Teco")
+        headers.replaceOrAdd(name: "x-tc-timestamp", value: timestamp)
+        headers.replaceOrAdd(name: "x-tc-content-sha256", value: bodyHash)
 
         // set authorization to SKIP without actually signing if requested
         if mode == .skip {
-            headers.replaceOrAdd(name: "Authorization", value: "SKIP")
+            headers.replaceOrAdd(name: "authorization", value: "SKIP")
             return headers
         }
 
         // add session token if available
         if !omitSessionToken, let sessionToken = credential.token {
-            headers.replaceOrAdd(name: "X-TC-Token", value: sessionToken)
+            headers.replaceOrAdd(name: "x-tc-token", value: sessionToken)
         }
 
         // construct signing data. Do this after adding the headers as it uses data from the headers
@@ -158,11 +158,11 @@ public struct TCSigner: _SignerSendable {
         "Signature=\(signature(signingData: signingData))"
 
         // add Authorization header
-        headers.replaceOrAdd(name: "Authorization", value: authorization)
+        headers.replaceOrAdd(name: "authorization", value: authorization)
 
         // now we have signed the request we can add the security token if required
         if omitSessionToken, let sessionToken = credential.token {
-            headers.replaceOrAdd(name: "X-TC-Token", value: sessionToken)
+            headers.replaceOrAdd(name: "x-tc-token", value: sessionToken)
         }
 
         return headers
@@ -287,8 +287,8 @@ public struct TCSigner: _SignerSendable {
         }
 
         return headersToSign
-            .sorted { $0.name < $1.name }
             .map { ($0.name.lowercased(), $0.value.trimmingCharacters(in: .whitespaces).lowercased()) }
+            .sorted { $0.name < $1.name }
     }
 
     /// returns port from URL. If port is set to 80 on an http url or 443 on an https url nil is returned

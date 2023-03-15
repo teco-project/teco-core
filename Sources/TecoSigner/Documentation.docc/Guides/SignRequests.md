@@ -52,10 +52,10 @@ Supply required HTTP headers, which must include `Content-Type`. Common paramete
 
 ```swift
 let headers: HTTPHeaders = [
-    "Content-Type": "application/json",
-    "X-TC-Action": "DescribeInstances",
-    "X-TC-Version": "2017-03-12",
-    "X-TC-Region": "ap-guangzhou",
+    "content-type": "application/json",
+    "x-tc-action": "DescribeInstances",
+    "x-tc-version": "2017-03-12",
+    "x-tc-region": "ap-guangzhou",
 ]
 ```
 
@@ -80,10 +80,10 @@ let signedHeadersForGETRequest = signer.signHeaders(
     url: URL(string: "https://cvm.tencentcloudapi.com/?Limit=10&Offset=10")!,
     method: .GET,
     headers: [
-        "Content-Type": "application/x-www-form-urlencoded",
-        "X-TC-Action": "DescribeInstances",
-        "X-TC-Version": "2017-03-12",
-        "X-TC-Region": "ap-guangzhou",
+        "content-type": "application/x-www-form-urlencoded",
+        "x-tc-action": "DescribeInstances",
+        "x-tc-version": "2017-03-12",
+        "x-tc-region": "ap-guangzhou",
     ],
     date: Date(timeIntervalSinceNow: -10)
 )
