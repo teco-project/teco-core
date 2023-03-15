@@ -75,7 +75,7 @@ private struct STSAssumeRoleWithWebIdentityResponse: TCResponseModel {
 }
 
 /// Credential provider that returns temporary credentials acquired with OIDC.
-struct OIDCRoleArnCredentialProvider: CredentialProviderWithClient {
+struct OIDCRoleArnCredentialProvider: CredentialProviderWithClient, NIOPreconcurrencySendable {
     let client: TCClient
 
     private let config: TCServiceConfig

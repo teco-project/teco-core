@@ -43,7 +43,7 @@ import TecoSigner
 /// This is the workhorse of TecoCore. You provide it with a ``TCRequestModel``, it converts it to `TCRequest` which is then converted to a raw `HTTPClient` request. This is then sent to Tencent Cloud.
 ///
 /// When the response from Tencent Cloud is received, it will be converted to a `TCResponse`, which is then decoded to generate a ``TCResponseModel`` or to create and throw a ``TCErrorType``.
-public final class TCClient: TecoSendable {
+public final class TCClient: _TecoSendable {
     // MARK: Member variables
 
     private static let globalRequestID = ManagedAtomic<Int>(0)
@@ -191,7 +191,7 @@ public final class TCClient: TecoSendable {
     }
 
     /// Specifies how `HTTPClient` will be created and establishes lifecycle ownership.
-    public enum HTTPClientProvider: TecoSendable {
+    public enum HTTPClientProvider: _TecoSendable {
         /// Use `HTTPClient` provided by the user.
         ///
         /// The user should be responsible for the lifecycle of the `HTTPClient`.
@@ -207,7 +207,7 @@ public final class TCClient: TecoSendable {
     }
 
     /// Additional options.
-    public struct Options: TecoSendable {
+    public struct Options: _TecoSendable {
         /// Log level used for request logging.
         let requestLogLevel: Logger.Level
         /// Log level used for error logging

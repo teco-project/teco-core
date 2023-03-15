@@ -11,9 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-
-#if swift(>=5.6)
-@preconcurrency public protocol TecoSendable: Sendable {}
+#if compiler(>=5.6)
+public typealias _TecoSendable = Sendable
 #else
-public protocol TecoSendable {}
+public typealias _TecoSendable = Any
 #endif

@@ -28,7 +28,7 @@ import NIOCore
 import TecoSigner
 
 /// Provider for Tencent Cloud credentials.
-public protocol CredentialProvider: TecoSendable, CustomStringConvertible {
+public protocol CredentialProvider: CustomStringConvertible, _TecoSendable {
     /// Provide a credential.
     ///
     /// - Parameters:

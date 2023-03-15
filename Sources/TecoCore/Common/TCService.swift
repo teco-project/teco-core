@@ -31,7 +31,7 @@ import NIOHTTP1
 /// Tencent Cloud service client protocol.
 ///
 /// Contains a client to communicate with Tencent Cloud and configuration for defining how to communicate.
-public protocol TCService: TecoSendable {
+public protocol TCService: _TecoSendable {
     /// Client used to communicate with Tencent Cloud.
     var client: TCClient { get }
     /// Service context details.
