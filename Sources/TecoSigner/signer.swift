@@ -34,7 +34,6 @@ import class Foundation.DateFormatter
 import struct Foundation.Locale
 import struct Foundation.TimeZone
 import struct Foundation.URL
-import struct Foundation.URLComponents
 import struct NIOHTTP1.HTTPHeaders
 import enum NIOHTTP1.HTTPMethod
 @_implementationOnly import struct Crypto.HMAC
@@ -87,30 +86,13 @@ public struct TCSigner: _SignerSendable {
     }
 
     /// Process URL before signing.
-    ///
-    /// `signHeaders` makes assumptions about the URLs it is provided.
-    /// This function cleans up a URL so it is ready to be signed.
-    /// It sorts the query params and ensures they are properly percent encoded.
-    public func processURL(url: URL) -> URL? {
-        guard var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return nil }
-        let urlQueryString = urlComponents.queryItems?
-            .sorted {
-                if $0.name < $1.name { return true }
-                if $0.name > $1.name { return false }
-                guard let value1 = $0.value, let value2 = $1.value else { return false }
-                return value1 < value2
-            }
-            .map { item in item.value.map { "\(item.name)=\($0.uriEncode())" } ?? "\(item.name)=" }
-            .joined(separator: "&")
-        urlComponents.percentEncodedQuery = urlQueryString
-
-        return urlComponents.url
-    }
+    @available(*, deprecated, message: "Make sure the URL is RFC3986 compatible instead.")
+    public func processURL(url: URL) -> URL? { return url }
 
     /// Generate signed headers, for an HTTP request.
     ///
     /// - Parameters:
-    ///   - url: Request URL string.
+    ///   - url: Request URL string (RFC 3986).
     ///   - method: Request HTTP method.
     ///   - headers: Request headers.
     ///   - body: Request body.
@@ -118,6 +100,7 @@ public struct TCSigner: _SignerSendable {
     ///   - omitSecurityToken: Should we include security token in the canonical headers.
     ///   - date: Date that URL is valid from, defaults to now.
     /// - Returns: Request headers with added "Authorization" header that contains request signature.
+    /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
     public func signHeaders(
         url: String,
         method: HTTPMethod = .POST,
@@ -136,7 +119,7 @@ public struct TCSigner: _SignerSendable {
     /// Generate signed headers, for an HTTP request.
     ///
     /// - Parameters:
-    ///   - url: Request URL.
+    ///   - url: Request URL (RFC 3986).
     ///   - method: Request HTTP method.
     ///   - headers: Request headers.
     ///   - body: Request body.
@@ -195,7 +178,7 @@ public struct TCSigner: _SignerSendable {
     }
 }
 
-enum TCSignerError: Error {
+public enum TCSignerError: Error {
     case invalidURL
 }
 
@@ -334,14 +317,6 @@ extension TCSigner {
     private static func hostname(from url: URL) -> String {
         "\(url.host ?? "")\(port(from: url).map { ":\($0)" } ?? "")"
     }
-}
-
-extension String {
-    func uriEncode() -> String {
-        return addingPercentEncoding(withAllowedCharacters: String.uriAllowedCharacters) ?? self
-    }
-
-    static let uriAllowedCharacters = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
 }
 
 extension Sequence where Element == UInt8 {
