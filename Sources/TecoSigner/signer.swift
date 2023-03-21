@@ -192,14 +192,12 @@ extension TCSigner {
         let date: String
         let headersToSign: [HTTPHeaders.Element]
         let signedHeaders: String
-        var unsignedURL: URL
 
         init(url: URL, method: HTTPMethod, headers: HTTPHeaders = HTTPHeaders(), body: BodyData? = nil, bodyHash: String? = nil, timestamp: String, date: String, signer: TCSigner, minimal: Bool = false) {
             self.url = url
             self.method = method
             self.timestamp = timestamp
             self.date = date
-            self.unsignedURL = self.url
 
             if let hash = bodyHash {
                 self.hashedPayload = hash
@@ -234,8 +232,8 @@ extension TCSigner {
             .map { "\($0.name):\($0.value)\n" }
             .joined()
         let canonicalRequest = "\(signingData.method.rawValue)\n" +
-            "\(signingData.unsignedURL.canonicalURI)\n" +
-            "\(signingData.unsignedURL.canonicalQuery)\n" +
+            "\(signingData.canonicalURI)\n" +
+            "\(signingData.canonicalQuery)\n" +
             "\(canonicalHeaders)\n" +
             "\(signingData.signedHeaders)\n" +
             signingData.hashedPayload
@@ -319,14 +317,14 @@ extension TCSigner {
     }
 }
 
-extension URL {
+extension TCSigner.SigningData {
     var canonicalURI: String {
-        let path = self.path
+        let path = self.url.path
         return path.isEmpty ? "/" : path
     }
     var canonicalQuery: String {
         // assuming query parameters are already percent encoded correctly
-        return self.query ?? ""
+        return self.url.query ?? ""
     }
 }
 
