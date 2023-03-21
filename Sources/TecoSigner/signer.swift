@@ -178,7 +178,9 @@ public struct TCSigner: _SignerSendable {
     }
 }
 
+/// Errors returned by ``TCSigner``.
 public enum TCSignerError: Error {
+    /// URL provided to the signer is invalid.
     case invalidURL
 }
 
