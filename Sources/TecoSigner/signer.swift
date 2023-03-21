@@ -110,6 +110,32 @@ public struct TCSigner: _SignerSendable {
     /// Generate signed headers, for an HTTP request.
     ///
     /// - Parameters:
+    ///   - url: Request URL string.
+    ///   - method: Request HTTP method.
+    ///   - headers: Request headers.
+    ///   - body: Request body.
+    ///   - mode: Signing mode.
+    ///   - omitSecurityToken: Should we include security token in the canonical headers.
+    ///   - date: Date that URL is valid from, defaults to now.
+    /// - Returns: Request headers with added "Authorization" header that contains request signature.
+    public func signHeaders(
+        url: String,
+        method: HTTPMethod = .POST,
+        headers: HTTPHeaders = HTTPHeaders(),
+        body: BodyData? = nil,
+        mode: SigningMode = .default,
+        omitSessionToken: Bool = false,
+        date: Date = Date()
+    ) throws -> HTTPHeaders {
+        guard let url = URL(string: url) else {
+            throw TCSignerError.invalidURL
+        }
+        return self.signHeaders(url: url, method: method, headers: headers, body: body, mode: mode, omitSessionToken: omitSessionToken, date: date)
+    }
+
+    /// Generate signed headers, for an HTTP request.
+    ///
+    /// - Parameters:
     ///   - url: Request URL.
     ///   - method: Request HTTP method.
     ///   - headers: Request headers.
@@ -167,7 +193,13 @@ public struct TCSigner: _SignerSendable {
 
         return headers
     }
+}
 
+enum TCSignerError: Error {
+    case invalidURL
+}
+
+extension TCSigner {
     /// structure used to store data used throughout the signing process
     struct SigningData {
         let url: URL
