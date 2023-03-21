@@ -234,8 +234,8 @@ extension TCSigner {
             .map { "\($0.name):\($0.value)\n" }
             .joined()
         let canonicalRequest = "\(signingData.method.rawValue)\n" +
-            "/\n" +
-            "\(signingData.unsignedURL.query ?? "")\n" + // assuming query parameters have are already percent encoded correctly
+            "\(signingData.unsignedURL.canonicalURI)\n" +
+            "\(signingData.unsignedURL.canonicalQuery)\n" +
             "\(canonicalHeaders)\n" +
             "\(signingData.signedHeaders)\n" +
             signingData.hashedPayload
@@ -316,6 +316,17 @@ extension TCSigner {
 
     private static func hostname(from url: URL) -> String {
         "\(url.host ?? "")\(port(from: url).map { ":\($0)" } ?? "")"
+    }
+}
+
+extension URL {
+    var canonicalURI: String {
+        let path = self.path
+        return path.isEmpty ? "/" : path
+    }
+    var canonicalQuery: String {
+        // assuming query parameters are already percent encoded correctly
+        return self.query ?? ""
     }
 }
 
