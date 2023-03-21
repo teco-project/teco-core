@@ -346,7 +346,7 @@ extension TCClient {
     /// Generate signed headers.
     ///
     /// - Parameters:
-    ///    - url : URL to sign.
+    ///    - url : URL to sign (RFC 3986).
     ///    - httpMethod: HTTP method to use (`.GET` or `.POST`).
     ///    - httpHeaders: Headers that are to be sent with this URL.
     ///    - body: Payload to sign.
@@ -369,11 +369,8 @@ extension TCClient {
             service: serviceConfig.service
         )
         return createSigner(serviceConfig: serviceConfig, logger: logger).flatMapThrowing { signer in
-            guard let cleanURL = signer.processURL(url: url) else {
-                throw TCClient.ClientError.invalidURL
-            }
             let body: TCSigner.BodyData? = body.asByteBuffer().map { .byteBuffer($0) }
-            return signer.signHeaders(url: cleanURL, method: httpMethod, headers: headers, body: body)
+            return signer.signHeaders(url: url, method: httpMethod, headers: headers, body: body)
         }
     }
 
