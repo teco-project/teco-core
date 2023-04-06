@@ -42,8 +42,14 @@ jobs:
     steps:
       - name: Setup Swift
         uses: swift-actions/setup-swift@v1
+        if: ${{ matrix.swift != '5.8' }}
         with:
           swift-version: ${{ matrix.swift }}
+      - name: Setup Swift
+        uses: slashmo/install-swift@v0.4.0
+        if: ${{ matrix.swift == '5.8' }}
+        with:
+          version: ${{ matrix.swift }}
       - name: Checkout
         uses: actions/checkout@v3
       - name: Build
