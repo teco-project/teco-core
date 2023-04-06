@@ -33,7 +33,7 @@ extension TCDateWrapper {
 }
 
 extension Swift.KeyedEncodingContainer {
-    public mutating func encode<Wrapper: TCDateWrapper>(_ value: Wrapper, forKey key: K) throws where Wrapper.StorageValue: ExpressibleByNilLiteral {
+    public mutating func encode<Wrapper: TCDateWrapper>(_ value: Wrapper, forKey key: K) throws where Wrapper.WrappedValue.Storage: ExpressibleByNilLiteral {
         try self.encodeIfPresent(value.projectedValue, forKey: key)
     }
 }

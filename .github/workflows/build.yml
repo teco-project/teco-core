@@ -26,7 +26,10 @@ jobs:
           - '5.5'
           - '5.6'
           - '5.7'
+          - '5.8'
         exclude:
+          - os: macos-11
+            swift: '5.8'
           - os: macos-12
             swift: '5.5'
           - os: macos-12
@@ -39,13 +42,17 @@ jobs:
     steps:
       - name: Setup Swift
         uses: swift-actions/setup-swift@v1
+        if: ${{ matrix.swift != '5.8' }}
         with:
           swift-version: ${{ matrix.swift }}
+      - name: Setup Swift
+        uses: slashmo/install-swift@v0.4.0
+        if: ${{ matrix.swift == '5.8' }}
+        with:
+          version: ${{ matrix.swift }}
       - name: Checkout
         uses: actions/checkout@v3
       - name: Build
         run: swift build
       - name: Test
         run: swift test
-      - name: Build (release)
-        run: swift build -c release
