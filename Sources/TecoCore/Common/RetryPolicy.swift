@@ -25,6 +25,7 @@
 
 import AsyncHTTPClient
 import func Foundation.exp2
+import NIOCore
 
 /// Creates a ``RetryPolicy`` for ``TCClient`` to use.
 public struct RetryPolicyFactory {

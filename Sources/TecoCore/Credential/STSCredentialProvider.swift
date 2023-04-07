@@ -15,6 +15,9 @@
 import AsyncHTTPClient
 import struct Foundation.Date
 import struct Foundation.TimeInterval
+import Logging
+import NIOCore
+import TecoSigner
 
 struct STSAssumeRoleRequest: TCRequestModel {
     /// Resource descriptions of a role, which can be obtained by clicking the role name in the CAM console.

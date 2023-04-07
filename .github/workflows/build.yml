@@ -56,3 +56,10 @@ jobs:
         run: swift build
       - name: Test
         run: swift test
+  build-with-docc:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build
+        run: swift build -Xswiftc -DBUILDING_DOCC

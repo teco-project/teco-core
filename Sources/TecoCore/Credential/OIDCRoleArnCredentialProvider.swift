@@ -12,9 +12,11 @@
 //===----------------------------------------------------------------------===//
 
 import AsyncHTTPClient
-import NIOCore
 import struct Foundation.Date
 import struct Foundation.TimeInterval
+import Logging
+import NIOCore
+import TecoSigner
 
 struct STSAssumeRoleWithWebIdentityRequest: TCRequestModel {
     /// Identity provider name.
