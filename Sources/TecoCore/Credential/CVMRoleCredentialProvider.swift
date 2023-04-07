@@ -32,7 +32,6 @@ import class Foundation.JSONDecoder
 import struct Foundation.Date
 import struct Foundation.TimeInterval
 import struct Foundation.URL
-
 import Logging
 import NIOCore
 import NIOHTTP1

@@ -34,6 +34,7 @@ import class Foundation.DateFormatter
 import struct Foundation.Locale
 import struct Foundation.TimeZone
 import struct Foundation.URL
+import struct NIOCore.ByteBuffer
 import struct NIOHTTP1.HTTPHeaders
 import enum NIOHTTP1.HTTPMethod
 @_implementationOnly import struct Crypto.HMAC
