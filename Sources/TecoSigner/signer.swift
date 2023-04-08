@@ -163,9 +163,9 @@ public struct TCSigner: _SignerSendable {
 
         // construct authorization string as in https://cloud.tencent.com/document/api/213/30654#4.-.E6.8B.BC.E6.8E.A5-Authorization
         let authorization = "TC3-HMAC-SHA256 " +
-        "Credential=\(credential.secretId)/\(dateString)/\(service)/tc3_request, " +
-        "SignedHeaders=\(signingData.signedHeaders), " +
-        "Signature=\(signature(signingData: signingData))"
+            "Credential=\(credential.secretId)/\(dateString)/\(service)/tc3_request, " +
+            "SignedHeaders=\(signingData.signedHeaders), " +
+            "Signature=\(signature(signingData: signingData))"
 
         // add Authorization header
         headers.replaceOrAdd(name: "authorization", value: authorization)
@@ -180,9 +180,17 @@ public struct TCSigner: _SignerSendable {
 }
 
 /// Errors returned by ``TCSigner``.
-public enum TCSignerError: Error {
+public enum TCSignerError: Error, CustomStringConvertible {
     /// URL provided to the signer is invalid.
     case invalidURL
+
+    /// Human readable description of ``TCSignerError``.
+    public var description: String {
+        switch self {
+        case .invalidURL:
+            return "URL provided to the signer is invalid."
+        }
+    }
 }
 
 extension TCSigner {
