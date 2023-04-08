@@ -32,14 +32,10 @@ let signer = TCSigner(credential: credential, service: "cvm")
 
 Before performing the signing step, you need to extract necessary information from a request.
 
-Pre-process the request URL using ``TCSigner/processURL(url:)``, so that it meets the requirement of Tencent Cloud API service. This function will return `nil` if the supplied URL is invalid.
+Make sure the request URL is compatible with [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986), which requires specific characters to be percent-encoded. The following sample shows a simple `POST` request endpoint.
 
 ```swift
-guard let rawURL = URL(string: "https://cvm.tencentcloudapi.com/"),
-      let url = signer.processURL(url: rawURL)
-else {
-    return nil
-}
+let url = URL(string: "https://cvm.tencentcloudapi.com/")!
 ```
 
 Wrap the request body into ``TCSigner/BodyData``. The following sample uses an empty JSON body.
@@ -63,21 +59,17 @@ let headers: HTTPHeaders = [
 
 ## Generate signed request headers
 
-You can generate signed headers using ``TCSigner/signHeaders(url:method:headers:body:mode:omitSessionToken:date:)``. The following sample shows a simple signing step with request URL, headers and body.
+You can generate signed headers using ``TCSigner/signHeaders(url:method:headers:body:mode:omitSessionToken:date:)-7a50k``. The following sample shows a simple signing step with request URL, headers and body.
 
 ```swift
-let signedHeaders = signer.signHeaders(
-    url: url,
-    headers: headers,
-    body: body
-)
+let signedHeaders = signer.signHeaders(url: url, headers: headers, body: body)
 ```
 
 By default, the signer assumes the request to use current time and `POST` method. You can override the behavior based on your use case. The following sample signs a `GET` request for 10 seconds ago.
 
 ```swift
-let signedHeadersForGETRequest = signer.signHeaders(
-    url: URL(string: "https://cvm.tencentcloudapi.com/?Limit=10&Offset=10")!,
+let signedHeadersForGETRequest = try signer.signHeaders(
+    url: "https://cvm.tencentcloudapi.com/?Limit=10&Offset=10",
     method: .GET,
     headers: [
         "content-type": "application/x-www-form-urlencoded",
@@ -88,6 +80,8 @@ let signedHeadersForGETRequest = signer.signHeaders(
     date: Date(timeIntervalSinceNow: -10)
 )
 ```
+
+Note that there is a convenience helper ``TCSigner/signHeaders(url:method:headers:body:mode:omitSessionToken:date:)-9aula`` which accepts the request URL in string, and may throw if the input is not valid URL.
 
 There are some other configurations to control signing behavior. For example, `omitSessionToken` specifies whether ``Credential/token`` is used for signature.
 
