@@ -22,7 +22,7 @@ extension TCClient {
         responses: Paginator<Input, Input.Response>.ResponseSequence
     )
 
-    /// Helper types used to access paginated API results.
+    /// Helper namespace used to access paginated API results.
     public enum Paginator<Input: TCPaginatedRequest, Output: TCPaginatedResponse> where Input.Response == Output {
         /// Async sequence that returns paginated Tencent Cloud API responses.
         public struct ResponseSequence: AsyncSequence {
@@ -106,6 +106,7 @@ extension TCClient {
             }
         }
 
+        /// Async sequence that returns paginated Tencent Cloud API result items.
         public struct ResultSequence: AsyncSequence {
             public typealias Element = Output.Item
 
