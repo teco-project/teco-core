@@ -13,6 +13,8 @@
 
 #if compiler(>=5.6)
 public typealias _TecoSendable = Sendable
+@preconcurrency public protocol _TecoPreconcurrencySendable: Sendable {}
 #else
 public typealias _TecoSendable = Any
+public protocol _TecoPreconcurrencySendable {}
 #endif
