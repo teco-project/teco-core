@@ -43,6 +43,13 @@ jobs:
         run: swift build
       - name: Test
         run: swift test
+  build-without-warnings:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build
+        run: swift build --build-tests -Xswiftc -warnings-as-errors
   build-with-docc:
     runs-on: ubuntu-latest
     steps:
