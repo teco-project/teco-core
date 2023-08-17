@@ -86,10 +86,6 @@ public struct TCSigner: _SignerSendable {
         case skip
     }
 
-    /// Process URL before signing.
-    @available(*, deprecated, message: "Make sure the URL is RFC3986 compatible instead.")
-    public func processURL(url: URL) -> URL? { return url }
-
     /// Generate signed headers, for an HTTP request.
     ///
     /// - Parameters:
