@@ -31,7 +31,7 @@ import NIOFoundationCompat
 import NIOHTTP1
 
 /// Structure encapsulating a processed HTTP Response.
-struct TCResponse {
+struct TCHTTPResponse {
     /// Response status.
     private let status: HTTPResponseStatus
     /// Response headers.
@@ -39,7 +39,7 @@ struct TCResponse {
     /// Response body.
     private let body: ByteBuffer?
 
-    /// Initialize a ``TCResponse`` object.
+    /// Initialize a ``TCHTTPResponse`` object.
     ///
     /// - Parameters:
     ///    - status: HTTP response status.
@@ -69,14 +69,18 @@ struct TCResponse {
         self.body = body
     }
 
-    /// Generate ``TCModel`` from ``TCResponse``.
-    internal func generateOutputData<Output: TCResponseModel>(errorType: TCErrorType.Type? = nil, logLevel: Logger.Level = .info, logger: Logger) throws -> Output {
+    /// Generate ``TCModel`` from ``TCHTTPResponse``.
+    internal func generateOutputData<Output: TCResponseModel>(
+        errorType: TCErrorType.Type? = nil,
+        errorLogLevel: Logger.Level = .info,
+        logger: Logger
+    ) throws -> Output {
         do {
             let container = try JSONDecoder().decode(Container<Output>.self, from: body ?? .init())
             return container.response
         } catch let apiError as APIError {
             let error = apiError.error
-            logger.log(level: logLevel, "Tencent Cloud service error", metadata: [
+            logger.log(level: errorLogLevel, "Tencent Cloud service error", metadata: [
                 "tc-error-code": .string(error.code),
                 "tc-error-message": .string(error.message),
             ])
@@ -108,7 +112,7 @@ struct TCResponse {
     }
 }
 
-extension TCResponse {
+extension TCHTTPResponse {
     /// Container that holds an API response.
     private struct Container<Output: TCResponseModel>: Decodable {
         let response: Output

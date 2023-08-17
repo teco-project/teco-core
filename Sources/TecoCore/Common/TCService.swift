@@ -66,21 +66,21 @@ extension TCService {
     ///
     /// - Parameters:
     ///    - url : URL to sign.
-    ///    - httpMethod: HTTP method to use.
+    ///    - method: HTTP method to use.
     ///    - headers: Headers that are to be sent with this URL.
     ///    - body: Payload to sign.
     ///    - logger: Logger to output to.
     /// - Returns: A set of signed headers that include the original headers supplied.
     public func signHeaders(
         url: URL,
-        httpMethod: HTTPMethod = .POST,
+        method: HTTPMethod = .POST,
         headers: HTTPHeaders = HTTPHeaders(),
         body: ByteBuffer? = nil,
         logger: Logger = TCClient.loggingDisabled
     ) -> EventLoopFuture<HTTPHeaders> {
         self.client.signHeaders(
             url: url,
-            httpMethod: httpMethod,
+            method: method,
             headers: headers,
             body: body,
             serviceConfig: self.config,

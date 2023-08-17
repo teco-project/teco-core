@@ -36,9 +36,9 @@ import TecoSigner
 
 /// Client managing communication with Tencent Cloud services.
 ///
-/// This is the workhorse of TecoCore. You provide it with a ``TCRequestModel``, it converts it to `TCRequest` which is then converted to a raw `HTTPClient` request. This is then sent to Tencent Cloud.
+/// This is the workhorse of TecoCore. You provide it with a ``TCRequestModel``, it converts it to `TCHTTPRequest` which is then converted to a raw `HTTPClient` request. This is then sent to Tencent Cloud.
 ///
-/// When the response from Tencent Cloud is received, it will be converted to a `TCResponse`, which is then decoded to generate a ``TCResponseModel`` or to create and throw a ``TCErrorType``.
+/// When the response from Tencent Cloud is received, it will be converted to a `TCHTTPResponse`, which is then decoded to generate a ``TCResponseModel`` or to create and throw a ``TCErrorType``.
 public final class TCClient: _TecoSendable {
     // MARK: Member variables
 
@@ -260,13 +260,13 @@ extension TCClient {
         self.execute(
             action: action,
             createRequest: {
-                try TCRequest(
+                try TCHTTPRequest(
                     action: action,
                     path: path,
                     region: region,
-                    httpMethod: httpMethod,
+                    method: httpMethod,
                     input: input,
-                    configuration: serviceConfig
+                    service: serviceConfig
                 )
             },
             skipAuthorization: skipAuthorization,
@@ -306,12 +306,12 @@ extension TCClient {
         self.execute(
             action: action,
             createRequest: {
-                try TCRequest(
+                try TCHTTPRequest(
                     action: action,
                     path: path,
                     region: region,
-                    httpMethod: httpMethod,
-                    configuration: serviceConfig
+                    method: httpMethod,
+                    service: serviceConfig
                 )
             },
             skipAuthorization: skipAuthorization,
@@ -343,8 +343,8 @@ extension TCClient {
     ///
     /// - Parameters:
     ///    - url : URL to sign (RFC 3986).
-    ///    - httpMethod: HTTP method to use (`.GET` or `.POST`).
-    ///    - httpHeaders: Headers that are to be sent with this URL.
+    ///    - method: HTTP method to use (`.GET` or `.POST`).
+    ///    - headers: Headers that are to be sent with this URL.
     ///    - body: Payload to sign.
     ///    - serviceConfig: Tencent Cloud service configuration used to sign the URL.
     ///    - skipAuthorization: If "Authorization" header should be set to `SKIP`.
@@ -352,7 +352,7 @@ extension TCClient {
     /// - Returns: A set of signed headers that include the original headers supplied.
     public func signHeaders(
         url: URL,
-        httpMethod: HTTPMethod,
+        method: HTTPMethod,
         headers: HTTPHeaders = HTTPHeaders(),
         body: ByteBuffer?,
         serviceConfig: TCServiceConfig,
@@ -368,7 +368,7 @@ extension TCClient {
             .flatMapThrowing { signer in
                 signer.signHeaders(
                     url: url,
-                    method: httpMethod,
+                    method: method,
                     headers: headers,
                     body: body.map { .byteBuffer($0) }
                 )
@@ -388,9 +388,9 @@ extension TCClient {
     /// The core executor.
     private func execute<Output: TCResponseModel>(
         action: String,
-        createRequest: @escaping () throws -> TCRequest,
+        createRequest: @escaping () throws -> TCHTTPRequest,
         skipAuthorization: Bool,
-        executor: @escaping (TCRequest, EventLoop, Logger) -> EventLoopFuture<TCResponse>,
+        executor: @escaping (TCHTTPRequest, EventLoop, Logger) -> EventLoopFuture<TCHTTPResponse>,
         config: TCServiceConfig,
         outputType: Output.Type,
         logger: Logger,
@@ -404,10 +404,10 @@ extension TCClient {
         )
         // get credential
         let future: EventLoopFuture<Output> = self.createSigner(serviceConfig: config, logger: logger)
-            .flatMapThrowing { signer -> TCRequest in
+            .flatMapThrowing { signer -> TCHTTPRequest in
                 // create request and sign with signer
                 var request = try createRequest()
-                request.signHeaders(with: signer, signingMode: skipAuthorization ? .skip : self.signingMode)
+                request.signHeaders(with: signer, mode: skipAuthorization ? .skip : self.signingMode)
                 return request
             }.flatMap { request -> EventLoopFuture<Output> in
                 self.invoke(
@@ -425,7 +425,7 @@ extension TCClient {
         with serviceConfig: TCServiceConfig,
         eventLoop: EventLoop,
         logger: Logger,
-        request: @escaping (EventLoop) -> EventLoopFuture<TCResponse>
+        request: @escaping (EventLoop) -> EventLoopFuture<TCHTTPResponse>
     ) -> EventLoopFuture<Output> {
         let promise = eventLoop.makePromise(of: Output.self)
 
@@ -436,7 +436,7 @@ extension TCClient {
                     promise.succeed(
                         try response.generateOutputData(
                             errorType: serviceConfig.errorType,
-                            logLevel: self.options.errorLogLevel,
+                            errorLogLevel: self.options.errorLogLevel,
                             logger: logger
                         )
                     )

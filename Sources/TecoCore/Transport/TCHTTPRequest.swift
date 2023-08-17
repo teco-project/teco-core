@@ -34,15 +34,15 @@ import NIOHTTP1
 import TecoSigner
 
 /// Structure encapsulating all the information needed to generate a raw HTTP request to Tencent Cloud.
-struct TCRequest {
+struct TCHTTPRequest {
     /// Request Tencent Cloud region.
     private let region: TCRegion?
     /// Request URL.
     internal let url: URL
     /// Request HTTP method.
-    internal let httpMethod: HTTPMethod
+    internal let method: HTTPMethod
     /// Request HTTP headers.
-    internal var httpHeaders: HTTPHeaders
+    internal var headers: HTTPHeaders
     /// Request body.
     internal let body: ByteBuffer?
 
@@ -50,39 +50,39 @@ struct TCRequest {
     ///
     /// - Parameters:
     ///   - signer: Tencent Cloud API signer to use.
-    ///   - signingMode: Signing mode.
-    internal mutating func signHeaders(with signer: TCSigner, signingMode: TCSigner.SigningMode) {
+    ///   - mode: Signing mode.
+    internal mutating func signHeaders(with signer: TCSigner, mode: TCSigner.SigningMode) {
         // if credentials are empty don't sign request
-        guard signingMode == .skip || !signer.credential.isEmpty else {
+        guard mode == .skip || !signer.credential.isEmpty else {
             assertionFailure("Empty credential provided for request!")
             return
         }
         // replace original headers with signed ones
-        httpHeaders = signer.signHeaders(
+        headers = signer.signHeaders(
             url: url,
-            method: httpMethod,
-            headers: httpHeaders,
+            method: method,
+            headers: headers,
             body: body.map { .byteBuffer($0) },
-            mode: signingMode
+            mode: mode
         )
     }
 }
 
-extension TCRequest {
-    internal init(action: String, path: String = "/", region: TCRegion? = nil, httpMethod: HTTPMethod, configuration: TCServiceConfig) throws {
-        let endpoint = configuration.getEndpoint(for: region)
+extension TCHTTPRequest {
+    internal init(action: String, path: String = "/", region: TCRegion? = nil, method: HTTPMethod, service: TCServiceConfig) throws {
+        let endpoint = service.getEndpoint(for: region)
         guard let url = URL(string: "\(endpoint)\(path)"), let _ = url.host else {
             throw TCClient.ClientError.invalidURL
         }
 
-        self.region = region ?? configuration.region
+        self.region = region ?? service.region
         self.url = url
-        self.httpMethod = httpMethod
-        self.httpHeaders = HTTPHeaders()
+        self.method = method
+        self.headers = HTTPHeaders()
         self.body = nil
 
         // set common parameter headers
-        self.addCommonParameters(action: action, configuration: configuration)
+        self.addCommonParameters(action: action, service: service)
         self.addStandardHeaders()
     }
 
@@ -90,51 +90,51 @@ extension TCRequest {
         action: String,
         path: String = "/",
         region: TCRegion? = nil,
-        httpMethod: HTTPMethod,
+        method: HTTPMethod,
         input: Input,
-        configuration: TCServiceConfig
+        service: TCServiceConfig
     ) throws {
-        let body = try JSONEncoder().encodeAsByteBuffer(input, allocator: configuration.byteBufferAllocator)
+        let body = try JSONEncoder().encodeAsByteBuffer(input, allocator: service.byteBufferAllocator)
 
-        let endpoint = configuration.getEndpoint(for: region)
+        let endpoint = service.getEndpoint(for: region)
         guard let urlComponents = URLComponents(string: "\(endpoint)\(path)"),
               let url = urlComponents.url
         else {
             throw TCClient.ClientError.invalidURL
         }
 
-        self.region = region ?? configuration.region
+        self.region = region ?? service.region
         self.url = url
-        self.httpMethod = httpMethod
-        self.httpHeaders = HTTPHeaders()
+        self.method = method
+        self.headers = HTTPHeaders()
         self.body = body
 
         // set common parameter headers
-        self.addCommonParameters(action: action, configuration: configuration)
+        self.addCommonParameters(action: action, service: service)
         self.addStandardHeaders()
     }
 
     /// Add common header parameters to all requests: "Action", "Version", "Region" and "Language".
-    private mutating func addCommonParameters(action: String, configuration: TCServiceConfig) {
-        httpHeaders.replaceOrAdd(name: "x-tc-action", value: action)
-        httpHeaders.replaceOrAdd(name: "x-tc-version", value: configuration.version)
+    private mutating func addCommonParameters(action: String, service: TCServiceConfig) {
+        headers.replaceOrAdd(name: "x-tc-action", value: action)
+        headers.replaceOrAdd(name: "x-tc-version", value: service.version)
         if let region = self.region {
-            httpHeaders.replaceOrAdd(name: "x-tc-region", value: region.rawValue)
+            headers.replaceOrAdd(name: "x-tc-region", value: region.rawValue)
         }
-        if let language = configuration.language {
-            httpHeaders.replaceOrAdd(name: "x-tc-language", value: language.rawValue)
+        if let language = service.language {
+            headers.replaceOrAdd(name: "x-tc-language", value: language.rawValue)
         }
     }
 
     /// Add headers standard to all requests: "content-type" and "user-agent".
     private mutating func addStandardHeaders() {
-        httpHeaders.add(name: "user-agent", value: "Teco/0.1")
+        headers.add(name: "user-agent", value: "Teco/0.1")
 
-        switch httpMethod {
+        switch method {
         case .GET:
-            httpHeaders.replaceOrAdd(name: "content-type", value: "application/x-www-form-urlencoded")
+            headers.replaceOrAdd(name: "content-type", value: "application/x-www-form-urlencoded")
         case .POST:
-            httpHeaders.replaceOrAdd(name: "content-type", value: "application/json")
+            headers.replaceOrAdd(name: "content-type", value: "application/json")
         default:
             return
         }

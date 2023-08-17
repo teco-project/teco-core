@@ -37,16 +37,16 @@ extension AsyncHTTPClient.HTTPClient {
     ///   - eventLoop: `EventLoop` to run request on.
     /// - Returns: `EventLoopFuture` that will be fulfilled with request response.
     internal func execute(
-        request: TCRequest,
+        request: TCHTTPRequest,
         timeout: TimeAmount,
         on eventLoop: EventLoop,
         logger: Logger
-    ) -> EventLoopFuture<TCResponse> {
+    ) -> EventLoopFuture<TCHTTPResponse> {
         do {
             let request = try HTTPClient.Request(
                 url: request.url,
-                method: request.httpMethod,
-                headers: request.httpHeaders,
+                method: request.method,
+                headers: request.headers,
                 body: request.body.map { .byteBuffer($0) }
             )
             return self.execute(
@@ -55,7 +55,7 @@ extension AsyncHTTPClient.HTTPClient {
                 on: eventLoop,
                 logger: logger
             ).flatMapThrowing { response in
-                try TCResponse(status: response.status, headers: response.headers, body: response.body)
+                try TCHTTPResponse(status: response.status, headers: response.headers, body: response.body)
             }
         } catch {
             return eventLoopGroup.next().makeFailedFuture(error)
