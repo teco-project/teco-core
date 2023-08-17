@@ -75,10 +75,17 @@ extension TCService {
         url: URL,
         httpMethod: HTTPMethod = .POST,
         headers: HTTPHeaders = HTTPHeaders(),
-        body: TCPayload = .empty,
+        body: ByteBuffer? = nil,
         logger: Logger = TCClient.loggingDisabled
     ) -> EventLoopFuture<HTTPHeaders> {
-        return self.client.signHeaders(url: url, httpMethod: httpMethod, headers: headers, body: body, serviceConfig: self.config, logger: logger)
+        self.client.signHeaders(
+            url: url,
+            httpMethod: httpMethod,
+            headers: headers,
+            body: body,
+            serviceConfig: self.config,
+            logger: logger
+        )
     }
 
     /// Returns a new version of service with edited parameters.
@@ -97,7 +104,7 @@ extension TCService {
         timeout: TimeAmount? = nil,
         byteBufferAllocator: ByteBufferAllocator? = nil
     ) -> Self {
-        return Self(from: self, patch: .init(
+        .init(from: self, patch: .init(
             region: region,
             language: language,
             endpoint: endpoint,

@@ -36,7 +36,7 @@ struct TCResponse {
     /// Response headers.
     private var headers: HTTPHeaders
     /// Response body.
-    private let body: Body
+    private let body: ByteBuffer?
 
     /// Initialize a ``TCResponse`` object.
     ///
@@ -60,24 +60,19 @@ struct TCResponse {
 
         // handle empty response body
         guard let body = body, body.readableBytes > 0 else {
-            self.body = .empty
+            self.body = nil
             return
         }
 
         // Tencent Cloud API response should always be JSON
-        self.body = .json(body)
+        self.body = body
     }
 
     /// Generate ``TCModel`` from ``TCResponse``.
     internal func generateOutputData<Output: TCResponseModel>(errorType: TCErrorType.Type? = nil, logLevel: Logger.Level = .info, logger: Logger) throws -> Output {
         let decoder = JSONDecoder()
-        let data: Data?
-
-        switch body {
-        case .json(let buffer):
-            data = buffer.getData(at: buffer.readerIndex, length: buffer.readableBytes, byteTransferStrategy: .noCopy)
-        default:
-            data = nil
+        let data: Data? = body.flatMap { buffer in
+            buffer.getData(at: buffer.readerIndex, length: buffer.readableBytes, byteTransferStrategy: .noCopy)
         }
 
         do {

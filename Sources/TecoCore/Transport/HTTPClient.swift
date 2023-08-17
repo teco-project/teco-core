@@ -1,6 +1,17 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the Soto for AWS open source project
+// This source file is part of the Teco open source project
+//
+// Copyright (c) 2022-2023 the Teco project authors
+// Licensed under Apache License v2.0
+//
+// See LICENSE.txt for license information
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
+//
+// This source file was part of the Soto for AWS open source project
 //
 // Copyright (c) 2017-2022 the Soto project authors
 // Licensed under Apache License v2.0
@@ -31,21 +42,12 @@ extension AsyncHTTPClient.HTTPClient {
         on eventLoop: EventLoop,
         logger: Logger
     ) -> EventLoopFuture<TCResponse> {
-        let requestBody: HTTPClient.Body?
-
-        switch request.body.asPayload().payload {
-        case .byteBuffer(let byteBuffer):
-            requestBody = .byteBuffer(byteBuffer)
-        case .empty:
-            requestBody = nil
-        }
-
         do {
             let request = try HTTPClient.Request(
                 url: request.url,
                 method: request.httpMethod,
                 headers: request.httpHeaders,
-                body: requestBody
+                body: request.body.map { .byteBuffer($0) }
             )
             return self.execute(
                 request: request,

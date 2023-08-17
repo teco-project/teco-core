@@ -354,7 +354,7 @@ extension TCClient {
         url: URL,
         httpMethod: HTTPMethod,
         headers: HTTPHeaders = HTTPHeaders(),
-        body: TCPayload,
+        body: ByteBuffer?,
         serviceConfig: TCServiceConfig,
         skipAuthorization: Bool = false,
         logger: Logger = TCClient.loggingDisabled
@@ -364,10 +364,15 @@ extension TCClient {
             action: "SignHeaders",
             service: serviceConfig.service
         )
-        return createSigner(serviceConfig: serviceConfig, logger: logger).flatMapThrowing { signer in
-            let body: TCSigner.BodyData? = body.asByteBuffer().map { .byteBuffer($0) }
-            return signer.signHeaders(url: url, method: httpMethod, headers: headers, body: body)
-        }
+        return createSigner(serviceConfig: serviceConfig, logger: logger)
+            .flatMapThrowing { signer in
+                signer.signHeaders(
+                    url: url,
+                    method: httpMethod,
+                    headers: headers,
+                    body: body.map { .byteBuffer($0) }
+                )
+            }
     }
 
     private func createSigner(serviceConfig: TCServiceConfig, logger: Logger) -> EventLoopFuture<TCSigner> {

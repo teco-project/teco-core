@@ -42,7 +42,7 @@ struct TCRequest {
     /// Request HTTP headers.
     internal var httpHeaders: HTTPHeaders
     /// Request body.
-    internal let body: Body
+    internal let body: ByteBuffer?
 
     /// Sign the request headers with given configuration.
     ///
@@ -55,20 +55,12 @@ struct TCRequest {
             assertionFailure("Empty credential provided for request!")
             return
         }
-        // get body for signing
-        let bodyData: TCSigner.BodyData?
-        switch self.body.asPayload().payload {
-        case .byteBuffer(let buffer):
-            bodyData = .byteBuffer(buffer)
-        case .empty:
-            bodyData = nil
-        }
         // replace original headers with signed ones
         httpHeaders = signer.signHeaders(
             url: url,
             method: httpMethod,
             headers: httpHeaders,
-            body: bodyData,
+            body: body.map { .byteBuffer($0) },
             mode: signingMode
         )
     }
@@ -85,7 +77,7 @@ extension TCRequest {
         self.url = url
         self.httpMethod = httpMethod
         self.httpHeaders = HTTPHeaders()
-        self.body = .empty
+        self.body = nil
 
         // set common parameter headers
         self.addCommonParameters(action: action, configuration: configuration)
@@ -113,7 +105,7 @@ extension TCRequest {
         self.url = url
         self.httpMethod = httpMethod
         self.httpHeaders = HTTPHeaders()
-        self.body = .json(body)
+        self.body = body
 
         // set common parameter headers
         self.addCommonParameters(action: action, configuration: configuration)
@@ -136,10 +128,10 @@ extension TCRequest {
     private mutating func addStandardHeaders() {
         httpHeaders.add(name: "user-agent", value: "Teco/0.1")
 
-        switch (httpMethod, body) {
-        case (.GET, _):
+        switch httpMethod {
+        case .GET:
             httpHeaders.replaceOrAdd(name: "content-type", value: "application/x-www-form-urlencoded")
-        case (.POST, .json):
+        case .POST:
             httpHeaders.replaceOrAdd(name: "content-type", value: "application/json")
         default:
             return
