@@ -2,34 +2,25 @@
 //
 // This source file is part of the Teco open source project
 //
-// Copyright (c) 2022 the Teco project authors
+// Copyright (c) 2023 the Teco project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-//===----------------------------------------------------------------------===//
-//
-// This source file was part of the Soto for AWS open source project
-//
-// Copyright (c) 2020-2022 the Soto project authors
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of Soto project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
 //===----------------------------------------------------------------------===//
 
 import Foundation
-import NIOFoundationCompat
+import Logging
 import NIOCore
+import NIOFoundationCompat
+import NIOHTTP1
 
 /// Holds a request or response payload.
 ///
 /// Currently request or response payloads only come in the form of a `ByteBuffer`.
+@available(*, deprecated, message: "'TCPayload' is deprecated. Use 'ByteBuffer' directly instead.")
 public struct TCPayload: Sendable {
     /// Internal enum for ``TCPayload``.
     enum Payload: Sendable {
@@ -41,12 +32,12 @@ public struct TCPayload: Sendable {
 
     /// Construct a payload from a `ByteBuffer`.
     public static func byteBuffer(_ buffer: ByteBuffer) -> Self {
-        return TCPayload(payload: .byteBuffer(buffer))
+        TCPayload(payload: .byteBuffer(buffer))
     }
 
     /// Construct an empty payload.
     public static var empty: Self {
-        return TCPayload(payload: .empty)
+        TCPayload(payload: .empty)
     }
 
     /// Construct a payload from raw data (aka. `[UInt8]`).
@@ -111,5 +102,81 @@ public struct TCPayload: Sendable {
         case .empty:
             return true
         }
+    }
+}
+
+extension TCClient {
+    /// Generate signed headers.
+    ///
+    /// - Parameters:
+    ///    - url : URL to sign (RFC 3986).
+    ///    - httpMethod: HTTP method to use (`.GET` or `.POST`).
+    ///    - headers: Headers that are to be sent with this URL.
+    ///    - body: Payload to sign.
+    ///    - serviceConfig: Tencent Cloud service configuration used to sign the URL.
+    ///    - skipAuthorization: If "Authorization" header should be set to `SKIP`.
+    ///    - logger: Logger to output to.
+    /// - Returns: A set of signed headers that include the original headers supplied.
+    @available(*, deprecated, renamed: "signHeaders(url:method:headers:body:serviceConfig:skipAuthorization:logger:)")
+    public func signHeaders(
+        url: URL,
+        httpMethod: HTTPMethod,
+        headers: HTTPHeaders = HTTPHeaders(),
+        body: TCPayload,
+        serviceConfig: TCServiceConfig,
+        skipAuthorization: Bool = false,
+        logger: Logger = TCClient.loggingDisabled
+    ) -> EventLoopFuture<HTTPHeaders> {
+        let buffer: ByteBuffer?
+        switch body.payload {
+        case .byteBuffer(let byteBuffer):
+            buffer = byteBuffer
+        case .empty:
+            buffer = nil
+        }
+        return self.signHeaders(
+            url: url,
+            method: httpMethod,
+            headers: headers,
+            body: buffer,
+            serviceConfig: serviceConfig,
+            skipAuthorization: skipAuthorization,
+            logger: logger
+        )
+    }
+}
+
+extension TCService {
+    /// Generate signed headers.
+    ///
+    /// - Parameters:
+    ///    - url : URL to sign.
+    ///    - httpMethod: HTTP method to use.
+    ///    - headers: Headers that are to be sent with this URL.
+    ///    - body: Payload to sign.
+    ///    - logger: Logger to output to.
+    /// - Returns: A set of signed headers that include the original headers supplied.
+    @available(*, deprecated, renamed: "signHeaders(url:method:headers:body:logger:)")
+    public func signHeaders(
+        url: URL,
+        httpMethod: HTTPMethod = .POST,
+        headers: HTTPHeaders = HTTPHeaders(),
+        body: TCPayload = .empty,
+        logger: Logger = TCClient.loggingDisabled
+    ) -> EventLoopFuture<HTTPHeaders> {
+        let buffer: ByteBuffer?
+        switch body.payload {
+        case .byteBuffer(let byteBuffer):
+            buffer = byteBuffer
+        case .empty:
+            buffer = nil
+        }
+        return self.signHeaders(
+            url: url,
+            method: httpMethod,
+            headers: headers,
+            body: buffer,
+            logger: logger
+        )
     }
 }

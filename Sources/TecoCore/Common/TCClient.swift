@@ -36,9 +36,9 @@ import TecoSigner
 
 /// Client managing communication with Tencent Cloud services.
 ///
-/// This is the workhorse of TecoCore. You provide it with a ``TCRequestModel``, it converts it to `TCRequest` which is then converted to a raw `HTTPClient` request. This is then sent to Tencent Cloud.
+/// This is the workhorse of TecoCore. You provide it with a ``TCRequestModel``, it converts it to `TCHTTPRequest` which is then converted to a raw `HTTPClient` request. This is then sent to Tencent Cloud.
 ///
-/// When the response from Tencent Cloud is received, it will be converted to a `TCResponse`, which is then decoded to generate a ``TCResponseModel`` or to create and throw a ``TCErrorType``.
+/// When the response from Tencent Cloud is received, it will be converted to a `TCHTTPResponse`, which is then decoded to generate a ``TCResponseModel`` or to create and throw a ``TCErrorType``.
 public final class TCClient: _TecoSendable {
     // MARK: Member variables
 
@@ -259,16 +259,14 @@ extension TCClient {
     ) -> EventLoopFuture<Output> {
         self.execute(
             action: action,
-            createRequest: {
-                try TCRequest(
-                    action: action,
-                    path: path,
-                    region: region,
-                    httpMethod: httpMethod,
-                    input: input,
-                    configuration: serviceConfig
-                )
-            },
+            createRequest: try .init(
+                action: action,
+                path: path,
+                region: region,
+                method: httpMethod,
+                input: input,
+                service: serviceConfig
+            ),
             skipAuthorization: skipAuthorization,
             executor: { request, eventLoop, logger in
                 self.httpClient.execute(request: request, timeout: serviceConfig.timeout, on: eventLoop, logger: logger)
@@ -305,15 +303,13 @@ extension TCClient {
     ) -> EventLoopFuture<Output> {
         self.execute(
             action: action,
-            createRequest: {
-                try TCRequest(
-                    action: action,
-                    path: path,
-                    region: region,
-                    httpMethod: httpMethod,
-                    configuration: serviceConfig
-                )
-            },
+            createRequest: try .init(
+                action: action,
+                path: path,
+                region: region,
+                method: httpMethod,
+                service: serviceConfig
+            ),
             skipAuthorization: skipAuthorization,
             executor: { request, eventLoop, logger in
                 self.httpClient.execute(request: request, timeout: serviceConfig.timeout, on: eventLoop, logger: logger)
@@ -343,8 +339,8 @@ extension TCClient {
     ///
     /// - Parameters:
     ///    - url : URL to sign (RFC 3986).
-    ///    - httpMethod: HTTP method to use (`.GET` or `.POST`).
-    ///    - httpHeaders: Headers that are to be sent with this URL.
+    ///    - method: HTTP method to use (`.GET` or `.POST`).
+    ///    - headers: Headers that are to be sent with this URL.
     ///    - body: Payload to sign.
     ///    - serviceConfig: Tencent Cloud service configuration used to sign the URL.
     ///    - skipAuthorization: If "Authorization" header should be set to `SKIP`.
@@ -352,9 +348,9 @@ extension TCClient {
     /// - Returns: A set of signed headers that include the original headers supplied.
     public func signHeaders(
         url: URL,
-        httpMethod: HTTPMethod,
+        method: HTTPMethod,
         headers: HTTPHeaders = HTTPHeaders(),
-        body: TCPayload,
+        body: ByteBuffer?,
         serviceConfig: TCServiceConfig,
         skipAuthorization: Bool = false,
         logger: Logger = TCClient.loggingDisabled
@@ -364,10 +360,15 @@ extension TCClient {
             action: "SignHeaders",
             service: serviceConfig.service
         )
-        return createSigner(serviceConfig: serviceConfig, logger: logger).flatMapThrowing { signer in
-            let body: TCSigner.BodyData? = body.asByteBuffer().map { .byteBuffer($0) }
-            return signer.signHeaders(url: url, method: httpMethod, headers: headers, body: body)
-        }
+        return createSigner(serviceConfig: serviceConfig, logger: logger)
+            .flatMapThrowing { signer in
+                signer.signHeaders(
+                    url: url,
+                    method: method,
+                    headers: headers,
+                    body: body.map { .byteBuffer($0) }
+                )
+            }
     }
 
     private func createSigner(serviceConfig: TCServiceConfig, logger: Logger) -> EventLoopFuture<TCSigner> {
@@ -377,43 +378,13 @@ extension TCClient {
     }
 }
 
-// MARK: Response helpers
-
-extension TCClient {
-    /// Generate a ``TCResponse`` from the HTTP response and return the output data from it.
-    ///
-    /// This is only every called if the response has http status code 200 OK.
-    private func validate<Output: TCResponseModel>(response: TCHTTPResponse, serviceConfig: TCServiceConfig, logger: Logger) throws -> Output {
-        assert((200..<300).contains(response.status.code), "Shouldn't get here if unexpected error happens")
-        let tcResponse = try TCResponse(from: response)
-        return try tcResponse.generateOutputData(errorType: serviceConfig.errorType, logLevel: options.errorLogLevel, logger: logger)
-    }
-
-    /// Create a raw error from ``TCHTTPResponse``.
-    ///
-    /// This is only called if we received an unsuccessful http status code.
-    private func createRawError(for response: TCHTTPResponse, serviceConfig: TCServiceConfig, logger: Logger) -> TCRawError {
-        // returns "Unhandled error message" with rawBody attached
-        var rawBodyString: String?
-        if var body = response.body {
-            rawBodyString = body.readString(length: body.readableBytes)
-        }
-        let context = TCErrorContext(
-            message: "Unhandled Error",
-            responseCode: response.status,
-            headers: response.headers
-        )
-        return TCRawError(rawBody: rawBodyString, context: context)
-    }
-}
-
 // MARK: Internal implemenation
 
 extension TCClient {
     /// The core executor.
     private func execute<Output: TCResponseModel>(
         action: String,
-        createRequest: @escaping () throws -> TCRequest,
+        createRequest: @autoclosure @escaping () throws -> TCHTTPRequest,
         skipAuthorization: Bool,
         executor: @escaping (TCHTTPRequest, EventLoop, Logger) -> EventLoopFuture<TCHTTPResponse>,
         config: TCServiceConfig,
@@ -428,12 +399,12 @@ extension TCClient {
             service: config.service
         )
         // get credential
-        let future: EventLoopFuture<Output> = createSigner(serviceConfig: config, logger: logger)
+        let future: EventLoopFuture<Output> = self.createSigner(serviceConfig: config, logger: logger)
             .flatMapThrowing { signer -> TCHTTPRequest in
                 // create request and sign with signer
-                let tcRequest = try createRequest()
-                return tcRequest.createHTTPRequest(signer: signer, serviceConfig: config,
-                                                   signingMode: skipAuthorization ? .skip : self.signingMode)
+                var request = try createRequest()
+                request.signHeaders(with: signer, mode: skipAuthorization ? .skip : self.signingMode)
+                return request
             }.flatMap { request -> EventLoopFuture<Output> in
                 self.invoke(
                     with: config,
@@ -458,12 +429,13 @@ extension TCClient {
             // execute HTTP request
             request(eventLoop)
                 .flatMapThrowing { response throws -> Void in
-                    // Tencent Cloud will return 200 even for API error, so treat any other response status as error
-                    guard response.status == .ok else {
-                        throw self.createRawError(for: response, serviceConfig: serviceConfig, logger: logger)
-                    }
-                    let output: Output = try self.validate(response: response, serviceConfig: serviceConfig, logger: logger)
-                    promise.succeed(output)
+                    promise.succeed(
+                        try response.generateOutputData(
+                            errorType: serviceConfig.errorType,
+                            errorLogLevel: self.options.errorLogLevel,
+                            logger: logger
+                        )
+                    )
                 }
                 .flatMapErrorThrowing { error -> Void in
                     // If we get a retry wait time for this error, then attempt to retry request
@@ -505,7 +477,7 @@ extension TCClient.ClientError: CustomStringConvertible {
     }
 }
 
-extension Logger {
+private extension Logger {
     func attachingRequestId(_ id: Int, action: String, service: String) -> Logger {
         var logger = self
         logger[metadataKey: "tc-service"] = .string(service)
@@ -515,7 +487,7 @@ extension Logger {
     }
 }
 
-extension TCClient {
+private extension TCClient {
     /// Record the request in `Metrics` and `Logging`.
     func recordRequest<Output>(_ future: EventLoopFuture<Output>, service: String, action: String, logger: Logger) -> EventLoopFuture<Output> {
         let dimensions: [(String, String)] = [("tc-service", service), ("tc-action", action)]

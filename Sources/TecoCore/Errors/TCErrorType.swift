@@ -2,7 +2,7 @@
 //
 // This source file is part of the Teco open source project
 //
-// Copyright (c) 2022 the Teco project authors
+// Copyright (c) 2022-2023 the Teco project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -41,16 +41,16 @@ public protocol TCErrorType: Error, CustomStringConvertible {
 extension TCErrorType {
     /// Error message returned along with the code.
     public var message: String? {
-        return context?.message
+        context?.message
     }
 }
 
 extension TCErrorType {
     public var localizedDescription: String {
-        return description
+        description
     }
 
     public static var domains: [TCErrorType.Type] {
-        return []
+        []
     }
 }

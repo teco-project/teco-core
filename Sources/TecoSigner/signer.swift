@@ -86,10 +86,6 @@ public struct TCSigner: _SignerSendable {
         case skip
     }
 
-    /// Process URL before signing.
-    @available(*, deprecated, message: "Make sure the URL is RFC3986 compatible instead.")
-    public func processURL(url: URL) -> URL? { return url }
-
     /// Generate signed headers, for an HTTP request.
     ///
     /// - Parameters:
@@ -285,12 +281,12 @@ extension TCSigner {
     
     /// return the string formatted for signing requests
     static func dateString(_ date: Date) -> String {
-        return dateFormatter.string(from: date)
+        dateFormatter.string(from: date)
     }
 
     /// return a timestamp formatted for signing requests
     static func timestamp(_ date: Date) -> String {
-        return String(UInt64(date.timeIntervalSince1970))
+        String(UInt64(date.timeIntervalSince1970))
     }
 
     /// return the headers for signing requests
@@ -335,13 +331,13 @@ extension TCSigner.SigningData {
     }
     var canonicalQuery: String {
         // assuming query parameters are already percent encoded correctly
-        return self.url.query ?? ""
+        self.url.query ?? ""
     }
 }
 
 extension Sequence where Element == UInt8 {
     /// return a hex-encoded string buffer from an array of bytes
     func hexDigest() -> String {
-        return self.map { String(format: "%02x", $0) }.joined()
+        self.map { String(format: "%02x", $0) }.joined()
     }
 }

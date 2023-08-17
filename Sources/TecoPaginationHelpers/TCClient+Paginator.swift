@@ -102,7 +102,7 @@ extension TCClient {
 
             /// Makes an ``AsyncIterator``.
             public func makeAsyncIterator() -> AsyncIterator {
-                return AsyncIterator(sequence: self)
+                AsyncIterator(sequence: self)
             }
         }
 
@@ -166,7 +166,7 @@ extension TCClient {
 
             /// Makes an ``AsyncIterator``.
             public func makeAsyncIterator() -> AsyncIterator {
-                return AsyncIterator(sequence: self)
+                AsyncIterator(sequence: self)
             }
         }
 

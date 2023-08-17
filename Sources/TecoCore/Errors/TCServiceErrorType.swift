@@ -41,6 +41,6 @@ extension TCServiceErrorType {
     }
 
     public func asRawError() -> TCRawServiceError {
-        return TCRawServiceError(self.errorCode, context: self.context)
+        TCRawServiceError(self.errorCode, context: self.context)
     }
 }

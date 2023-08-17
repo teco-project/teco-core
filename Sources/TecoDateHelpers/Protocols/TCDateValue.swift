@@ -24,7 +24,7 @@ public protocol TCDateValue: _TecoDateSendable {
 
 extension Foundation.Date: TCDateValue {
     public func encode(formatter: TCDateFormatter) -> String {
-        return formatter.string(from: self)
+        formatter.string(from: self)
     }
 
     public static func decode<Wrapper: TCDateWrapper>(from stringValue: String, formatter: TCDateFormatter, container: SingleValueDecodingContainer, wrapper: Wrapper.Type = Wrapper.self) throws -> Date {

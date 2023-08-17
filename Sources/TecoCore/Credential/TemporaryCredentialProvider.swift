@@ -55,7 +55,7 @@ public final class TemporaryCredentialProvider: CredentialProvider {
     }
 
     public func shutdown(on eventLoop: EventLoop) -> EventLoopFuture<Void> {
-        return self.lock.withLock {
+        self.lock.withLock {
             if let future = credentialFuture {
                 return future.and(provider.shutdown(on: eventLoop)).map { _ in }.hop(to: eventLoop)
             }

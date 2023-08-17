@@ -109,7 +109,7 @@ public struct TCServiceConfig: Sendable {
     ///   - patch: Parameters to patch the service config.
     /// - Returns: A patched ``TCServiceConfig``.
     public func with(patch: Patch) -> TCServiceConfig {
-        return TCServiceConfig(service: self, with: patch)
+        .init(service: self, with: patch)
     }
 
     /// Service config parameters that a user can patch.

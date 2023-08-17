@@ -2,7 +2,7 @@
 //
 // This source file is part of the Teco open source project
 //
-// Copyright (c) 2022 the Teco project authors
+// Copyright (c) 2022-2023 the Teco project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -44,7 +44,7 @@ public protocol CredentialProvider: CustomStringConvertible, _TecoSendable {
 
 extension CredentialProvider {
     public func shutdown(on eventLoop: EventLoop) -> EventLoopFuture<Void> {
-        return eventLoop.makeSucceededFuture(())
+        eventLoop.makeSucceededFuture(())
     }
 
     public var description: String { "\(type(of: self))" }

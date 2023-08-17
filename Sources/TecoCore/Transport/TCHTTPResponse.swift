@@ -2,7 +2,7 @@
 //
 // This source file is part of the Teco open source project
 //
-// Copyright (c) 2022 the Teco project authors
+// Copyright (c) 2022-2023 the Teco project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -27,57 +27,60 @@ import struct Foundation.Data
 import class Foundation.JSONDecoder
 import Logging
 import NIOCore
+import NIOFoundationCompat
 import NIOHTTP1
 
 /// Structure encapsulating a processed HTTP Response.
-struct TCResponse {
+struct TCHTTPResponse {
     /// Response status.
     private let status: HTTPResponseStatus
     /// Response headers.
     private var headers: HTTPHeaders
     /// Response body.
-    private let body: Body
+    private let body: ByteBuffer?
 
-    /// Initialize a ``TCResponse`` object.
+    /// Initialize a ``TCHTTPResponse`` object.
     ///
     /// - Parameters:
-    ///    - response: Raw HTTP response.
-    internal init(from response: TCHTTPResponse) throws {
-        self.status = response.status
-        
-        // headers
-        self.headers = response.headers
-        
-        // handle empty body
-        guard let body = response.body, body.readableBytes > 0 else {
-            self.body = .empty
+    ///    - status: HTTP response status.
+    ///    - headers: HTTP response headers.
+    ///    - body: HTTP response body.
+    internal init(status: HTTPResponseStatus, headers: HTTPHeaders, body: ByteBuffer?) throws {
+        // Tencent Cloud API returns 200 even for API error, so treat any other response status as raw error
+        guard status == .ok else {
+            let context = TCErrorContext(message: "Unhandled Error", responseCode: status, headers: headers)
+            guard var body = body else {
+                throw TCRawError(context: context)
+            }
+            throw TCRawError(rawBody: body.readString(length: body.readableBytes), context: context)
+        }
+
+        // save HTTP context
+        self.status = status
+        self.headers = headers
+
+        // handle empty response body
+        guard let body = body, body.readableBytes > 0 else {
+            self.body = nil
             return
         }
-        
-        // tencent cloud api response is always json
-        self.body = .json(body)
+
+        // Tencent Cloud API response should always be JSON
+        self.body = body
     }
 
-    /// Generate ``TCModel`` from ``TCResponse``.
-    internal func generateOutputData<Output: TCResponseModel>(errorType: TCErrorType.Type? = nil, logLevel: Logger.Level = .info, logger: Logger) throws -> Output {
-        let decoder = JSONDecoder()
-        let data: Data?
-
-        switch body {
-        case .text(let string):
-            data = string.data(using: .utf8)
-        case .json(let buffer):
-            data = buffer.getData(at: buffer.readerIndex, length: buffer.readableBytes, byteTransferStrategy: .noCopy)
-        default:
-            data = nil
-        }
-
+    /// Generate ``TCModel`` from ``TCHTTPResponse``.
+    internal func generateOutputData<Output: TCResponseModel>(
+        errorType: TCErrorType.Type? = nil,
+        errorLogLevel: Logger.Level = .info,
+        logger: Logger
+    ) throws -> Output {
         do {
-            let container = try decoder.decode(Container<Output>.self, from: data ?? Data())
+            let container = try JSONDecoder().decode(Container<Output>.self, from: body ?? .init())
             return container.response
         } catch let apiError as APIError {
             let error = apiError.error
-            logger.log(level: logLevel, "Tencent Cloud service error", metadata: [
+            logger.log(level: errorLogLevel, "Tencent Cloud service error", metadata: [
                 "tc-error-code": .string(error.code),
                 "tc-error-message": .string(error.message),
             ])
@@ -88,7 +91,7 @@ struct TCResponse {
                 responseCode: self.status,
                 headers: self.headers
             )
-            
+
             if let errorType = errorType {
                 for errorDomain in errorType.domains {
                     if let error = errorDomain.init(errorCode: error.code, context: context) {
@@ -99,17 +102,17 @@ struct TCResponse {
                     throw error
                 }
             }
-            
+
             if let error = TCCommonError(errorCode: error.code, context: context) {
                 throw error
             }
-            
+
             throw TCRawServiceError(errorCode: error.code, context: context)
         }
     }
 }
 
-extension TCResponse {
+extension TCHTTPResponse {
     /// Container that holds an API response.
     private struct Container<Output: TCResponseModel>: Decodable {
         let response: Output
