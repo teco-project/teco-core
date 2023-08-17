@@ -37,9 +37,9 @@ public protocol ExpiringCredential: Credential {
     func isExpiring(within: TimeInterval) -> Bool
 }
 
-public extension ExpiringCredential {
+extension ExpiringCredential {
     /// Has credential expired.
-    var isExpired: Bool {
+    public var isExpired: Bool {
         isExpiring(within: 0)
     }
 }
@@ -59,6 +59,6 @@ public struct TemporaryCredential: ExpiringCredential {
     }
 
     public func isExpiring(within interval: TimeInterval) -> Bool {
-        return self.expiration.timeIntervalSinceNow < interval
+        self.expiration.timeIntervalSinceNow < interval
     }
 }

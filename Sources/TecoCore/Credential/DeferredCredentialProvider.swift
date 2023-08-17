@@ -34,8 +34,9 @@ import TecoSigner
 ///
 /// After the wrapped ``CredentialProvider`` has generated a credential, it is stored and returned instead of calling the real `getCredential` again.
 public class DeferredCredentialProvider: CredentialProvider {
-    let lock = NIOLock()
-    var credential: Credential? {
+    private let lock = NIOLock()
+
+    private var credential: Credential? {
         get {
             self.lock.withLock {
                 internalCredential
@@ -73,7 +74,7 @@ public class DeferredCredentialProvider: CredentialProvider {
     }
 
     public func shutdown(on eventLoop: EventLoop) -> EventLoopFuture<Void> {
-        return self.startupPromise.futureResult
+        self.startupPromise.futureResult
             .and(self.provider.shutdown(on: eventLoop))
             .map { _ in }
             .hop(to: eventLoop)

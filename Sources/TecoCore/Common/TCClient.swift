@@ -481,7 +481,7 @@ extension TCClient.ClientError: CustomStringConvertible {
     }
 }
 
-extension Logger {
+private extension Logger {
     func attachingRequestId(_ id: Int, action: String, service: String) -> Logger {
         var logger = self
         logger[metadataKey: "tc-service"] = .string(service)
@@ -491,7 +491,7 @@ extension Logger {
     }
 }
 
-extension TCClient {
+private extension TCClient {
     /// Record the request in `Metrics` and `Logging`.
     func recordRequest<Output>(_ future: EventLoopFuture<Output>, service: String, action: String, logger: Logger) -> EventLoopFuture<Output> {
         let dimensions: [(String, String)] = [("tc-service", service), ("tc-action", action)]

@@ -54,7 +54,7 @@ final class ProfileCredentialProvider: CredentialProviderSelector {
         for profile: String,
         context: CredentialProviderFactory.Context
     ) -> EventLoopFuture<CredentialProvider> {
-        return FileLoader.loadProfile(path: credentialsFilePath, for: profile, on: context.eventLoop)
+        FileLoader.loadProfile(path: credentialsFilePath, for: profile, on: context.eventLoop)
             .flatMapErrorThrowing { error in
                 // Throw `.noProvider` error if credential file cannot be loaded
                 throw error is ProfileCredentialProviderError ? error : CredentialProviderError.noProvider

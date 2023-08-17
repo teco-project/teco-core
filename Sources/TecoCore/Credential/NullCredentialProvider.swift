@@ -32,6 +32,6 @@ public struct NullCredentialProvider: CredentialProvider {
     public init() {}
 
     public func getCredential(on eventLoop: EventLoop, logger: Logger) -> EventLoopFuture<Credential> {
-        return eventLoop.makeFailedFuture(CredentialProviderError.noProvider)
+        eventLoop.makeFailedFuture(CredentialProviderError.noProvider)
     }
 }

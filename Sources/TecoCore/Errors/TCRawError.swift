@@ -24,6 +24,6 @@ public struct TCRawError: Error, CustomStringConvertible {
     }
 
     public var description: String {
-        return "Unhandled error, code: \(self.context.responseCode)\(self.rawBody.map { ", body: \($0)" } ?? "")"
+        "Unhandled error, code: \(self.context.responseCode)\(self.rawBody.map { ", body: \($0)" } ?? "")"
     }
 }

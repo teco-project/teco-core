@@ -41,16 +41,16 @@ public protocol TCErrorType: Error, CustomStringConvertible {
 extension TCErrorType {
     /// Error message returned along with the code.
     public var message: String? {
-        return context?.message
+        context?.message
     }
 }
 
 extension TCErrorType {
     public var localizedDescription: String {
-        return description
+        description
     }
 
     public static var domains: [TCErrorType.Type] {
-        return []
+        []
     }
 }

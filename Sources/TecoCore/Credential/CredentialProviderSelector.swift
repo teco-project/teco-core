@@ -66,7 +66,7 @@ extension CredentialProviderSelector {
     }
 
     func shutdown(on eventLoop: EventLoop) -> EventLoopFuture<Void> {
-        return self.startupPromise.futureResult.flatMap { provider in
+        self.startupPromise.futureResult.flatMap { provider in
             provider.shutdown(on: eventLoop)
         }.hop(to: eventLoop)
     }
@@ -77,7 +77,7 @@ extension CredentialProviderSelector {
         }
 
         return self.startupPromise.futureResult.hop(to: eventLoop).flatMap { provider in
-            return provider.getCredential(on: eventLoop, logger: logger)
+            provider.getCredential(on: eventLoop, logger: logger)
         }
     }
 }

@@ -25,9 +25,9 @@
 
 import TecoSigner
 
-public extension StaticCredential {
+extension StaticCredential {
     /// Construct static credential from environment variables if they exist.
-    static func fromEnvironment() -> StaticCredential? {
+    public static func fromEnvironment() -> StaticCredential? {
         guard let secretId = Environment["TENCENTCLOUD_SECRET_ID"] else {
             return nil
         }
@@ -43,7 +43,7 @@ public extension StaticCredential {
     }
 
     /// Construct static credential from SCF environment variables if they exist.
-    static func fromSCFEnvironment() -> StaticCredential? {
+    public static func fromSCFEnvironment() -> StaticCredential? {
         guard let secretId = Environment["TENCENTCLOUD_SECRETID"] else {
             return nil
         }

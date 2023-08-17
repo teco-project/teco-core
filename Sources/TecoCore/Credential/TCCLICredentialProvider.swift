@@ -60,7 +60,7 @@ final class TCCLICredentialProvider: CredentialProviderSelector {
         context: CredentialProviderFactory.Context,
         region: TCRegion? = nil
     ) -> EventLoopFuture<CredentialProvider> {
-        return FileLoader.loadTCCLICredential(path: credentialFilePath, on: context.eventLoop)
+        FileLoader.loadTCCLICredential(path: credentialFilePath, on: context.eventLoop)
             .flatMapErrorThrowing { error in
                 // Throw `.noProvider` error if credential file cannot be loaded
                 throw CredentialProviderError.noProvider
@@ -101,13 +101,13 @@ final class TCCLICredentialProvider: CredentialProviderSelector {
     }
 }
 
-extension FileLoader {
+private extension FileLoader {
     /// Load TCCLI credential from disk.
     ///
     /// - Parameters:
     ///   - path: File path for TCCLI credential file.
     ///   - eventLoop: `EventLoop` to run on.
-    fileprivate static func loadTCCLICredential(path: String, on eventLoop: EventLoop) -> EventLoopFuture<TCCLICredential> {
+    static func loadTCCLICredential(path: String, on eventLoop: EventLoop) -> EventLoopFuture<TCCLICredential> {
         self.loadFile(path: path, on: eventLoop) { byteBuffer in
             eventLoop.makeCompletedFuture {
                 try self.decoder.decode(TCCLICredential.self, from: byteBuffer)

@@ -39,10 +39,10 @@ import TecoSigner
 
 /// Credential provider that provides temporary credentials from CVM instance metadata.
 struct CVMRoleCredentialProvider: CredentialProvider {
-    static let endpoint = "http://metadata.tencentyun.com/latest/meta-data/cam/security-credentials"
+    private static let endpoint = "http://metadata.tencentyun.com/latest/meta-data/cam/security-credentials"
 
     /// CAM role credential for a CVM instance.
-    struct Metadata: ExpiringCredential, Decodable {
+    private struct Metadata: ExpiringCredential, Decodable {
         let secretId: String
         let secretKey: String
         let expiredTime: TimeInterval
@@ -52,7 +52,7 @@ struct CVMRoleCredentialProvider: CredentialProvider {
         }
 
         func isExpiring(within interval: TimeInterval) -> Bool {
-            return self.expiration.timeIntervalSinceNow < interval
+            self.expiration.timeIntervalSinceNow < interval
         }
 
         enum CodingKeys: String, CodingKey {
@@ -64,7 +64,7 @@ struct CVMRoleCredentialProvider: CredentialProvider {
     }
 
     private var credentialURL: URL {
-        return URL(string: Self.endpoint)!
+        URL(string: Self.endpoint)!
     }
 
     private let httpClient: HTTPClient
@@ -77,6 +77,7 @@ struct CVMRoleCredentialProvider: CredentialProvider {
     }
 
     func getCredential(on eventLoop: EventLoop, logger: Logger) -> EventLoopFuture<Credential> {
+        // get role name from input or CVM endpoint
         let roleNameFuture: EventLoopFuture<String>
         if let roleName = self.roleName {
             roleNameFuture = eventLoop.makeSucceededFuture(roleName)
@@ -103,7 +104,7 @@ struct CVMRoleCredentialProvider: CredentialProvider {
                 let url = self.credentialURL.appendingPathComponent(roleName)
                 return self.request(url: url, on: eventLoop, logger: logger)
             }
-            .flatMapThrowing { response in
+            .flatMapThrowing { response -> Credential in
                 // decode the repsonse payload into the metadata object
                 guard response.status == .ok else {
                     throw CVMRoleCredentialProviderError.couldNotGetInstanceMetadata
@@ -113,7 +114,6 @@ struct CVMRoleCredentialProvider: CredentialProvider {
                 }
                 return try self.decoder.decode(Metadata.self, from: body)
             }
-            .map { metadata in metadata }
     }
 
     private func request(

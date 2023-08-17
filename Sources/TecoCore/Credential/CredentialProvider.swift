@@ -44,7 +44,7 @@ public protocol CredentialProvider: CustomStringConvertible, _TecoSendable {
 
 extension CredentialProvider {
     public func shutdown(on eventLoop: EventLoop) -> EventLoopFuture<Void> {
-        return eventLoop.makeSucceededFuture(())
+        eventLoop.makeSucceededFuture(())
     }
 
     public var description: String { "\(type(of: self))" }

@@ -60,9 +60,9 @@ extension CredentialProviderFactory {
     /// The default ``CredentialProvider`` used to access credentials.
     public static var `default`: CredentialProviderFactory {
         #if os(Linux)
-        return .selector(.environment, .cvm, .tke, .scf, .profile(), .tccli())
+        .selector(.environment, .cvm, .tke, .scf, .profile(), .tccli())
         #else
-        return .selector(.environment, .profile(), .tccli())
+        .selector(.environment, .profile(), .tccli())
         #endif
     }
 
@@ -76,7 +76,7 @@ extension CredentialProviderFactory {
     /// Looks in environment variables `TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY` and `TENCENTCLOUD_TOKEN`.
     public static var environment: CredentialProviderFactory {
         Self { _ -> CredentialProvider in
-            return StaticCredential.fromEnvironment() ?? NullCredentialProvider()
+            StaticCredential.fromEnvironment() ?? NullCredentialProvider()
         }
     }
 
@@ -100,7 +100,7 @@ extension CredentialProviderFactory {
     /// Looks in environment variables `TENCENTCLOUD_SECRETID`, `TENCENTCLOUD_SECRETKEY` and `TENCENTCLOUD_SESSIONTOKEN`.
     public static var scf: CredentialProviderFactory {
         Self { _ -> CredentialProvider in
-            return StaticCredential.fromSCFEnvironment() ?? NullCredentialProvider()
+            StaticCredential.fromSCFEnvironment() ?? NullCredentialProvider()
         }
     }
 
