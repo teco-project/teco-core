@@ -259,16 +259,14 @@ extension TCClient {
     ) -> EventLoopFuture<Output> {
         self.execute(
             action: action,
-            createRequest: {
-                try TCHTTPRequest(
-                    action: action,
-                    path: path,
-                    region: region,
-                    method: httpMethod,
-                    input: input,
-                    service: serviceConfig
-                )
-            },
+            createRequest: try .init(
+                action: action,
+                path: path,
+                region: region,
+                method: httpMethod,
+                input: input,
+                service: serviceConfig
+            ),
             skipAuthorization: skipAuthorization,
             executor: { request, eventLoop, logger in
                 self.httpClient.execute(request: request, timeout: serviceConfig.timeout, on: eventLoop, logger: logger)
@@ -305,15 +303,13 @@ extension TCClient {
     ) -> EventLoopFuture<Output> {
         self.execute(
             action: action,
-            createRequest: {
-                try TCHTTPRequest(
-                    action: action,
-                    path: path,
-                    region: region,
-                    method: httpMethod,
-                    service: serviceConfig
-                )
-            },
+            createRequest: try .init(
+                action: action,
+                path: path,
+                region: region,
+                method: httpMethod,
+                service: serviceConfig
+            ),
             skipAuthorization: skipAuthorization,
             executor: { request, eventLoop, logger in
                 self.httpClient.execute(request: request, timeout: serviceConfig.timeout, on: eventLoop, logger: logger)
@@ -388,7 +384,7 @@ extension TCClient {
     /// The core executor.
     private func execute<Output: TCResponseModel>(
         action: String,
-        createRequest: @escaping () throws -> TCHTTPRequest,
+        createRequest: @autoclosure @escaping () throws -> TCHTTPRequest,
         skipAuthorization: Bool,
         executor: @escaping (TCHTTPRequest, EventLoop, Logger) -> EventLoopFuture<TCHTTPResponse>,
         config: TCServiceConfig,
