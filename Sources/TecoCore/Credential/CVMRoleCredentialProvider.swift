@@ -98,7 +98,7 @@ struct CVMRoleCredentialProvider: CredentialProvider {
             }
         }
         return roleNameFuture
-            .flatMap { roleName -> EventLoopFuture<TCHTTPResponse> in
+            .flatMap { roleName -> EventLoopFuture<HTTPClient.Response> in
                 // request credentials with the role name
                 let url = self.credentialURL.appendingPathComponent(roleName)
                 return self.request(url: url, on: eventLoop, logger: logger)
@@ -123,9 +123,17 @@ struct CVMRoleCredentialProvider: CredentialProvider {
         timeout: TimeAmount = .seconds(2),
         on eventLoop: EventLoop,
         logger: Logger
-    ) -> EventLoopFuture<TCHTTPResponse> {
-        let request = TCHTTPRequest(url: url, method: method, headers: headers, body: .empty)
-        return httpClient.execute(request: request, timeout: timeout, on: eventLoop, logger: logger)
+    ) -> EventLoopFuture<HTTPClient.Response> {
+        do {
+            return self.httpClient.execute(
+                request: try HTTPClient.Request(url: url, method: method, headers: headers),
+                timeout: timeout,
+                on: eventLoop,
+                logger: logger
+            )
+        } catch {
+            return eventLoop.makeFailedFuture(error)
+        }
     }
 }
 

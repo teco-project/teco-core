@@ -42,13 +42,3 @@ struct TCHTTPRequest {
         self.body = body
     }
 }
-
-/// HTTP Response.
-protocol TCHTTPResponse {
-    /// HTTP response status.
-    var status: HTTPResponseStatus { get }
-    /// HTTP response headers.
-    var headers: HTTPHeaders { get }
-    /// Payload of response.
-    var body: ByteBuffer? { get }
-}

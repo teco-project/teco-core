@@ -377,20 +377,6 @@ extension TCClient {
     }
 }
 
-// MARK: Response helpers
-
-extension TCClient {
-    /// Generate a ``TCResponse`` from the HTTP response and return the output data from it.
-    private func validate<Output: TCResponseModel>(response: TCHTTPResponse, serviceConfig: TCServiceConfig, logger: Logger) throws -> Output {
-        let tcResponse = try TCResponse(
-            status: response.status,
-            headers: response.headers,
-            body: response.body
-        )
-        return try tcResponse.generateOutputData(errorType: serviceConfig.errorType, logLevel: options.errorLogLevel, logger: logger)
-    }
-}
-
 // MARK: Internal implemenation
 
 extension TCClient {
@@ -399,7 +385,7 @@ extension TCClient {
         action: String,
         createRequest: @escaping () throws -> TCRequest,
         skipAuthorization: Bool,
-        executor: @escaping (TCHTTPRequest, EventLoop, Logger) -> EventLoopFuture<TCHTTPResponse>,
+        executor: @escaping (TCHTTPRequest, EventLoop, Logger) -> EventLoopFuture<TCResponse>,
         config: TCServiceConfig,
         outputType: Output.Type,
         logger: Logger,
@@ -434,7 +420,7 @@ extension TCClient {
         with serviceConfig: TCServiceConfig,
         eventLoop: EventLoop,
         logger: Logger,
-        request: @escaping (EventLoop) -> EventLoopFuture<TCHTTPResponse>
+        request: @escaping (EventLoop) -> EventLoopFuture<TCResponse>
     ) -> EventLoopFuture<Output> {
         let promise = eventLoop.makePromise(of: Output.self)
 
@@ -442,8 +428,13 @@ extension TCClient {
             // execute HTTP request
             request(eventLoop)
                 .flatMapThrowing { response throws -> Void in
-                    let output: Output = try self.validate(response: response, serviceConfig: serviceConfig, logger: logger)
-                    promise.succeed(output)
+                    promise.succeed(
+                        try response.generateOutputData(
+                            errorType: serviceConfig.errorType,
+                            logLevel: self.options.errorLogLevel,
+                            logger: logger
+                        )
+                    )
                 }
                 .flatMapErrorThrowing { error -> Void in
                     // If we get a retry wait time for this error, then attempt to retry request

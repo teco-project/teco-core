@@ -30,8 +30,8 @@ extension AsyncHTTPClient.HTTPClient {
         timeout: TimeAmount,
         on eventLoop: EventLoop,
         logger: Logger
-    ) -> EventLoopFuture<TCHTTPResponse> {
-        let requestBody: AsyncHTTPClient.HTTPClient.Body?
+    ) -> EventLoopFuture<TCResponse> {
+        let requestBody: HTTPClient.Body?
 
         switch request.body.payload {
         case .byteBuffer(let byteBuffer):
@@ -39,23 +39,45 @@ extension AsyncHTTPClient.HTTPClient {
         case .empty:
             requestBody = nil
         }
+
         do {
-            let asyncRequest = try AsyncHTTPClient.HTTPClient.Request(
+            let request = try HTTPClient.Request(
                 url: request.url,
                 method: request.method,
                 headers: request.headers,
                 body: requestBody
             )
             return self.execute(
-                request: asyncRequest,
-                eventLoop: .delegate(on: eventLoop),
-                deadline: .now() + timeout,
+                request: request,
+                timeout: timeout,
+                on: eventLoop,
                 logger: logger
-            ).map { $0 }
+            ).flatMapThrowing { response in
+                try TCResponse(status: response.status, headers: response.headers, body: response.body)
+            }
         } catch {
             return eventLoopGroup.next().makeFailedFuture(error)
         }
     }
-}
 
-extension AsyncHTTPClient.HTTPClient.Response: TCHTTPResponse {}
+    /// Execute arbitrary HTTP request within specified timeout.
+    ///
+    /// - Parameters:
+    ///   - request: HTTP request to execute.
+    ///   - timeout: If execution is idle for longer than timeout then throw error.
+    ///   - eventLoop: `EventLoop` to run request on.
+    ///   - logger: The logger to use for this request.
+    internal func execute(
+        request: Request,
+        timeout: TimeAmount,
+        on eventLoop: EventLoop,
+        logger: Logger? = nil
+    ) -> EventLoopFuture<HTTPClient.Response> {
+        self.execute(
+            request: request,
+            eventLoop: .delegate(on: eventLoop),
+            deadline: .now() + timeout,
+            logger: logger
+        )
+    }
+}
