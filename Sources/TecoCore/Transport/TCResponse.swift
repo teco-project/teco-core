@@ -27,6 +27,7 @@ import struct Foundation.Data
 import class Foundation.JSONDecoder
 import Logging
 import NIOCore
+import NIOFoundationCompat
 import NIOHTTP1
 
 /// Structure encapsulating a processed HTTP Response.
@@ -70,13 +71,8 @@ struct TCResponse {
 
     /// Generate ``TCModel`` from ``TCResponse``.
     internal func generateOutputData<Output: TCResponseModel>(errorType: TCErrorType.Type? = nil, logLevel: Logger.Level = .info, logger: Logger) throws -> Output {
-        let decoder = JSONDecoder()
-        let data: Data? = body.flatMap { buffer in
-            buffer.getData(at: buffer.readerIndex, length: buffer.readableBytes, byteTransferStrategy: .noCopy)
-        }
-
         do {
-            let container = try decoder.decode(Container<Output>.self, from: data ?? Data())
+            let container = try JSONDecoder().decode(Container<Output>.self, from: body ?? .init())
             return container.response
         } catch let apiError as APIError {
             let error = apiError.error

@@ -25,9 +25,11 @@
 
 import struct Foundation.Data
 import struct Foundation.Date
+import class Foundation.JSONEncoder
 import struct Foundation.URL
 import struct Foundation.URLComponents
 import NIOCore
+import NIOFoundationCompat
 import NIOHTTP1
 import TecoSigner
 
@@ -92,7 +94,7 @@ extension TCRequest {
         input: Input,
         configuration: TCServiceConfig
     ) throws {
-        let body = try input.encodeAsJSON(byteBufferAllocator: configuration.byteBufferAllocator)
+        let body = try JSONEncoder().encodeAsByteBuffer(input, allocator: configuration.byteBufferAllocator)
 
         let endpoint = configuration.getEndpoint(for: region)
         guard let urlComponents = URLComponents(string: "\(endpoint)\(path)"),
