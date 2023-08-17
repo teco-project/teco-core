@@ -18,7 +18,7 @@ public struct TCRawError: Error, CustomStringConvertible {
     public let rawBody: String?
     public let context: TCErrorContext
 
-    internal init(rawBody: String?, context: TCErrorContext) {
+    internal init(rawBody: String? = nil, context: TCErrorContext) {
         self.rawBody = rawBody
         self.context = context
     }

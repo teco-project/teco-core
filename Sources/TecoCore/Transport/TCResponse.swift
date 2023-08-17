@@ -41,20 +41,30 @@ struct TCResponse {
     /// Initialize a ``TCResponse`` object.
     ///
     /// - Parameters:
-    ///    - response: Raw HTTP response.
-    internal init(from response: TCHTTPResponse) throws {
-        self.status = response.status
+    ///    - status: HTTP response status.
+    ///    - headers: HTTP response headers.
+    ///    - body: HTTP response body.
+    internal init(status: HTTPResponseStatus, headers: HTTPHeaders, body: ByteBuffer?) throws {
+        // Tencent Cloud API returns 200 even for API error, so treat any other response status as raw error
+        guard status == .ok else {
+            let context = TCErrorContext(message: "Unhandled Error", responseCode: status, headers: headers)
+            guard var body = body else {
+                throw TCRawError(context: context)
+            }
+            throw TCRawError(rawBody: body.readString(length: body.readableBytes), context: context)
+        }
 
-        // headers
-        self.headers = response.headers
+        // save HTTP context
+        self.status = status
+        self.headers = headers
 
-        // handle empty body
-        guard let body = response.body, body.readableBytes > 0 else {
+        // handle empty response body
+        guard let body = body, body.readableBytes > 0 else {
             self.body = .empty
             return
         }
 
-        // tencent cloud api response is always json
+        // Tencent Cloud API response should always be JSON
         self.body = .json(body)
     }
 
@@ -86,7 +96,7 @@ struct TCResponse {
                 responseCode: self.status,
                 headers: self.headers
             )
-            
+
             if let errorType = errorType {
                 for errorDomain in errorType.domains {
                     if let error = errorDomain.init(errorCode: error.code, context: context) {
@@ -97,11 +107,11 @@ struct TCResponse {
                     throw error
                 }
             }
-            
+
             if let error = TCCommonError(errorCode: error.code, context: context) {
                 throw error
             }
-            
+
             throw TCRawServiceError(errorCode: error.code, context: context)
         }
     }

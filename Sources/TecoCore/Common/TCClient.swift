@@ -381,29 +381,13 @@ extension TCClient {
 
 extension TCClient {
     /// Generate a ``TCResponse`` from the HTTP response and return the output data from it.
-    ///
-    /// This is only every called if the response has http status code 200 OK.
     private func validate<Output: TCResponseModel>(response: TCHTTPResponse, serviceConfig: TCServiceConfig, logger: Logger) throws -> Output {
-        assert((200..<300).contains(response.status.code), "Shouldn't get here if unexpected error happens")
-        let tcResponse = try TCResponse(from: response)
-        return try tcResponse.generateOutputData(errorType: serviceConfig.errorType, logLevel: options.errorLogLevel, logger: logger)
-    }
-
-    /// Create a raw error from ``TCHTTPResponse``.
-    ///
-    /// This is only called if we received an unsuccessful http status code.
-    private func createRawError(for response: TCHTTPResponse, serviceConfig: TCServiceConfig, logger: Logger) -> TCRawError {
-        // returns "Unhandled error message" with rawBody attached
-        var rawBodyString: String?
-        if var body = response.body {
-            rawBodyString = body.readString(length: body.readableBytes)
-        }
-        let context = TCErrorContext(
-            message: "Unhandled Error",
-            responseCode: response.status,
-            headers: response.headers
+        let tcResponse = try TCResponse(
+            status: response.status,
+            headers: response.headers,
+            body: response.body
         )
-        return TCRawError(rawBody: rawBodyString, context: context)
+        return try tcResponse.generateOutputData(errorType: serviceConfig.errorType, logLevel: options.errorLogLevel, logger: logger)
     }
 }
 
@@ -458,10 +442,6 @@ extension TCClient {
             // execute HTTP request
             request(eventLoop)
                 .flatMapThrowing { response throws -> Void in
-                    // Tencent Cloud will return 200 even for API error, so treat any other response status as error
-                    guard response.status == .ok else {
-                        throw self.createRawError(for: response, serviceConfig: serviceConfig, logger: logger)
-                    }
                     let output: Output = try self.validate(response: response, serviceConfig: serviceConfig, logger: logger)
                     promise.succeed(output)
                 }
