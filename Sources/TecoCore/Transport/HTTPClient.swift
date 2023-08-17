@@ -26,14 +26,14 @@ extension AsyncHTTPClient.HTTPClient {
     ///   - eventLoop: `EventLoop` to run request on.
     /// - Returns: `EventLoopFuture` that will be fulfilled with request response.
     internal func execute(
-        request: TCHTTPRequest,
+        request: TCRequest,
         timeout: TimeAmount,
         on eventLoop: EventLoop,
         logger: Logger
     ) -> EventLoopFuture<TCResponse> {
         let requestBody: HTTPClient.Body?
 
-        switch request.body.payload {
+        switch request.body.asPayload().payload {
         case .byteBuffer(let byteBuffer):
             requestBody = .byteBuffer(byteBuffer)
         case .empty:
@@ -43,8 +43,8 @@ extension AsyncHTTPClient.HTTPClient {
         do {
             let request = try HTTPClient.Request(
                 url: request.url,
-                method: request.method,
-                headers: request.headers,
+                method: request.httpMethod,
+                headers: request.httpHeaders,
                 body: requestBody
             )
             return self.execute(

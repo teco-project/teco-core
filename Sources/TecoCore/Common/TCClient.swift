@@ -385,7 +385,7 @@ extension TCClient {
         action: String,
         createRequest: @escaping () throws -> TCRequest,
         skipAuthorization: Bool,
-        executor: @escaping (TCHTTPRequest, EventLoop, Logger) -> EventLoopFuture<TCResponse>,
+        executor: @escaping (TCRequest, EventLoop, Logger) -> EventLoopFuture<TCResponse>,
         config: TCServiceConfig,
         outputType: Output.Type,
         logger: Logger,
@@ -398,12 +398,12 @@ extension TCClient {
             service: config.service
         )
         // get credential
-        let future: EventLoopFuture<Output> = createSigner(serviceConfig: config, logger: logger)
-            .flatMapThrowing { signer -> TCHTTPRequest in
+        let future: EventLoopFuture<Output> = self.createSigner(serviceConfig: config, logger: logger)
+            .flatMapThrowing { signer -> TCRequest in
                 // create request and sign with signer
-                let tcRequest = try createRequest()
-                return tcRequest.createHTTPRequest(signer: signer, serviceConfig: config,
-                                                   signingMode: skipAuthorization ? .skip : self.signingMode)
+                var request = try createRequest()
+                request.signHeaders(with: signer, signingMode: skipAuthorization ? .skip : self.signingMode)
+                return request
             }.flatMap { request -> EventLoopFuture<Output> in
                 self.invoke(
                     with: config,

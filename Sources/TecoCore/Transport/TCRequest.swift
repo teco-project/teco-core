@@ -36,43 +36,41 @@ struct TCRequest {
     /// Request Tencent Cloud region.
     private let region: TCRegion?
     /// Request URL.
-    private let url: URL
+    internal let url: URL
     /// Request HTTP method.
-    private let httpMethod: HTTPMethod
+    internal let httpMethod: HTTPMethod
     /// Request HTTP headers.
-    private var httpHeaders: HTTPHeaders
+    internal var httpHeaders: HTTPHeaders
     /// Request body.
-    private let body: Body
+    internal let body: Body
 
-    /// Create HTTP Client request from ``TCRequest``.
+    /// Sign the request headers with given configuration.
     ///
-    /// If the signer's credentials are available the request will be signed. Otherwise defaults to an unsigned request.
-    internal func createHTTPRequest(signer: TCSigner, serviceConfig: TCServiceConfig, signingMode: TCSigner.SigningMode) -> TCHTTPRequest {
+    /// - Parameters:
+    ///   - signer: Tencent Cloud API signer to use.
+    ///   - signingMode: Signing mode.
+    internal mutating func signHeaders(with signer: TCSigner, signingMode: TCSigner.SigningMode) {
         // if credentials are empty don't sign request
-        if signingMode != .skip && signer.credential.isEmpty {
-            return self.toHTTPRequest(byteBufferAllocator: serviceConfig.byteBufferAllocator)
+        guard signingMode == .skip || !signer.credential.isEmpty else {
+            assertionFailure("Empty credential provided for request!")
+            return
         }
-
-        return self.toHTTPRequestWithSignedHeader(signer: signer, serviceConfig: serviceConfig, signingMode: signingMode)
-    }
-
-    /// Create HTTP Client request from ``TCRequest``.
-    private func toHTTPRequest(byteBufferAllocator: ByteBufferAllocator) -> TCHTTPRequest {
-        return TCHTTPRequest(url: url, method: httpMethod, headers: httpHeaders, body: body.asPayload())
-    }
-
-    /// Create HTTP Client request with signed headers from ``TCRequest``.
-    private func toHTTPRequestWithSignedHeader(signer: TCSigner, serviceConfig: TCServiceConfig, signingMode: TCSigner.SigningMode) -> TCHTTPRequest {
-        let payload = self.body.asPayload()
-        let bodyDataForSigning: TCSigner.BodyData?
-        switch payload.payload {
+        // get body for signing
+        let bodyData: TCSigner.BodyData?
+        switch self.body.asPayload().payload {
         case .byteBuffer(let buffer):
-            bodyDataForSigning = .byteBuffer(buffer)
+            bodyData = .byteBuffer(buffer)
         case .empty:
-            bodyDataForSigning = nil
+            bodyData = nil
         }
-        let signedHeaders = signer.signHeaders(url: url, method: httpMethod, headers: httpHeaders, body: bodyDataForSigning, mode: signingMode, date: Date())
-        return TCHTTPRequest(url: url, method: httpMethod, headers: signedHeaders, body: payload)
+        // replace original headers with signed ones
+        httpHeaders = signer.signHeaders(
+            url: url,
+            method: httpMethod,
+            headers: httpHeaders,
+            body: bodyData,
+            mode: signingMode
+        )
     }
 }
 
