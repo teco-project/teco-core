@@ -88,7 +88,7 @@ public struct TCPayload: Sendable {
         switch self.payload {
         case .byteBuffer(let byteBuffer):
             return byteBuffer.getString(at: byteBuffer.readerIndex, length: byteBuffer.readableBytes)
-        default:
+        case .empty:
             return nil
         }
     }
@@ -98,7 +98,7 @@ public struct TCPayload: Sendable {
         switch self.payload {
         case .byteBuffer(let byteBuffer):
             return byteBuffer
-        default:
+        case .empty:
             return nil
         }
     }

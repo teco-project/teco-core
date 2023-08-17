@@ -58,12 +58,12 @@ struct TCRequest {
 
     /// Create HTTP Client request from ``TCRequest``.
     private func toHTTPRequest(byteBufferAllocator: ByteBufferAllocator) -> TCHTTPRequest {
-        return TCHTTPRequest(url: url, method: httpMethod, headers: httpHeaders, body: body.asPayload(byteBufferAllocator: byteBufferAllocator))
+        return TCHTTPRequest(url: url, method: httpMethod, headers: httpHeaders, body: body.asPayload())
     }
 
     /// Create HTTP Client request with signed headers from ``TCRequest``.
     private func toHTTPRequestWithSignedHeader(signer: TCSigner, serviceConfig: TCServiceConfig, signingMode: TCSigner.SigningMode) -> TCHTTPRequest {
-        let payload = self.body.asPayload(byteBufferAllocator: serviceConfig.byteBufferAllocator)
+        let payload = self.body.asPayload()
         let bodyDataForSigning: TCSigner.BodyData?
         switch payload.payload {
         case .byteBuffer(let buffer):
@@ -141,8 +141,6 @@ extension TCRequest {
         switch (httpMethod, body) {
         case (.GET, _):
             httpHeaders.replaceOrAdd(name: "content-type", value: "application/x-www-form-urlencoded")
-        case (.POST, .text):
-            httpHeaders.replaceOrAdd(name: "content-type", value: "plain/text")
         case (.POST, .json):
             httpHeaders.replaceOrAdd(name: "content-type", value: "application/json")
         default:

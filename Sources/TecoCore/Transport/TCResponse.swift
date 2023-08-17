@@ -44,16 +44,16 @@ struct TCResponse {
     ///    - response: Raw HTTP response.
     internal init(from response: TCHTTPResponse) throws {
         self.status = response.status
-        
+
         // headers
         self.headers = response.headers
-        
+
         // handle empty body
         guard let body = response.body, body.readableBytes > 0 else {
             self.body = .empty
             return
         }
-        
+
         // tencent cloud api response is always json
         self.body = .json(body)
     }
@@ -64,8 +64,6 @@ struct TCResponse {
         let data: Data?
 
         switch body {
-        case .text(let string):
-            data = string.data(using: .utf8)
         case .json(let buffer):
             data = buffer.getData(at: buffer.readerIndex, length: buffer.readableBytes, byteTransferStrategy: .noCopy)
         default:
