@@ -35,6 +35,7 @@ extension AsyncHTTPClient.HTTPClient {
     ///   - request: HTTP request.
     ///   - timeout: If execution is idle for longer than timeout then throw error.
     ///   - eventLoop: `EventLoop` to run request on.
+    ///   - logger: The logger to use for this request.
     /// - Returns: `EventLoopFuture` that will be fulfilled with request response.
     internal func execute(
         request: TCHTTPRequest,
