@@ -1,5 +1,9 @@
 # ``TecoPaginationHelpers``
 
+@Metadata {
+    @DisplayName("Teco Pagination Helpers")
+}
+
 Pagination support for Tencent Cloud APIs.
 
 ## Overview

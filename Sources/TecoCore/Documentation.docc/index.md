@@ -1,5 +1,9 @@
 #  ``TecoCore``
 
+@Metadata {
+    @DisplayName("Teco Core")
+}
+
 The core library of Teco, an open-source Tencent Cloud SDK for Swift.
 
 ## Overview

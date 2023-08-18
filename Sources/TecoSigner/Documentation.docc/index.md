@@ -1,5 +1,9 @@
 #  ``TecoSigner``
 
+@Metadata {
+    @DisplayName("Teco Signer")
+}
+
 Signing helpers for Tencent Cloud API signature V3.
 
 ## Overview
