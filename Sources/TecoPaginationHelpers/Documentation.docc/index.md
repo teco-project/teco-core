@@ -12,18 +12,19 @@ This module provides helpers for accessing the full paginated result either sync
 
 ### Models
 
-- <doc:TCPaginatedRequest>
-- <doc:TCPaginatedResponse>
-- <doc:TecoCore/TCClient/PaginationError>
+- ``TCPaginatedRequest``
+- ``TCPaginatedResponse``
+
+- ``TecoCore/TCClient/PaginationError``
 
 ### Pagination
 
-- <doc:TecoCore/TCClient/paginate(input:region:command:initialValue:reducer:logger:on:)>
-- <doc:TecoCore/TCClient/paginate(input:region:command:logger:on:)>
-- <doc:TecoCore/TCClient/paginate(input:region:command:callback:logger:on:)>
+- ``TecoCore/TCClient/paginate(input:region:command:initialValue:reducer:logger:on:)``
+- ``TecoCore/TCClient/paginate(input:region:command:logger:on:)``
+- ``TecoCore/TCClient/paginate(input:region:command:callback:logger:on:)``
 
 ### Paginator
 
-- <doc:TecoCore/TCClient/Paginator>
-- <doc:TecoCore/TCClient/PaginatorSequences>
-- <doc:TecoCore/TCClient/Paginator/makeAsyncSequences(input:region:command:logger:on:)>
+- ``TecoCore/TCClient/Paginator``
+- ``TecoCore/TCClient/PaginatorSequences``
+- ``TecoCore/TCClient/Paginator/makeAsyncSequences(input:region:command:logger:on:)``
