@@ -125,8 +125,8 @@ extension TCClient {
     }
 }
 
-extension Logger {
-    fileprivate func attachingPaginationContext(id: Int) -> Logger {
+private extension Logger {
+    func attachingPaginationContext(id: Int) -> Logger {
         var logger = self
         logger[metadataKey: "tc-client-pagination-seq"] = "\(id)"
         return logger
