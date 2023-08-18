@@ -1,6 +1,10 @@
 version: 1
 builder:
   configs:
-    - documentation_targets: [TecoCore, TecoPaginationHelpers, TecoSigner]
+    - documentation_targets:
+        - TecoCore
+        - TecoDateHelpers
+        - TecoPaginationHelpers
+        - TecoSigner
       custom_documentation_parameters: ['--include-extended-types']
       platform: linux

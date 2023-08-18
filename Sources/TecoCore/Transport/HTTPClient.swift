@@ -35,6 +35,7 @@ extension AsyncHTTPClient.HTTPClient {
     ///   - request: HTTP request.
     ///   - timeout: If execution is idle for longer than timeout then throw error.
     ///   - eventLoop: `EventLoop` to run request on.
+    ///   - logger: The logger to use for this request.
     /// - Returns: `EventLoopFuture` that will be fulfilled with request response.
     internal func execute(
         request: TCHTTPRequest,
@@ -43,7 +44,7 @@ extension AsyncHTTPClient.HTTPClient {
         logger: Logger
     ) -> EventLoopFuture<TCHTTPResponse> {
         do {
-            let request = try HTTPClient.Request(
+            let request = try Request(
                 url: request.url,
                 method: request.method,
                 headers: request.headers,
@@ -55,7 +56,7 @@ extension AsyncHTTPClient.HTTPClient {
                 on: eventLoop,
                 logger: logger
             ).flatMapThrowing { response in
-                try TCHTTPResponse(status: response.status, headers: response.headers, body: response.body)
+                try .init(status: response.status, headers: response.headers, body: response.body)
             }
         } catch {
             return eventLoopGroup.next().makeFailedFuture(error)
@@ -74,7 +75,7 @@ extension AsyncHTTPClient.HTTPClient {
         timeout: TimeAmount,
         on eventLoop: EventLoop,
         logger: Logger? = nil
-    ) -> EventLoopFuture<HTTPClient.Response> {
+    ) -> EventLoopFuture<Response> {
         self.execute(
             request: request,
             eventLoop: .delegate(on: eventLoop),
