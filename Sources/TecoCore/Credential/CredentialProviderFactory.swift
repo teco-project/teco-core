@@ -71,7 +71,7 @@ extension CredentialProviderFactory {
         Self(cb: factory)
     }
 
-    /// Get ``Credential`` details from the environment.
+    /// Get `Credential` details from the environment.
     ///
     /// Looks in environment variables `TENCENTCLOUD_SECRET_ID`, `TENCENTCLOUD_SECRET_KEY` and `TENCENTCLOUD_TOKEN`.
     public static var environment: CredentialProviderFactory {
@@ -95,7 +95,7 @@ extension CredentialProviderFactory {
         }
     }
 
-    /// Get ``Credential`` details from SCF environment variables.
+    /// Get `Credential` details from SCF environment variables.
     ///
     /// Looks in environment variables `TENCENTCLOUD_SECRETID`, `TENCENTCLOUD_SECRETKEY` and `TENCENTCLOUD_SESSIONTOKEN`.
     public static var scf: CredentialProviderFactory {

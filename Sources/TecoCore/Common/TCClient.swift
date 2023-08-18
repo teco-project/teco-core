@@ -244,7 +244,7 @@ extension TCClient {
     ///    - input: API request payload.
     ///    - logger: Logger to log request details to.
     ///    - eventLoop: `EventLoop` to run request on.
-    /// - Returns: ``EventLoopFuture`` containing output object that completes when response is received.
+    /// - Returns: `EventLoopFuture` containing output object that completes when response is received.
     public func execute<Input: TCRequestModel, Output: TCResponseModel>(
         action: String,
         path: String = "/",
@@ -289,7 +289,7 @@ extension TCClient {
     ///    - skipAuthorization: If "Authorization" header should be set to `SKIP`.
     ///    - logger: Logger to log request details to.
     ///    - eventLoop: `EventLoop` to run request on.
-    /// - Returns: ``EventLoopFuture`` containing output object that completes when response is received.
+    /// - Returns: `EventLoopFuture` containing output object that completes when response is received.
     public func execute<Output: TCResponseModel>(
         action: String,
         path: String = "/",

@@ -26,7 +26,7 @@ extension TCClient {
     ///   - reducer: Function to combine responses into result value. This combined result is returned along with a boolean indicating if the pagination should continue.
     ///   - logger: Logger to log request details to.
     ///   - eventLoop: `EventLoop` to run request on.
-    /// - Returns: ``EventLoopFuture`` containing the combined result.
+    /// - Returns: `EventLoopFuture` containing the combined result.
     public func paginate<Result, Input: TCPaginatedRequest, Output: TCPaginatedResponse>(
         input: Input,
         region: TCRegion? = nil,
@@ -72,7 +72,7 @@ extension TCClient {
     ///   - command: Command to be paginated.
     ///   - logger: Logger to log request details to.
     ///   - eventLoop: `EventLoop` to run request on.
-    /// - Returns: ``EventLoopFuture`` containing total item count and complete output object list from a series of requests.
+    /// - Returns: `EventLoopFuture` containing total item count and complete output object list from a series of requests.
     public func paginate<Input: TCPaginatedRequest, Output: TCPaginatedResponse>(
         input: Input,
         region: TCRegion? = nil,
