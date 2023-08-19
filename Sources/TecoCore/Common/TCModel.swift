@@ -12,8 +12,6 @@
 //===----------------------------------------------------------------------===//
 
 /// Protocol for the input and output data objects for all Tencent Cloud service commands.
-///
-/// The model must be codable in both directions.
 public protocol TCModel: Codable, _TecoSendable {}
 
 /// ``TCModel`` that can be used in API input.
