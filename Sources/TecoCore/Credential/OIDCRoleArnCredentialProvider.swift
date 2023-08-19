@@ -18,7 +18,7 @@ import Logging
 import NIOCore
 import TecoSigner
 
-struct STSAssumeRoleWithWebIdentityRequest: TCRequestModel {
+struct STSAssumeRoleWithWebIdentityRequest: TCRequest {
     /// Identity provider name.
     let providerId: String
     /// OIDC token issued by the IdP.
@@ -49,7 +49,7 @@ struct STSAssumeRoleWithWebIdentityRequest: TCRequestModel {
     }
 }
 
-private struct STSAssumeRoleWithWebIdentityResponse: TCResponseModel {
+private struct STSAssumeRoleWithWebIdentityResponse: TCResponse {
     /// Temporary security credentials.
     let credentials: Credentials
     /// Credentials expiration time in Unix timestamp.

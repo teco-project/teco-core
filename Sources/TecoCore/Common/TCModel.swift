@@ -25,12 +25,12 @@ public protocol TCInputModel: TCModel {}
 public protocol TCOutputModel: TCModel {}
 
 /// ``TCInputModel`` that serves as request payload.
-public protocol TCRequestModel: TCInputModel {}
+public protocol TCRequest: TCInputModel {}
 
 /// ``TCOutputModel`` that serves as response payload.
 ///
 /// Holds the request ID assigned by Tencent Cloud.
-public protocol TCResponseModel: TCOutputModel {
+public protocol TCResponse: TCOutputModel {
     /// Request ID assigned by Tencent Cloud uniquely for every API request.
     var requestId: String { get }
 }

@@ -19,7 +19,7 @@ import Logging
 import NIOCore
 import TecoSigner
 
-struct STSAssumeRoleRequest: TCRequestModel {
+struct STSAssumeRoleRequest: TCRequest {
     /// Resource descriptions of a role, which can be obtained by clicking the role name in the CAM console.
     ///
     /// General role example:
@@ -64,7 +64,7 @@ struct STSAssumeRoleRequest: TCRequestModel {
     }
 }
 
-private struct STSAssumeRoleResponse: TCResponseModel {
+private struct STSAssumeRoleResponse: TCResponse {
     /// Temporary security credentials.
     let credentials: Credentials
     /// Credentials expiration time in Unix timestamp.
