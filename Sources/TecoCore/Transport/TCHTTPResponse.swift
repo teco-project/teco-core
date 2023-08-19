@@ -70,7 +70,7 @@ struct TCHTTPResponse {
     }
 
     /// Generate ``TCModel`` from ``TCHTTPResponse``.
-    internal func generateOutputData<Output: TCResponseModel>(
+    internal func generateOutputData<Output: TCResponse>(
         errorType: TCErrorType.Type? = nil,
         errorLogLevel: Logger.Level = .info,
         logger: Logger
@@ -114,7 +114,7 @@ struct TCHTTPResponse {
 
 extension TCHTTPResponse {
     /// Container that holds an API response.
-    private struct Container<Output: TCResponseModel>: Decodable {
+    private struct Container<Output: TCResponse>: Decodable {
         let response: Output
 
         enum CodingKeys: String, CodingKey {
@@ -131,7 +131,7 @@ extension TCHTTPResponse {
     }
 
     /// Error payload used in JSON output.
-    private struct APIError: TCResponseModel, Error {
+    private struct APIError: TCResponse, Error {
         let error: Error
         let requestId: String
 

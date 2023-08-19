@@ -36,9 +36,9 @@ import TecoSigner
 
 /// Client managing communication with Tencent Cloud services.
 ///
-/// This is the workhorse of TecoCore. You provide it with a ``TCRequestModel``, it converts it to `TCHTTPRequest` which is then converted to a raw `HTTPClient` request. This is then sent to Tencent Cloud.
+/// This is the workhorse of TecoCore. You provide it with a ``TCRequest``, it converts it to `TCHTTPRequest` which is then converted to a raw `HTTPClient` request. This is then sent to Tencent Cloud.
 ///
-/// When the response from Tencent Cloud is received, it will be converted to a `TCHTTPResponse`, which is then decoded to generate a ``TCResponseModel`` or to create and throw a ``TCErrorType``.
+/// When the response from Tencent Cloud is received, it will be converted to a `TCHTTPResponse`, which is then decoded to generate a ``TCResponse`` or to create and throw a ``TCErrorType``.
 public final class TCClient: _TecoSendable {
     // MARK: Member variables
 
@@ -245,7 +245,7 @@ extension TCClient {
     ///    - logger: Logger to log request details to.
     ///    - eventLoop: `EventLoop` to run request on.
     /// - Returns: `EventLoopFuture` containing output object that completes when response is received.
-    public func execute<Input: TCRequestModel, Output: TCResponseModel>(
+    public func execute<Input: TCRequest, Output: TCResponse>(
         action: String,
         path: String = "/",
         region: TCRegion? = nil,
@@ -290,7 +290,7 @@ extension TCClient {
     ///    - logger: Logger to log request details to.
     ///    - eventLoop: `EventLoop` to run request on.
     /// - Returns: `EventLoopFuture` containing output object that completes when response is received.
-    public func execute<Output: TCResponseModel>(
+    public func execute<Output: TCResponse>(
         action: String,
         path: String = "/",
         region: TCRegion? = nil,
@@ -382,7 +382,7 @@ extension TCClient {
 
 extension TCClient {
     /// The core executor.
-    private func execute<Output: TCResponseModel>(
+    private func execute<Output: TCResponse>(
         action: String,
         createRequest: @autoclosure @escaping () throws -> TCHTTPRequest,
         skipAuthorization: Bool,
@@ -417,7 +417,7 @@ extension TCClient {
     }
 
     /// The core invoker.
-    private func invoke<Output: TCResponseModel>(
+    private func invoke<Output: TCResponse>(
         with serviceConfig: TCServiceConfig,
         eventLoop: EventLoop,
         logger: Logger,

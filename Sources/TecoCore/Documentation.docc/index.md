@@ -33,7 +33,10 @@ This library provides most common functionalities around calling Tencent Cloud A
 - ``TCInputModel``
 - ``TCOutputModel``
 
+- ``TCRequest``
 - ``TCRequestModel``
+
+- ``TCResponse``
 - ``TCResponseModel``
 
 ### Credentials

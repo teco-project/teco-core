@@ -17,6 +17,16 @@ import NIOCore
 import NIOFoundationCompat
 import NIOHTTP1
 
+/// ``TCInputModel`` that serves as request payload.
+@available(*, deprecated, renamed: "TCRequest")
+public typealias TCRequestModel = TCRequest
+
+/// ``TCOutputModel`` that serves as response payload.
+///
+/// Holds the request ID assigned by Tencent Cloud.
+@available(*, deprecated, renamed: "TCResponse")
+public typealias TCResponseModel = TCResponse
+
 /// Holds a request or response payload.
 ///
 /// Currently request or response payloads only come in the form of a `ByteBuffer`.
