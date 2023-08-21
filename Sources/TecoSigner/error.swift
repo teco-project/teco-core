@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-/// Errors returned by ``TCSignerV3``.
+/// Errors returned by Teco signers.
 public enum TCSignerError: Error, CustomStringConvertible {
     /// URL provided to the signer is invalid.
     case invalidURL

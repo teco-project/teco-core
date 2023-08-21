@@ -1,4 +1,4 @@
-# Signing API requests
+# Signing API requests with `TC3-HMAC-SHA256`
 
 Generate properly-signed HTTP headers for your Tencent Cloud API request.
 
@@ -6,7 +6,7 @@ Generate properly-signed HTTP headers for your Tencent Cloud API request.
 
 Tencent Cloud API authenticates every single request, i.e., the request must be signed using the security credentials in the designated steps. Each request has to contain the signature information and be sent in the specified way and format.
 
-``TCSigner`` makes it easy to sign an API request using the `TC3-HMAC-SHA256` signature algorithm, which is recommended for higher security and better performance.
+``TCSignerV3`` makes it easy to sign an API request using the `TC3-HMAC-SHA256` signature algorithm, which is recommended for higher security and better performance.
 
 ## Create a signer instance
 
@@ -25,7 +25,7 @@ let credential = StaticCredential(secretId: "YOUR_SECRET_ID", secretKey: "YOUR_S
 Then create a signer to sign requests for a service.
 
 ```swift
-let signer = TCSigner(credential: credential, service: "cvm")
+let signer = TCSignerV3(credential: credential, service: "cvm")
 ```
 
 ## Prepare a request for signing
@@ -38,10 +38,10 @@ Make sure the request URL is compatible with [RFC 3986](https://www.rfc-editor.o
 let url = URL(string: "https://cvm.tencentcloudapi.com/")!
 ```
 
-Wrap the request body into ``TCSigner/BodyData``. The following sample uses an empty JSON body.
+Wrap the request body into ``TCSignerV3/BodyData``. The following sample uses an empty JSON body.
 
 ```swift
-let body: TCSigner.BodyData = .string("{}")
+let body: TCSignerV3.BodyData = .string("{}")
 ```
 
 Supply required HTTP headers, which must include `Content-Type`. Common parameters often use keys in the form of `X-TC-<Param>`. You may also add custom header fields depending on your use case. 
@@ -59,7 +59,7 @@ let headers: HTTPHeaders = [
 
 ## Generate signed request headers
 
-You can generate signed headers using ``TCSigner/signHeaders(url:method:headers:body:mode:omitSessionToken:date:)-7a50k``. The following sample shows a simple signing step with request URL, headers and body.
+You can generate signed headers using ``TCSignerV3/signHeaders(url:method:headers:body:mode:omitSessionToken:date:)-b8bp``. The following sample shows a simple signing step with request URL, headers and body.
 
 ```swift
 let signedHeaders = signer.signHeaders(url: url, headers: headers, body: body)
@@ -81,7 +81,7 @@ let signedHeadersForGETRequest = try signer.signHeaders(
 )
 ```
 
-Note that there is a convenience helper ``TCSigner/signHeaders(url:method:headers:body:mode:omitSessionToken:date:)-9aula`` which accepts the request URL in string, and may throw if the input is not valid URL.
+Note that there is a convenience helper ``TCSignerV3/signHeaders(url:method:headers:body:mode:omitSessionToken:date:)-1rcp6`` which accepts the request URL in string, and may throw if the input is not valid URL.
 
 There are some other configurations to control signing behavior. For example, `omitSessionToken` specifies whether ``Credential/token`` is used for signature.
 
@@ -94,7 +94,7 @@ let signedHeadersOmittingToken = signer.signHeaders(
 )
 ```
 
-``TCSigner/SigningMode`` controls how the signer signs a request. By default, the signer takes all statically available headers for maximal security. The following sample uses minimal signing mode, which is slightly faster while being less secure.
+``TCSignerV3/SigningMode`` controls how the signer signs a request. By default, the signer takes all statically available headers for maximal security. The following sample uses minimal signing mode, which is slightly faster while being less secure.
 
 ```swift
 let signedHeadersUsingMinimalMode = signer.signHeaders(

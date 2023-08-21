@@ -1,4 +1,4 @@
-# ``TecoSigner/TCSigner/SigningMode/minimal``
+# ``TecoSigner/TCSignerV3/SigningMode/minimal``
 
 ## Discussion
 
