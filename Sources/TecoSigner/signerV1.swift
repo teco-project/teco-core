@@ -39,7 +39,7 @@ public struct TCSignerV1: _SignerSendable {
     ///
     /// - Parameters:
     ///   - url: Request URL string (RFC 3986).
-    ///   - method: Request HTTP method.
+    ///   - method: Request HTTP method. Defaults to`.GET`.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - date: Date that URL is valid from, defaults to now.
     /// - Returns: Query string with added "Signature" field that contains request signature.
@@ -50,17 +50,17 @@ public struct TCSignerV1: _SignerSendable {
         omitSessionToken: Bool = false,
         date: Date = Date()
     ) throws -> String {
-        guard let url = URL(string: url) else {
+        guard let url = URLComponents(string: url), let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        return try self.signQueryString(url: url, method: method, omitSessionToken: omitSessionToken, date: date)
+        return self.signQueryString(host: host, path: url.path, queryItems: url.queryItems, method: method, omitSessionToken: omitSessionToken, date: date)
     }
 
     /// Generate signed query string, for an HTTP request.
     ///
     /// - Parameters:
     ///   - url: Request URL (RFC 3986).
-    ///   - method: Request HTTP method.
+    ///   - method: Request HTTP method. Defaults to`.GET`.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - date: Date that URL is valid from, defaults to now.
     /// - Returns: Query string with added "Signature" field that contains request signature.
@@ -71,10 +71,115 @@ public struct TCSignerV1: _SignerSendable {
         omitSessionToken: Bool = false,
         date: Date = Date()
     ) throws -> String {
-        guard let url = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+        guard let url = URLComponents(url: url, resolvingAgainstBaseURL: false), let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        var queryItems = url.queryItems ?? []
+        return self.signQueryString(host: host, path: url.path, queryItems: url.queryItems, method: method, omitSessionToken: omitSessionToken, date: date)
+    }
+
+    /// Generate signed query string, for an HTTP request.
+    ///
+    /// - Parameters:
+    ///   - url: Request URL (RFC 3986).
+    ///   - query: Request query string.
+    ///   - method: Request HTTP method. Defaults to`.POST`.
+    ///   - omitSessionToken: Should we include security token in the canonical headers.
+    ///   - date: Date that URL is valid from, defaults to now.
+    /// - Returns: Query string with added "Signature" field that contains request signature.
+    /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
+    public func signQueryString(
+        url: String,
+        query: String?,
+        method: HTTPMethod = .POST,
+        omitSessionToken: Bool = false,
+        date: Date = Date()
+    ) throws -> String {
+        guard let url = URL(string: url), let host = url.host else {
+            throw TCSignerError.invalidURL
+        }
+        let queryItems: [URLQueryItem]? = {
+            var url = URLComponents()
+            url.query = query
+            return url.queryItems
+        }()
+        return self.signQueryString(host: host, path: url.path, queryItems: queryItems, method: method, omitSessionToken: omitSessionToken, date: date)
+    }
+
+    /// Generate signed query string, for an HTTP request.
+    ///
+    /// - Parameters:
+    ///   - url: Request URL (RFC 3986).
+    ///   - query: Request query string.
+    ///   - method: Request HTTP method. Defaults to`.POST`.
+    ///   - omitSessionToken: Should we include security token in the canonical headers.
+    ///   - date: Date that URL is valid from, defaults to now.
+    /// - Returns: Query string with added "Signature" field that contains request signature.
+    /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
+    public func signQueryString(
+        url: URL,
+        query: String?,
+        method: HTTPMethod = .POST,
+        omitSessionToken: Bool = false,
+        date: Date = Date()
+    ) throws -> String {
+        guard let host = url.host else {
+            throw TCSignerError.invalidURL
+        }
+        let queryItems: [URLQueryItem]? = {
+            var url = URLComponents()
+            url.query = query
+            return url.queryItems
+        }()
+        return self.signQueryString(host: host, path: url.path, queryItems: queryItems, method: method, omitSessionToken: omitSessionToken, date: date)
+    }
+
+    /// Generate signed query string, for an HTTP request.
+    ///
+    /// - Parameters:
+    ///   - host: Request HTTP host.
+    ///   - path: Request URL path.
+    ///   - query: Request query string.
+    ///   - method: Request HTTP method. Defaults to`.GET`.
+    ///   - omitSessionToken: Should we include security token in the canonical headers.
+    ///   - date: Date that URL is valid from, defaults to now.
+    /// - Returns: Query string with added "Signature" field that contains request signature.
+    /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
+    public func signQueryString(
+        host: String,
+        path: String = "/",
+        query: String?,
+        method: HTTPMethod = .GET,
+        omitSessionToken: Bool = false,
+        date: Date = Date()
+    ) -> String {
+        let queryItems: [URLQueryItem]? = {
+            var url = URLComponents()
+            url.query = query
+            return url.queryItems
+        }()
+        return self.signQueryString(host: host, path: path, queryItems: queryItems, method: method, omitSessionToken: omitSessionToken, date: date)
+    }
+
+    /// Generate signed query string, for an HTTP request.
+    ///
+    /// - Parameters:
+    ///   - host: Request HTTP host.
+    ///   - path: Request URL path.
+    ///   - queryItems: Request query items.
+    ///   - method: Request HTTP method. Defaults to`.GET`.
+    ///   - omitSessionToken: Should we include security token in the canonical headers.
+    ///   - date: Date that URL is valid from, defaults to now.
+    /// - Returns: Query string with added "Signature" field that contains request signature.
+    /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
+    public func signQueryString(
+        host: String,
+        path: String = "/",
+        queryItems: [URLQueryItem]?,
+        method: HTTPMethod = .GET,
+        omitSessionToken: Bool = false,
+        date: Date = Date()
+    ) -> String {
+        var queryItems = queryItems ?? []
 
         // set timestamp and nonce
         queryItems.replaceOrAdd(name: "Timestamp", value: TCSignerV1.timestamp(date))
@@ -89,7 +194,7 @@ public struct TCSignerV1: _SignerSendable {
         }
 
         // construct signing data. Do this after adding query items as it uses data from them
-        let signingData = SigningData(host: url.host, path: url.path, queryItems: queryItems, method: method)
+        let signingData = SigningData(host: host, path: path, queryItems: queryItems, method: method)
 
         // add "Signature" field
         queryItems.replaceOrAdd(name: "Signature", value: signature(signingData: signingData))
