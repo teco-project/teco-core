@@ -16,6 +16,7 @@
 #else
 import struct Foundation.Data
 #endif
+import struct Foundation.CharacterSet
 import struct Foundation.Date
 import struct Foundation.URL
 import struct Foundation.URLComponents
@@ -217,9 +218,7 @@ public struct TCSignerV1: _SignerSendable {
         }
 
         // compose query items into string
-        var composedURL = URLComponents()
-        composedURL.queryItems = queryItems.sorted(by: { $0.name < $1.name })
-        return composedURL.percentEncodedQuery ?? ""
+        return TCSignerV1.percentEncodedQuery(queryItems)
     }
 }
 
@@ -267,6 +266,23 @@ extension TCSignerV1 {
     /// return a random unsigned integer for request nonce
     static func nonce() -> String {
         String(Int32.random(in: 0...Int32.max))
+    }
+
+    /// return the query string that is percent encoded properly
+    static func percentEncodedQuery(_ queryItems: [URLQueryItem]) -> String {
+        queryItems.sorted(by: { $0.name < $1.name })
+            .map { "\($0.name)=\($0.value?.queryEncoded() ?? "")" }
+            .joined(separator: "&")
+    }
+}
+
+private extension CharacterSet {
+    static let tcQueryAllowed = CharacterSet.urlQueryAllowed.subtracting(.init(charactersIn: "/;+=&"))
+}
+
+private extension String {
+    func queryEncoded() -> String {
+        self.addingPercentEncoding(withAllowedCharacters: .tcQueryAllowed) ?? self
     }
 }
 
