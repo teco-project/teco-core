@@ -90,11 +90,11 @@ public struct TCSignerV3: _SignerSendable {
     ///
     /// - Parameters:
     ///   - url: Request URL string (RFC 3986).
-    ///   - method: Request HTTP method.
+    ///   - method: Request HTTP method. Defaults to`.POST`.
     ///   - headers: Request headers.
     ///   - body: Request body.
     ///   - mode: Signing mode.
-    ///   - omitSecurityToken: Should we include security token in the canonical headers.
+    ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - date: Date that URL is valid from, defaults to now.
     /// - Returns: Request headers with added "Authorization" header that contains request signature.
     /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
@@ -117,11 +117,11 @@ public struct TCSignerV3: _SignerSendable {
     ///
     /// - Parameters:
     ///   - url: Request URL (RFC 3986).
-    ///   - method: Request HTTP method.
+    ///   - method: Request HTTP method. Defaults to`.POST`.
     ///   - headers: Request headers.
     ///   - body: Request body.
     ///   - mode: Signing mode.
-    ///   - omitSecurityToken: Should we include security token in the canonical headers.
+    ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - date: Date that URL is valid from, defaults to now.
     /// - Returns: Request headers with added "Authorization" header that contains request signature.
     public func signHeaders(
@@ -133,12 +133,15 @@ public struct TCSignerV3: _SignerSendable {
         omitSessionToken: Bool = false,
         date: Date = Date()
     ) -> HTTPHeaders {
+        var headers = headers
+
+        // compute required values for signing
         let bodyHash = TCSignerV3.hashedPayload(body)
         let timestamp = TCSignerV3.timestamp(date)
         let dateString = TCSignerV3.dateString(date)
-        var headers = headers
+
         // add timestamp, host and body hash to headers
-        headers.replaceOrAdd(name: "host", value: Self.hostname(from: url))
+        headers.replaceOrAdd(name: "host", value: TCSignerV3.hostname(from: url))
         headers.replaceOrAdd(name: "x-tc-requestclient", value: "Teco")
         headers.replaceOrAdd(name: "x-tc-timestamp", value: timestamp)
         headers.replaceOrAdd(name: "x-tc-content-sha256", value: bodyHash)
@@ -155,7 +158,7 @@ public struct TCSignerV3: _SignerSendable {
         }
 
         // construct signing data. Do this after adding the headers as it uses data from the headers
-        let signingData = TCSignerV3.SigningData(url: url, method: method, headers: headers, body: body, bodyHash: bodyHash, timestamp: timestamp, date: dateString, signer: self, minimal: mode == .minimal)
+        let signingData = SigningData(url: url, method: method, headers: headers, body: body, bodyHash: bodyHash, timestamp: timestamp, date: dateString, signer: self, minimal: mode == .minimal)
 
         // construct authorization string as in https://cloud.tencent.com/document/api/213/30654#4.-.E6.8B.BC.E6.8E.A5-Authorization
         let authorization = "TC3-HMAC-SHA256 " +
@@ -183,8 +186,7 @@ extension TCSignerV3 {
         let hashedPayload: String
         let timestamp: String
         let date: String
-        let headersToSign: [HTTPHeaders.Element]
-        let signedHeaders: String
+        let headers: HTTPHeaders
 
         init(url: URL, method: HTTPMethod, headers: HTTPHeaders = HTTPHeaders(), body: BodyData? = nil, bodyHash: String? = nil, timestamp: String, date: String, signer: TCSignerV3, minimal: Bool = false) {
             self.url = url
@@ -198,15 +200,14 @@ extension TCSignerV3 {
                 self.hashedPayload = TCSignerV3.hashedPayload(body)
             }
 
-            self.headersToSign = TCSignerV3.headersToSign(headers, minimal: minimal)
-            self.signedHeaders = headersToSign.map(\.name).joined(separator: ";")
+            self.headers = TCSignerV3.headersToSign(headers, minimal: minimal)
         }
     }
 
     /// Stage 3 Calculating signature as in https://cloud.tencent.com/document/api/213/30654#3.-.E8.AE.A1.E7.AE.97.E7.AD.BE.E5.90.8D
     func signature(signingData: SigningData) -> String {
-        let secretSigning = self.secretSigning(date: signingData.date)
-        let signature = HMAC<SHA256>.authenticationCode(for: [UInt8](stringToSign(signingData: signingData).utf8), using: secretSigning)
+        let signingSecret = self.signingSecret(date: signingData.date)
+        let signature = HMAC<SHA256>.authenticationCode(for: [UInt8](stringToSign(signingData: signingData).utf8), using: signingSecret)
         return signature.hexDigest()
     }
 
@@ -221,7 +222,7 @@ extension TCSignerV3 {
 
     /// Stage 1 Create the canonical request as in https://cloud.tencent.com/document/api/213/30654#1.-.E6.8B.BC.E6.8E.A5.E8.A7.84.E8.8C.83.E8.AF.B7.E6.B1.82.E4.B8.B2
     func canonicalRequest(signingData: SigningData) -> String {
-        let canonicalHeaders = signingData.headersToSign
+        let canonicalHeaders = signingData.headers
             .map { "\($0.name):\($0.value)\n" }
             .joined()
         let canonicalRequest = "\(signingData.method.rawValue)\n" +
@@ -234,11 +235,11 @@ extension TCSignerV3 {
     }
 
     /// Compute signing key.
-    func secretSigning(date: String) -> SymmetricKey {
+    func signingSecret(date: String) -> SymmetricKey {
         let secretDate = HMAC<SHA256>.authenticationCode(for: [UInt8](date.utf8), using: SymmetricKey(data: [UInt8]("TC3\(credential.secretKey)".utf8)))
         let secretService = HMAC<SHA256>.authenticationCode(for: [UInt8](service.utf8), using: SymmetricKey(data: secretDate))
-        let secretSigning = HMAC<SHA256>.authenticationCode(for: [UInt8]("tc3_request".utf8), using: SymmetricKey(data: secretService))
-        return SymmetricKey(data: secretSigning)
+        let signingSecret = HMAC<SHA256>.authenticationCode(for: [UInt8]("tc3_request".utf8), using: SymmetricKey(data: secretService))
+        return SymmetricKey(data: signingSecret)
     }
 
     /// Create a SHA256 hash of the Requests body.
@@ -276,7 +277,7 @@ extension TCSignerV3 {
     }
 
     /// return the headers for signing requests
-    static func headersToSign(_ headers: HTTPHeaders, minimal: Bool) -> [HTTPHeaders.Element] {
+    static func headersToSign(_ headers: HTTPHeaders, minimal: Bool) -> HTTPHeaders {
         var headersToSign: HTTPHeaders = [:]
 
         if minimal {
@@ -292,9 +293,11 @@ extension TCSignerV3 {
             }
         }
 
-        return headersToSign
-            .map { ($0.name.lowercased(), $0.value.trimmingCharacters(in: .whitespaces).lowercased()) }
-            .sorted { $0.name < $1.name }
+        return HTTPHeaders(
+            headersToSign.map {
+                ($0.name.lowercased(), $0.value.trimmingCharacters(in: .whitespaces).lowercased())
+            }.sorted { $0.0 < $1.0 }
+        )
     }
 
     /// returns port from URL. If port is set to 80 on an http url or 443 on an https url nil is returned
@@ -318,6 +321,9 @@ private extension TCSignerV3.SigningData {
     var canonicalQuery: String {
         // assuming query parameters are already percent encoded correctly
         self.url.query ?? ""
+    }
+    var signedHeaders: String {
+        self.headers.map(\.name).joined(separator: ";")
     }
 }
 
