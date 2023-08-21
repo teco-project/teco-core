@@ -41,8 +41,8 @@ import enum NIOHTTP1.HTTPMethod
 @_implementationOnly import struct Crypto.SHA256
 @_implementationOnly import struct Crypto.SymmetricKey
 
-/// Tencent Cloud API V3 signer (TC3).
-public struct TCSigner: _SignerSendable {
+/// Tencent Cloud API V3 signer (TC3-HMAC-SHA256).
+public struct TCSignerV3: _SignerSendable {
     /// Security credential for accessing Tencent Cloud services.
     public let credential: Credential
     /// Service name you're requesting for.
@@ -133,9 +133,9 @@ public struct TCSigner: _SignerSendable {
         omitSessionToken: Bool = false,
         date: Date = Date()
     ) -> HTTPHeaders {
-        let bodyHash = TCSigner.hashedPayload(body)
-        let timestamp = TCSigner.timestamp(date)
-        let dateString = TCSigner.dateString(date)
+        let bodyHash = TCSignerV3.hashedPayload(body)
+        let timestamp = TCSignerV3.timestamp(date)
+        let dateString = TCSignerV3.dateString(date)
         var headers = headers
         // add timestamp, host and body hash to headers
         headers.replaceOrAdd(name: "host", value: Self.hostname(from: url))
@@ -155,7 +155,7 @@ public struct TCSigner: _SignerSendable {
         }
 
         // construct signing data. Do this after adding the headers as it uses data from the headers
-        let signingData = TCSigner.SigningData(url: url, method: method, headers: headers, body: body, bodyHash: bodyHash, timestamp: timestamp, date: dateString, signer: self, minimal: mode == .minimal)
+        let signingData = TCSignerV3.SigningData(url: url, method: method, headers: headers, body: body, bodyHash: bodyHash, timestamp: timestamp, date: dateString, signer: self, minimal: mode == .minimal)
 
         // construct authorization string as in https://cloud.tencent.com/document/api/213/30654#4.-.E6.8B.BC.E6.8E.A5-Authorization
         let authorization = "TC3-HMAC-SHA256 " +
@@ -175,21 +175,7 @@ public struct TCSigner: _SignerSendable {
     }
 }
 
-/// Errors returned by ``TCSigner``.
-public enum TCSignerError: Error, CustomStringConvertible {
-    /// URL provided to the signer is invalid.
-    case invalidURL
-
-    /// Human readable description of ``TCSignerError``.
-    public var description: String {
-        switch self {
-        case .invalidURL:
-            return "URL provided to the signer is invalid."
-        }
-    }
-}
-
-extension TCSigner {
+extension TCSignerV3 {
     /// structure used to store data used throughout the signing process
     struct SigningData {
         let url: URL
@@ -200,7 +186,7 @@ extension TCSigner {
         let headersToSign: [HTTPHeaders.Element]
         let signedHeaders: String
 
-        init(url: URL, method: HTTPMethod, headers: HTTPHeaders = HTTPHeaders(), body: BodyData? = nil, bodyHash: String? = nil, timestamp: String, date: String, signer: TCSigner, minimal: Bool = false) {
+        init(url: URL, method: HTTPMethod, headers: HTTPHeaders = HTTPHeaders(), body: BodyData? = nil, bodyHash: String? = nil, timestamp: String, date: String, signer: TCSignerV3, minimal: Bool = false) {
             self.url = url
             self.method = method
             self.timestamp = timestamp
@@ -209,10 +195,10 @@ extension TCSigner {
             if let hash = bodyHash {
                 self.hashedPayload = hash
             } else {
-                self.hashedPayload = TCSigner.hashedPayload(body)
+                self.hashedPayload = TCSignerV3.hashedPayload(body)
             }
 
-            self.headersToSign = TCSigner.headersToSign(headers, minimal: minimal)
+            self.headersToSign = TCSignerV3.headersToSign(headers, minimal: minimal)
             self.signedHeaders = headersToSign.map(\.name).joined(separator: ";")
         }
     }
@@ -324,7 +310,7 @@ extension TCSigner {
     }
 }
 
-extension TCSigner.SigningData {
+private extension TCSignerV3.SigningData {
     var canonicalURI: String {
         let path = self.url.path
         return path.isEmpty ? "/" : path
@@ -335,7 +321,7 @@ extension TCSigner.SigningData {
     }
 }
 
-extension Sequence where Element == UInt8 {
+private extension Sequence where Element == UInt8 {
     /// return a hex-encoded string buffer from an array of bytes
     func hexDigest() -> String {
         self.map { String(format: "%02x", $0) }.joined()
