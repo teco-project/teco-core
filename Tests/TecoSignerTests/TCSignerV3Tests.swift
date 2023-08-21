@@ -16,27 +16,7 @@ import NIOHTTP1
 @testable import TecoSigner
 import XCTest
 
-@propertyWrapper struct EnvironmentVariable<Value: LosslessStringConvertible> {
-    var defaultValue: Value
-    var variableName: String
-
-    public init(_ variableName: String, default: Value) {
-        self.defaultValue = `default`
-        self.variableName = variableName
-    }
-
-    public var wrappedValue: Value {
-        guard let value = ProcessInfo.processInfo.environment[variableName] else {
-            return self.defaultValue
-        }
-        return Value(value) ?? self.defaultValue
-    }
-}
-
 final class TCSignerV3Tests: XCTestCase {
-    @EnvironmentVariable("ENABLE_TIMING_TESTS", default: true)
-    static var enableTimingTests: Bool
-
     let credential: Credential = StaticCredential(secretId: "MY_TC_SECRET_ID", secretKey: "MY_TC_SECRET_KEY")
     let credentialWithSessionToken: Credential = StaticCredential(secretId: "MY_TC_SECRET_ID", secretKey: "MY_TC_SECRET_KEY", token: "MY_TC_SESSION_TOKEN")
     let tcSampleCredential: Credential = StaticCredential(secretId: "AKIDz8krbsJ5yKBZQpn74WFkmLPx3EXAMPLE", secretKey: "Gu5t9xGARNpq86cd98joQYCN3EXAMPLE")
