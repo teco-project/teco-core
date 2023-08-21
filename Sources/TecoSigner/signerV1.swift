@@ -41,6 +41,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - url: Request URL string (RFC 3986).
     ///   - method: Request HTTP method. Defaults to`.GET`.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
+    ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
     /// - Returns: Query string with added "Signature" field that contains request signature.
     /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
@@ -48,12 +49,13 @@ public struct TCSignerV1: _SignerSendable {
         url: String,
         method: HTTPMethod = .GET,
         omitSessionToken: Bool = false,
+        nonce: UInt? = nil,
         date: Date = Date()
     ) throws -> String {
         guard let url = URLComponents(string: url), let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        return self.signQueryString(host: host, path: url.path, queryItems: url.queryItems, method: method, omitSessionToken: omitSessionToken, date: date)
+        return self.signQueryString(host: host, path: url.path, queryItems: url.queryItems, method: method, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
     }
 
     /// Generate signed query string, for an HTTP request.
@@ -62,6 +64,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - url: Request URL (RFC 3986).
     ///   - method: Request HTTP method. Defaults to`.GET`.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
+    ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
     /// - Returns: Query string with added "Signature" field that contains request signature.
     /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
@@ -69,12 +72,13 @@ public struct TCSignerV1: _SignerSendable {
         url: URL,
         method: HTTPMethod = .GET,
         omitSessionToken: Bool = false,
+        nonce: UInt? = nil,
         date: Date = Date()
     ) throws -> String {
         guard let url = URLComponents(url: url, resolvingAgainstBaseURL: false), let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        return self.signQueryString(host: host, path: url.path, queryItems: url.queryItems, method: method, omitSessionToken: omitSessionToken, date: date)
+        return self.signQueryString(host: host, path: url.path, queryItems: url.queryItems, method: method, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
     }
 
     /// Generate signed query string, for an HTTP request.
@@ -84,6 +88,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - query: Request query string.
     ///   - method: Request HTTP method. Defaults to`.POST`.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
+    ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
     /// - Returns: Query string with added "Signature" field that contains request signature.
     /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
@@ -92,6 +97,7 @@ public struct TCSignerV1: _SignerSendable {
         query: String?,
         method: HTTPMethod = .POST,
         omitSessionToken: Bool = false,
+        nonce: UInt? = nil,
         date: Date = Date()
     ) throws -> String {
         guard let url = URL(string: url), let host = url.host else {
@@ -102,7 +108,7 @@ public struct TCSignerV1: _SignerSendable {
             url.query = query
             return url.queryItems
         }()
-        return self.signQueryString(host: host, path: url.path, queryItems: queryItems, method: method, omitSessionToken: omitSessionToken, date: date)
+        return self.signQueryString(host: host, path: url.path, queryItems: queryItems, method: method, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
     }
 
     /// Generate signed query string, for an HTTP request.
@@ -112,6 +118,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - query: Request query string.
     ///   - method: Request HTTP method. Defaults to`.POST`.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
+    ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
     /// - Returns: Query string with added "Signature" field that contains request signature.
     /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
@@ -120,6 +127,7 @@ public struct TCSignerV1: _SignerSendable {
         query: String?,
         method: HTTPMethod = .POST,
         omitSessionToken: Bool = false,
+        nonce: UInt? = nil,
         date: Date = Date()
     ) throws -> String {
         guard let host = url.host else {
@@ -130,7 +138,7 @@ public struct TCSignerV1: _SignerSendable {
             url.query = query
             return url.queryItems
         }()
-        return self.signQueryString(host: host, path: url.path, queryItems: queryItems, method: method, omitSessionToken: omitSessionToken, date: date)
+        return self.signQueryString(host: host, path: url.path, queryItems: queryItems, method: method, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
     }
 
     /// Generate signed query string, for an HTTP request.
@@ -141,6 +149,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - query: Request query string.
     ///   - method: Request HTTP method. Defaults to`.GET`.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
+    ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
     /// - Returns: Query string with added "Signature" field that contains request signature.
     /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
@@ -150,6 +159,7 @@ public struct TCSignerV1: _SignerSendable {
         query: String?,
         method: HTTPMethod = .GET,
         omitSessionToken: Bool = false,
+        nonce: UInt? = nil,
         date: Date = Date()
     ) -> String {
         let queryItems: [URLQueryItem]? = {
@@ -157,7 +167,7 @@ public struct TCSignerV1: _SignerSendable {
             url.query = query
             return url.queryItems
         }()
-        return self.signQueryString(host: host, path: path, queryItems: queryItems, method: method, omitSessionToken: omitSessionToken, date: date)
+        return self.signQueryString(host: host, path: path, queryItems: queryItems, method: method, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
     }
 
     /// Generate signed query string, for an HTTP request.
@@ -168,6 +178,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - queryItems: Request query items.
     ///   - method: Request HTTP method. Defaults to`.GET`.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
+    ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
     /// - Returns: Query string with added "Signature" field that contains request signature.
     /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
@@ -177,13 +188,14 @@ public struct TCSignerV1: _SignerSendable {
         queryItems: [URLQueryItem]?,
         method: HTTPMethod = .GET,
         omitSessionToken: Bool = false,
+        nonce: UInt? = nil,
         date: Date = Date()
     ) -> String {
         var queryItems = queryItems ?? []
 
         // set timestamp and nonce
         queryItems.replaceOrAdd(name: "Timestamp", value: TCSignerV1.timestamp(date))
-        queryItems.replaceOrAdd(name: "Nonce", value: TCSignerV1.nonce())
+        queryItems.replaceOrAdd(name: "Nonce", value: nonce.map(String.init) ?? TCSignerV1.nonce())
 
         // add "SecretId" field
         queryItems.replaceOrAdd(name: "SecretId", value: credential.secretId)
