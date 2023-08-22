@@ -83,12 +83,12 @@ final class TCSignerV1Tests: XCTestCase {
     func testCanonicalRequest() throws {
         let url = URLComponents(string: "https://test.com/?item=apple&hello")!
         let signer = TCSignerV1(credential: credential)
-        let query = signer.canonicalQueryString(items: url.queryItems!)
-        XCTAssertEqual(query, "hello=&item=apple")
+        let requestString = signer.requestString(items: url.queryItems!)
+        XCTAssertEqual(requestString, "hello=&item=apple")
 
         let signingData = TCSignerV1.SigningData(host: url.host, path: url.path, queryItems: url.queryItems, method: .POST)
-        let canonicalString = signer.stringToSign(signingData: signingData)
-        XCTAssertEqual(canonicalString, "POSTtest.com/?hello=&item=apple")
+        let signatureOriginalString = signer.signatureOriginalString(signingData: signingData)
+        XCTAssertEqual(signatureOriginalString, "POSTtest.com/?hello=&item=apple")
     }
 
     // MARK: - Tencent Cloud Signer samples

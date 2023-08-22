@@ -238,20 +238,20 @@ extension TCSignerV1 {
         }
     }
 
-    /// Stage 3 Calculating signature as in https://cloud.tencent.com/document/api/213/15693#2.4.-.E7.94.9F.E6.88.90.E7.AD.BE.E5.90.8D.E4.B8.B2
+    /// Stage 3 Calculating signature as in https://www.tencentcloud.com/document/api/213/31575#2.4.-generating-a-signature-string
     func signature(signingData: SigningData) -> String {
         let signingSecret = SymmetricKey(data: [UInt8](credential.secretKey.utf8))
-        let signature = HMAC<Insecure.SHA1>.authenticationCode(for: [UInt8](stringToSign(signingData: signingData).utf8), using: signingSecret)
+        let signature = HMAC<Insecure.SHA1>.authenticationCode(for: [UInt8](signatureOriginalString(signingData: signingData).utf8), using: signingSecret)
         return Data(signature).base64EncodedString()
     }
 
-    /// Stage 2 Create the string to sign as in https://cloud.tencent.com/document/api/213/15693#2.3.-.E6.8B.BC.E6.8E.A5.E7.AD.BE.E5.90.8D.E5.8E.9F.E6.96.87.E5.AD.97.E7.AC.A6.E4.B8.B2
-    func stringToSign(signingData: SigningData) -> String {
-        signingData.method.rawValue + signingData.host + signingData.path + "?" + canonicalQueryString(items: signingData.queryItems)
+    /// Stage 2 Create the signature original string as in https://www.tencentcloud.com/document/api/213/31575#2.3.-concatenating-the-signature-original-string
+    func signatureOriginalString(signingData: SigningData) -> String {
+        signingData.method.rawValue + signingData.host + signingData.path + "?" + requestString(items: signingData.queryItems)
     }
 
-    /// Stage 1 Create the canonical query string as in https://cloud.tencent.com/document/api/213/15693#2.1.-.E5.AF.B9.E5.8F.82.E6.95.B0.E6.8E.92.E5.BA.8F and https://cloud.tencent.com/document/api/213/15693#2.2.-.E6.8B.BC.E6.8E.A5.E8.AF.B7.E6.B1.82.E5.AD.97.E7.AC.A6.E4.B8.B2
-    func canonicalQueryString(items: [URLQueryItem]) -> String {
+    /// Stage 1 Create the request string as in https://www.tencentcloud.com/document/api/213/31575#2.1.-sorting-parameters and https://www.tencentcloud.com/document/api/213/31575#2.2.-concatenating-a-request-string
+    func requestString(items: [URLQueryItem]) -> String {
         let queryItems = items.sorted { $0.name < $1.name }
         return queryItems
             .map { "\($0.name)=\($0.value ?? "")" }

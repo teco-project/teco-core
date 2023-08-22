@@ -160,7 +160,7 @@ public struct TCSignerV3: _SignerSendable {
         // construct signing data. Do this after adding the headers as it uses data from the headers
         let signingData = SigningData(url: url, method: method, headers: headers, body: body, bodyHash: bodyHash, timestamp: timestamp, date: dateString, signer: self, minimal: mode == .minimal)
 
-        // construct authorization string as in https://cloud.tencent.com/document/api/213/30654#4.-.E6.8B.BC.E6.8E.A5-Authorization
+        // construct authorization string as in https://www.tencentcloud.com/document/api/213/33224#4.-concatenating-the-authorization
         let authorization = "TC3-HMAC-SHA256 " +
             "Credential=\(credential.secretId)/\(dateString)/\(service)/tc3_request, " +
             "SignedHeaders=\(signingData.signedHeaders), " +
@@ -204,14 +204,14 @@ extension TCSignerV3 {
         }
     }
 
-    /// Stage 3 Calculating signature as in https://cloud.tencent.com/document/api/213/30654#3.-.E8.AE.A1.E7.AE.97.E7.AD.BE.E5.90.8D
+    /// Stage 3 Calculating signature as in https://www.tencentcloud.com/document/api/213/33224#3.-calculating-the-signature
     func signature(signingData: SigningData) -> String {
         let signingSecret = self.signingSecret(date: signingData.date)
         let signature = HMAC<SHA256>.authenticationCode(for: [UInt8](stringToSign(signingData: signingData).utf8), using: signingSecret)
         return signature.hexDigest()
     }
 
-    /// Stage 2 Create the string to sign as in https://cloud.tencent.com/document/api/213/30654#2.-.E6.8B.BC.E6.8E.A5.E5.BE.85.E7.AD.BE.E5.90.8D.E5.AD.97.E7.AC.A6.E4.B8.B2
+    /// Stage 2 Create the string to sign as in https://www.tencentcloud.com/document/api/213/33224#2.-concatenating-the-string-to-be-signed
     func stringToSign(signingData: SigningData) -> String {
         let stringToSign = "TC3-HMAC-SHA256\n" +
             "\(signingData.timestamp)\n" +
@@ -220,7 +220,7 @@ extension TCSignerV3 {
         return stringToSign
     }
 
-    /// Stage 1 Create the canonical request as in https://cloud.tencent.com/document/api/213/30654#1.-.E6.8B.BC.E6.8E.A5.E8.A7.84.E8.8C.83.E8.AF.B7.E6.B1.82.E4.B8.B2
+    /// Stage 1 Create the canonical request as in https://www.tencentcloud.com/document/api/213/33224#1.-concatenating-the-canonicalrequest-string
     func canonicalRequest(signingData: SigningData) -> String {
         let canonicalHeaders = signingData.headers
             .map { "\($0.name):\($0.value)\n" }
