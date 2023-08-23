@@ -1,4 +1,4 @@
-# Signing API requests with `HmacSHA1` (Unrecommended)
+# Signing API requests with `HmacSHA1` and `HmacSHA256` (Unrecommended)
 
 Generate properly-signed URL query for your Tencent Cloud API request.
 
@@ -6,7 +6,7 @@ Generate properly-signed URL query for your Tencent Cloud API request.
 
 Tencent Cloud API authenticates every single request, i.e., the request must be signed using the security credentials in the designated steps. Each request has to contain the signature information and be sent in the specified way and format.
 
-``TCSignerV1`` makes it easy to sign an API request using the `HmacSHA1` signature algorithm. It may be required for some legacy APIs, but for higher security you should use ``TCSignerV3`` as described in <doc:SignRequestsV3> in the first place.
+``TCSignerV1`` makes it easy to sign an API request using the `HmacSHA1` and `HmacSHA256` signature algorithm. It may be required for some legacy APIs, but for higher security you should use ``TCSignerV3`` as described in <doc:SignRequestsV3> in the first place.
 
 ## Create a signer instance
 
@@ -160,3 +160,13 @@ let signedQueryOmittingToken = try signer.signQueryString(url: url, query omitSe
 ```
 
 You can now use the signed query string as the `POST` request body, and send it to the request URL.
+
+## Use the `HmacSHA256` algorithm
+
+SHA1 is now recognized as an insecure hash function, making `HmacSHA1` unsafe in some situations. `HmacSHA256` is a safer algorithm than `HmacSHA1`, and should be used where applicable.
+
+``TCSignerV1`` has built-in support for the `HmacSHA256` signing algorithm. You can sign a request using `HmacSHA256` by specifying the `algorithm` parameter.
+
+```swift
+let signedQueryWithHmacSHA256 = try signer.signQueryString(url: url, algorithm: .hmacSHA256)
+```
