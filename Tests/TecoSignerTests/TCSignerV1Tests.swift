@@ -16,10 +16,15 @@ import NIOHTTP1
 import XCTest
 
 final class TCSignerV1Tests: XCTestCase {
+
     let credential: Credential = StaticCredential(secretId: "MY_TC_SECRET_ID", secretKey: "MY_TC_SECRET_KEY")
     let credentialWithSessionToken: Credential = StaticCredential(secretId: "MY_TC_SECRET_ID", secretKey: "MY_TC_SECRET_KEY", token: "MY_TC_SESSION_TOKEN")
+
     let tcSampleCredential: Credential = StaticCredential(secretId: "AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******", secretKey: "Gu5t9xGARNpq86cd98joQYCN3*******")
     let tcSampleDate: Date = Date(timeIntervalSince1970: 1465185768)
+
+    let tcSHA256SampleCredential: Credential = StaticCredential(secretId: "AKIDT8G5**********ooNq1rFSw1fyBVCX9D", secretKey: "pxPgRWD******qBTDk7WmeRZSmPco0")
+    let tcSHA256SampleDate: Date = Date(timeIntervalSince1970: 1502197934)
 
     // - MARK: Examples by API Explorer - https://console.cloud.tencent.com/api/explorer
 
@@ -146,6 +151,33 @@ final class TCSignerV1Tests: XCTestCase {
         XCTAssertEqual(
             query,
             "Action=DescribeInstances&InstanceIds.0=ins-09dx96dg&Limit=20&Nonce=11886&Offset=0&Region=ap-guangzhou&SecretId=AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******&Signature=zmmjn35mikh6pM3V7sUEuX4wyYM%3D&Timestamp=1465185768&Version=2017-03-12"
+        )
+    }
+
+    // https://cloud.tencent.com/document/api/228/10771
+    func testTencentCloudSHA256Sample() throws {
+        let signer = TCSignerV1(credential: tcSHA256SampleCredential)
+        let query = signer.signQueryString(
+            host: "cdn.api.qcloud.com",
+            path: "/v2/index.php",
+            queryItems: [
+                .init(name: "Action", value: "DescribeCdnHosts"),
+                .init(name: "SecretId", value: "AKIDT8G5**********ooNq1rFSw1fyBVCX9D"),
+                .init(name: "Timestamp", value: "1502197934"),
+                .init(name: "Nonce", value: "48059"),
+                .init(name: "SignatureMethod", value: "HmacSHA256"),
+                .init(name: "offset", value: "0"),
+                .init(name: "limit", value: "10"),
+            ],
+            method: .GET,
+            algorithm: .hmacSHA256,
+            nonce: 48059,
+            date: tcSHA256SampleDate
+        )
+        // This is manually computed since the document is wrong.
+        XCTAssertEqual(
+            query,
+            "Action=DescribeCdnHosts&Nonce=48059&SecretId=AKIDT8G5**********ooNq1rFSw1fyBVCX9D&Signature=8GGNfQ1HXC%2FJkCjUugwXZKtKuMmkbX9lPxtDdkfNxy8%3D&SignatureMethod=HmacSHA256&Timestamp=1502197934&limit=10&offset=0"
         )
     }
 }
