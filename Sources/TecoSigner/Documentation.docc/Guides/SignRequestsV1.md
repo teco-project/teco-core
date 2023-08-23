@@ -127,20 +127,31 @@ let signedQuery = try signer.signQueryString(url: url, query: query)
 If a `query` parameter is provided along with `url`, the signer assumes the request to use `POST` method by default. It'll also use current time and add a random `nonce` for the request. You can override the behavior based on your use case. The following sample signs a request for 10 seconds ago, with `nonce` set to `888`.
 
 ```swift
-let signedQueryWithNonce = signer.signQueryString(
-    host: "region.tencentcloudapi.com",
+let signedQueryWithNonce = try signer.signQueryString(
+    url: "https://region.tencentcloudapi.com/",
     queryItems: [
         .init(name: "Action", value: "DescribeRegions"),
         .init(name: "Product", value: "cvm"),
         .init(name: "Version", value: "2022-06-27"),
     ],
-    method: .POST,
     nonce: 888,
     date: Date(timeIntervalSinceNow: -10)
 )
 ```
 
 Note that the non-throwing variants ``TCSignerV1/signQueryString(host:path:queryItems:method:omitSessionToken:nonce:date:)`` and ``TCSignerV1/signQueryString(host:path:query:method:omitSessionToken:nonce:date:)`` are still available, but you'll have to specify the `method` parameter for a `POST` request.
+
+```swift
+let signedHandcraftQuery = signer.signQueryString(
+    host: "tag.tencentcloudapi.com",
+    queryItems: [
+        .init(name: "Action", value: "GetTagValues"),
+        .init(name: "Version", value: "2018-08-13"),
+        .init(name: "TagKeys.0", value: "平台"),
+    ],
+    method: .POST
+)
+```
 
 There are some other configurations to control signing behavior. For example, `omitSessionToken` specifies whether ``Credential/token`` is used for signature.
 
