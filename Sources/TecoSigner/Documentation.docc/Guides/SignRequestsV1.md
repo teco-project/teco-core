@@ -1,12 +1,12 @@
-# Signing API requests with `HmacSHA1` (Unrecommended)
+# Signing API requests with `HmacSHA1` and `HmacSHA256` (Unrecommended)
 
-Generate properly-signed URL query for your Tencent Cloud API request.
+Generate properly-signed URL query for your Tencent Cloud API request using signature V1.
 
 ## Overview
 
 Tencent Cloud API authenticates every single request, i.e., the request must be signed using the security credentials in the designated steps. Each request has to contain the signature information and be sent in the specified way and format.
 
-``TCSignerV1`` makes it easy to sign an API request using the `HmacSHA1` signature algorithm. It may be required for some legacy APIs, but for higher security you should use ``TCSignerV3`` as described in <doc:SignRequestsV3> in the first place.
+``TCSignerV1`` makes it easy to sign an API request using the `HmacSHA1` and `HmacSHA256` signature algorithm. It may be required for some legacy APIs, but for higher security you should use ``TCSignerV3`` as described in <doc:SignRequestsV3> in the first place.
 
 ## Create a signer instance
 
@@ -44,7 +44,7 @@ let url = URL(string: "https://region.tencentcloudapi.com/?Action=DescribeProduc
 
 ### Generate signed query string
 
-You can generate signed query string using ``TCSignerV1/signQueryString(url:method:omitSessionToken:nonce:date:)-91hjz``. The following sample shows a simple signing step using request URL.
+You can generate signed query string using ``TCSignerV1/signQueryString(url:method:algorithm:omitSessionToken:nonce:date:)-9ykb0``. The following sample shows a simple signing step using request URL.
 
 ```swift
 let signedQuery = try signer.signQueryString(url: url)
@@ -67,7 +67,7 @@ let signedQueryWithNonce = signer.signQueryString(
 )
 ```
 
-Note that there are non-throwing variants ``TCSignerV1/signQueryString(host:path:queryItems:method:omitSessionToken:nonce:date:)`` and ``TCSignerV1/signQueryString(host:path:query:method:omitSessionToken:nonce:date:)`` which accepts the request host, path and query directly.
+Note that there are non-throwing variants ``TCSignerV1/signQueryString(host:path:queryItems:method:algorithm:omitSessionToken:nonce:date:)`` and ``TCSignerV1/signQueryString(host:path:query:method:algorithm:omitSessionToken:nonce:date:)`` which accepts the request host, path and query directly.
 
 There are some other configurations to control signing behavior. For example, `omitSessionToken` specifies whether ``Credential/token`` is used for signature.
 
@@ -116,7 +116,7 @@ let query = "Action=DescribeProducts&Version=2022-06-27"
 
 ### Generate signed query string
 
-You can generate signed query string using ``TCSignerV1/signQueryString(url:query:method:omitSessionToken:nonce:date:)-8klqy``. The following sample shows a simple signing step using request URL and body.
+You can generate signed query string using ``TCSignerV1/signQueryString(url:query:method:algorithm:omitSessionToken:nonce:date:)-576vr``. The following sample shows a simple signing step using request URL and body.
 
 ```swift
 let signedQuery = try signer.signQueryString(url: url, query: query)
@@ -139,7 +139,7 @@ let signedQueryWithNonce = try signer.signQueryString(
 )
 ```
 
-Note that the non-throwing variants ``TCSignerV1/signQueryString(host:path:queryItems:method:omitSessionToken:nonce:date:)`` and ``TCSignerV1/signQueryString(host:path:query:method:omitSessionToken:nonce:date:)`` are still available, but you'll have to specify the `method` parameter for a `POST` request.
+Note that the non-throwing variants ``TCSignerV1/signQueryString(host:path:queryItems:method:algorithm:omitSessionToken:nonce:date:)`` and ``TCSignerV1/signQueryString(host:path:query:method:algorithm:omitSessionToken:nonce:date:)`` are still available, but you'll have to specify the `method` parameter for a `POST` request.
 
 ```swift
 let signedHandcraftQuery = signer.signQueryString(
@@ -156,7 +156,17 @@ let signedHandcraftQuery = signer.signQueryString(
 There are some other configurations to control signing behavior. For example, `omitSessionToken` specifies whether ``Credential/token`` is used for signature.
 
 ```swift
-let signedQueryOmittingToken = try signer.signQueryString(url: url, query omitSessionToken: true)
+let signedQueryOmittingToken = try signer.signQueryString(url: url, query: query, omitSessionToken: true)
 ```
 
 You can now use the signed query string as the `POST` request body, and send it to the request URL.
+
+## Use the `HmacSHA256` algorithm
+
+SHA1 is now recognized as an insecure hash function, making `HmacSHA1` unsafe in some situations. `HmacSHA256` is a safer algorithm than `HmacSHA1`, and should be used where applicable.
+
+``TCSignerV1`` has built-in support for the `HmacSHA256` signing algorithm. You can sign a request using `HmacSHA256` by specifying the `algorithm` parameter.
+
+```swift
+let signedQueryWithHmacSHA256 = try signer.signQueryString(url: url, algorithm: .hmacSHA256)
+```
