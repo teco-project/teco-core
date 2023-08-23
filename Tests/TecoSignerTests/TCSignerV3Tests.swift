@@ -55,7 +55,7 @@ final class TCSignerV3Tests: XCTestCase {
         )
     }
 
-    // - MARK: Extended Signing
+    // - MARK: Extended signing
 
     func testSignPostRequest() throws {
         let signer = TCSignerV3(credential: credential, service: "region")
@@ -167,7 +167,7 @@ final class TCSignerV3Tests: XCTestCase {
         XCTAssertEqual(headers["authorization"].first, "SKIP")
     }
 
-    // MARK: - Tencent Cloud Signer samples
+    // MARK: - Tencent Cloud signer samples
 
     // https://cloud.tencent.com/document/api/213/30654
     func testTencentCloudSample() throws {

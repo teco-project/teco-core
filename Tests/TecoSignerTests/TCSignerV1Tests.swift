@@ -51,7 +51,7 @@ final class TCSignerV1Tests: XCTestCase {
         )
     }
 
-    // - MARK: More test cases
+    // - MARK: Special query parameters
 
     func testEmptyQueryParameter() throws {
         let signer = TCSignerV1(credential: credential)
@@ -122,7 +122,7 @@ final class TCSignerV1Tests: XCTestCase {
         XCTAssertEqual(signatureOriginalString, "POSTtest.com/?hello=&item=apple")
     }
 
-    // MARK: - Tencent Cloud Signer samples
+    // MARK: - Tencent Cloud signer samples
 
     // https://cloud.tencent.com/document/api/213/30654
     func testTencentCloudSample() throws {
