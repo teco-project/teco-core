@@ -11,12 +11,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#if os(Linux) && compiler(>=5.6)
-@preconcurrency import struct Foundation.Data
-#else
-import struct Foundation.Data
-#endif
 import struct Foundation.CharacterSet
+import struct Foundation.Data
 import struct Foundation.Date
 import struct Foundation.URL
 import struct Foundation.URLComponents
