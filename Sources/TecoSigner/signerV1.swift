@@ -259,6 +259,7 @@ public struct TCSignerV1: _SignerSendable {
         date: Date = Date()
     ) -> String {
         var queryItems = queryItems ?? []
+        queryItems.remove(name: "Signature")
 
         // set timestamp and nonce
         queryItems.replaceOrAdd(name: "Timestamp", value: TCSignerV1.timestamp(date))
@@ -267,14 +268,18 @@ public struct TCSignerV1: _SignerSendable {
         // add "SecretId" field
         queryItems.replaceOrAdd(name: "SecretId", value: credential.secretId)
 
-        // add "SignatureMethod" field for hmac-sha256
-        if algorithm == .hmacSHA256 {
+        // add "SignatureMethod" field
+        if algorithm != .hmacSHA1 {
             queryItems.replaceOrAdd(name: "SignatureMethod", value: algorithm.rawValue)
+        } else {
+            queryItems.remove(name: "SignatureMethod")
         }
 
         // add session token if available
         if !omitSessionToken, let sessionToken = credential.token {
             queryItems.replaceOrAdd(name: "Token", value: sessionToken)
+        } else {
+            queryItems.remove(name: "Token")
         }
 
         // construct signing data. Do this after adding query items as it uses data from them
@@ -370,5 +375,8 @@ private extension RangeReplaceableCollection where Self : MutableCollection, Ele
         } else {
             self.append(queryItem)
         }
+    }
+    mutating func remove(name: String) {
+        self.removeAll(where: { $0.name == name })
     }
 }

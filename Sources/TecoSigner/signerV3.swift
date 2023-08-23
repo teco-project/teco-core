@@ -155,6 +155,8 @@ public struct TCSignerV3: _SignerSendable {
         // add session token if available
         if !omitSessionToken, let sessionToken = credential.token {
             headers.replaceOrAdd(name: "x-tc-token", value: sessionToken)
+        } else {
+            headers.remove(name: "x-tc-token")
         }
 
         // construct signing data. Do this after adding the headers as it uses data from the headers
