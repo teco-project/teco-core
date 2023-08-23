@@ -20,6 +20,9 @@ It also defines the interface of Tencent Cloud security credentials.
 - ``TCSignerV3``
 - ``TCSigner``
 
+- <doc:SignRequestsV1>
+- ``TCSignerV1``
+
 - ``TCSignerError``
 
 ### Credentials
