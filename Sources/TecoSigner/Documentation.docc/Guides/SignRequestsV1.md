@@ -44,7 +44,7 @@ let url = URL(string: "https://region.tencentcloudapi.com/?Action=DescribeProduc
 
 ### Generate signed query string
 
-You can generate signed query string using ``TCSignerV1/signQueryString(url:method:omitSessionToken:nonce:date:)-91hjz``. The following sample shows a simple signing step using request URL.
+You can generate signed query string using ``TCSignerV1/signQueryString(url:method:algorithm:omitSessionToken:nonce:date:)-9ykb0``. The following sample shows a simple signing step using request URL.
 
 ```swift
 let signedQuery = try signer.signQueryString(url: url)
@@ -67,7 +67,7 @@ let signedQueryWithNonce = signer.signQueryString(
 )
 ```
 
-Note that there are non-throwing variants ``TCSignerV1/signQueryString(host:path:queryItems:method:omitSessionToken:nonce:date:)`` and ``TCSignerV1/signQueryString(host:path:query:method:omitSessionToken:nonce:date:)`` which accepts the request host, path and query directly.
+Note that there are non-throwing variants ``TCSignerV1/signQueryString(host:path:queryItems:method:algorithm:omitSessionToken:nonce:date:)`` and ``TCSignerV1/signQueryString(host:path:query:method:algorithm:omitSessionToken:nonce:date:)`` which accepts the request host, path and query directly.
 
 There are some other configurations to control signing behavior. For example, `omitSessionToken` specifies whether ``Credential/token`` is used for signature.
 
@@ -116,7 +116,7 @@ let query = "Action=DescribeProducts&Version=2022-06-27"
 
 ### Generate signed query string
 
-You can generate signed query string using ``TCSignerV1/signQueryString(url:query:method:omitSessionToken:nonce:date:)-8klqy``. The following sample shows a simple signing step using request URL and body.
+You can generate signed query string using ``TCSignerV1/signQueryString(url:query:method:algorithm:omitSessionToken:nonce:date:)-576vr``. The following sample shows a simple signing step using request URL and body.
 
 ```swift
 let signedQuery = try signer.signQueryString(url: url, query: query)
@@ -139,7 +139,7 @@ let signedQueryWithNonce = try signer.signQueryString(
 )
 ```
 
-Note that the non-throwing variants ``TCSignerV1/signQueryString(host:path:queryItems:method:omitSessionToken:nonce:date:)`` and ``TCSignerV1/signQueryString(host:path:query:method:omitSessionToken:nonce:date:)`` are still available, but you'll have to specify the `method` parameter for a `POST` request.
+Note that the non-throwing variants ``TCSignerV1/signQueryString(host:path:queryItems:method:algorithm:omitSessionToken:nonce:date:)`` and ``TCSignerV1/signQueryString(host:path:query:method:algorithm:omitSessionToken:nonce:date:)`` are still available, but you'll have to specify the `method` parameter for a `POST` request.
 
 ```swift
 let signedHandcraftQuery = signer.signQueryString(

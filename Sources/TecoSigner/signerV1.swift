@@ -18,8 +18,10 @@ import struct Foundation.URL
 import struct Foundation.URLComponents
 import struct Foundation.URLQueryItem
 import enum NIOHTTP1.HTTPMethod
+@_implementationOnly import protocol Crypto.HashFunction
 @_implementationOnly import struct Crypto.HMAC
 @_implementationOnly import enum Crypto.Insecure
+@_implementationOnly import struct Crypto.SHA256
 @_implementationOnly import struct Crypto.SymmetricKey
 
 /// Tencent Cloud API V1 signer (HmacSHA1).
@@ -30,6 +32,14 @@ public struct TCSignerV1: _SignerSendable {
     /// Initialize the signer with Tencent Cloud credential.
     public init(credential: Credential) {
         self.credential = credential
+    }
+
+    /// Signing algorithm.
+    public enum Algorithm: String, _SignerSendable {
+        /// Use the `HmacSHA1` signing algorithm.
+        case hmacSHA1 = "HmacSHA1"
+        /// Use the `HmacSHA256` signing algorithm.
+        case hmacSHA256 = "HmacSHA256"
     }
 
     // - MARK: Sign with URL (Defaults to `GET`)
@@ -47,6 +57,7 @@ public struct TCSignerV1: _SignerSendable {
     public func signQueryString(
         url: String,
         method: HTTPMethod = .GET,
+        algorithm: Algorithm = .hmacSHA1,
         omitSessionToken: Bool = false,
         nonce: UInt? = nil,
         date: Date = Date()
@@ -54,7 +65,7 @@ public struct TCSignerV1: _SignerSendable {
         guard let url = URLComponents(string: url), let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        return self.signQueryString(host: host, path: url.path, queryItems: url.queryItems, method: method, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+        return self.signQueryString(host: host, path: url.path, queryItems: url.queryItems, method: method, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
     }
 
     /// Generate signed query string, for an HTTP request.
@@ -70,6 +81,7 @@ public struct TCSignerV1: _SignerSendable {
     public func signQueryString(
         url: URL,
         method: HTTPMethod = .GET,
+        algorithm: Algorithm = .hmacSHA1,
         omitSessionToken: Bool = false,
         nonce: UInt? = nil,
         date: Date = Date()
@@ -77,7 +89,7 @@ public struct TCSignerV1: _SignerSendable {
         guard let url = URLComponents(url: url, resolvingAgainstBaseURL: false), let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        return self.signQueryString(host: host, path: url.path, queryItems: url.queryItems, method: method, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+        return self.signQueryString(host: host, path: url.path, queryItems: url.queryItems, method: method, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
     }
 
     // - MARK: Sign with URL and query (Defaults to `POST`)
@@ -88,6 +100,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - url: Request URL (RFC 3986).
     ///   - query: Request query string.
     ///   - method: Request HTTP method. Defaults to`.POST`.
+    ///   - algorithm: Algorithm used for signing. Defaults to HmacSHA1.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
@@ -97,6 +110,7 @@ public struct TCSignerV1: _SignerSendable {
         url: String,
         query: String?,
         method: HTTPMethod = .POST,
+        algorithm: Algorithm = .hmacSHA1,
         omitSessionToken: Bool = false,
         nonce: UInt? = nil,
         date: Date = Date()
@@ -104,7 +118,7 @@ public struct TCSignerV1: _SignerSendable {
         guard let url = URLComponents(string: url), let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        return self.signQueryString(host: host, path: url.path, query: query, method: method, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+        return self.signQueryString(host: host, path: url.path, query: query, method: method, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
     }
 
     /// Generate signed query string, for an HTTP request.
@@ -113,6 +127,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - url: Request URL (RFC 3986).
     ///   - query: Request query string.
     ///   - method: Request HTTP method. Defaults to`.POST`.
+    ///   - algorithm: Algorithm used for signing. Defaults to HmacSHA1.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
@@ -122,6 +137,7 @@ public struct TCSignerV1: _SignerSendable {
         url: URL,
         query: String?,
         method: HTTPMethod = .POST,
+        algorithm: Algorithm = .hmacSHA1,
         omitSessionToken: Bool = false,
         nonce: UInt? = nil,
         date: Date = Date()
@@ -129,7 +145,7 @@ public struct TCSignerV1: _SignerSendable {
         guard let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        return self.signQueryString(host: host, path: url.path, query: query, method: method, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+        return self.signQueryString(host: host, path: url.path, query: query, method: method, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
     }
 
     /// Generate signed query string, for an HTTP request.
@@ -138,6 +154,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - url: Request URL (RFC 3986).
     ///   - queryItems: Request query items.
     ///   - method: Request HTTP method. Defaults to`.POST`.
+    ///   - algorithm: Algorithm used for signing. Defaults to HmacSHA1.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
@@ -147,6 +164,7 @@ public struct TCSignerV1: _SignerSendable {
         url: String,
         queryItems: [URLQueryItem]?,
         method: HTTPMethod = .POST,
+        algorithm: Algorithm = .hmacSHA1,
         omitSessionToken: Bool = false,
         nonce: UInt? = nil,
         date: Date = Date()
@@ -154,7 +172,7 @@ public struct TCSignerV1: _SignerSendable {
         guard let url = URLComponents(string: url), let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        return self.signQueryString(host: host, path: url.path, queryItems: queryItems, method: method, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+        return self.signQueryString(host: host, path: url.path, queryItems: queryItems, method: method, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
     }
 
     /// Generate signed query string, for an HTTP request.
@@ -163,6 +181,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - url: Request URL (RFC 3986).
     ///   - queryItems: Request query items.
     ///   - method: Request HTTP method. Defaults to`.POST`.
+    ///   - algorithm: Algorithm used for signing. Defaults to HmacSHA1.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
@@ -172,6 +191,7 @@ public struct TCSignerV1: _SignerSendable {
         url: URL,
         queryItems: [URLQueryItem]?,
         method: HTTPMethod = .POST,
+        algorithm: Algorithm = .hmacSHA1,
         omitSessionToken: Bool = false,
         nonce: UInt? = nil,
         date: Date = Date()
@@ -179,7 +199,7 @@ public struct TCSignerV1: _SignerSendable {
         guard let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        return self.signQueryString(host: host, path: url.path, queryItems: queryItems, method: method, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+        return self.signQueryString(host: host, path: url.path, queryItems: queryItems, method: method, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
     }
 
     // - MARK: Sign with host, path and query (Non-throwing)
@@ -191,6 +211,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - path: Request URL path.
     ///   - query: Request query string.
     ///   - method: Request HTTP method. Defaults to`.GET`.
+    ///   - algorithm: Algorithm used for signing. Defaults to HmacSHA1.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
@@ -201,6 +222,7 @@ public struct TCSignerV1: _SignerSendable {
         path: String = "/",
         query: String?,
         method: HTTPMethod = .GET,
+        algorithm: Algorithm = .hmacSHA1,
         omitSessionToken: Bool = false,
         nonce: UInt? = nil,
         date: Date = Date()
@@ -210,7 +232,7 @@ public struct TCSignerV1: _SignerSendable {
             url.query = query
             return url.queryItems
         }()
-        return self.signQueryString(host: host, path: path, queryItems: queryItems, method: method, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+        return self.signQueryString(host: host, path: path, queryItems: queryItems, method: method, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
     }
 
     /// Generate signed query string, for an HTTP request.
@@ -220,6 +242,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - path: Request URL path.
     ///   - queryItems: Request query items.
     ///   - method: Request HTTP method. Defaults to`.GET`.
+    ///   - algorithm: Algorithm used for signing. Defaults to HmacSHA1.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
@@ -230,6 +253,7 @@ public struct TCSignerV1: _SignerSendable {
         path: String = "/",
         queryItems: [URLQueryItem]?,
         method: HTTPMethod = .GET,
+        algorithm: Algorithm = .hmacSHA1,
         omitSessionToken: Bool = false,
         nonce: UInt? = nil,
         date: Date = Date()
@@ -243,6 +267,11 @@ public struct TCSignerV1: _SignerSendable {
         // add "SecretId" field
         queryItems.replaceOrAdd(name: "SecretId", value: credential.secretId)
 
+        // add "SignatureMethod" field for hmac-sha256
+        if algorithm == .hmacSHA256 {
+            queryItems.replaceOrAdd(name: "SignatureMethod", value: algorithm.rawValue)
+        }
+
         // add session token if available
         if !omitSessionToken, let sessionToken = credential.token {
             queryItems.replaceOrAdd(name: "Token", value: sessionToken)
@@ -252,7 +281,12 @@ public struct TCSignerV1: _SignerSendable {
         let signingData = SigningData(host: host, path: path, queryItems: queryItems, method: method)
 
         // add "Signature" field
-        queryItems.replaceOrAdd(name: "Signature", value: signature(signingData: signingData))
+        switch algorithm {
+        case .hmacSHA1:
+            queryItems.replaceOrAdd(name: "Signature", value: signature(signingData: signingData, hashFunction: Insecure.SHA1.self))
+        case .hmacSHA256:
+            queryItems.replaceOrAdd(name: "Signature", value: signature(signingData: signingData, hashFunction: SHA256.self))
+        }
 
         // now we have signed the request we can add the security token if required
         if omitSessionToken, let sessionToken = credential.token {
@@ -281,9 +315,9 @@ extension TCSignerV1 {
     }
 
     /// Stage 3 Calculating signature as in https://www.tencentcloud.com/document/api/213/31575#2.4.-generating-a-signature-string
-    func signature(signingData: SigningData) -> String {
+    func signature<H: HashFunction>(signingData: SigningData, hashFunction: H.Type) -> String {
         let signingSecret = SymmetricKey(data: [UInt8](credential.secretKey.utf8))
-        let signature = HMAC<Insecure.SHA1>.authenticationCode(for: [UInt8](signatureOriginalString(signingData: signingData).utf8), using: signingSecret)
+        let signature = HMAC<H>.authenticationCode(for: [UInt8](signatureOriginalString(signingData: signingData).utf8), using: signingSecret)
         return Data(signature).base64EncodedString()
     }
 
