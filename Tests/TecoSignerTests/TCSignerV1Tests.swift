@@ -11,7 +11,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-import NIOCore
 import NIOHTTP1
 @testable import TecoSigner
 import XCTest
@@ -82,8 +81,8 @@ final class TCSignerV1Tests: XCTestCase {
 
     func testUnicodeParameter() throws {
         let signer = TCSignerV1(credential: credential)
-        let query = signer.signQueryString(
-            host: "tag.tencentcloudapi.com",
+        let query = try signer.signQueryString(
+            url: "https://tag.tencentcloudapi.com/",
             queryItems: [
                 .init(name: "Action", value: "GetTagValues"),
                 .init(name: "Version", value: "2018-08-13"),
@@ -94,7 +93,7 @@ final class TCSignerV1Tests: XCTestCase {
         )
         XCTAssertEqual(
             query,
-            "Action=GetTagValues&Nonce=4906&SecretId=MY_TC_SECRET_ID&Signature=UjS7bczn21DgMabt7pq74p7pCVs%3D&TagKeys.0=%E5%B9%B3%E5%8F%B0&Timestamp=1000000000&Version=2018-08-13"
+            "Action=GetTagValues&Nonce=4906&SecretId=MY_TC_SECRET_ID&Signature=wC32%2Bfkn0vo3B8Ap0yQEWn0gzFc%3D&TagKeys.0=%E5%B9%B3%E5%8F%B0&Timestamp=1000000000&Version=2018-08-13"
         )
     }
 
@@ -140,6 +139,7 @@ final class TCSignerV1Tests: XCTestCase {
                 .init(name: "Timestamp", value: "1465185768"),
                 .init(name: "Version", value: "2017-03-12"),
             ],
+            method: .GET,
             nonce: 11886,
             date: tcSampleDate
         )
