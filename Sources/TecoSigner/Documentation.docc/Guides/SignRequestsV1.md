@@ -1,6 +1,6 @@
 # Signing API requests with `HmacSHA1` and `HmacSHA256` (Unrecommended)
 
-Generate properly-signed URL query for your Tencent Cloud API request.
+Generate properly-signed URL query for your Tencent Cloud API request using signature V1.
 
 ## Overview
 
@@ -156,7 +156,7 @@ let signedHandcraftQuery = signer.signQueryString(
 There are some other configurations to control signing behavior. For example, `omitSessionToken` specifies whether ``Credential/token`` is used for signature.
 
 ```swift
-let signedQueryOmittingToken = try signer.signQueryString(url: url, query omitSessionToken: true)
+let signedQueryOmittingToken = try signer.signQueryString(url: url, query: query, omitSessionToken: true)
 ```
 
 You can now use the signed query string as the `POST` request body, and send it to the request URL.

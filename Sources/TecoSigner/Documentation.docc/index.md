@@ -4,11 +4,11 @@
     @DisplayName("Teco Signer")
 }
 
-Signing helpers for Tencent Cloud API signature V3.
+Signing helpers for Tencent Cloud APIs.
 
 ## Overview
 
-This library provides a set of utilities around signing [Tencent Cloud](https://www.tencentcloud.com) API requests using signature V3 (`TC3-HMAC-SHA256`).
+This library provides a set of utilities around signing [Tencent Cloud](https://www.tencentcloud.com) API requests using signature V3 (`TC3-HMAC-SHA256`) and V1 (`HmacSHA1`/`HmacSHA256`).
 
 It also defines the interface of Tencent Cloud security credentials.
 
