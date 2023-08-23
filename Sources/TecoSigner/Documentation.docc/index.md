@@ -16,9 +16,13 @@ It also defines the interface of Tencent Cloud security credentials.
 
 ### Signing
 
-- <doc:SignRequests>
-
+- <doc:SignRequestsV3>
+- ``TCSignerV3``
 - ``TCSigner``
+
+- <doc:SignRequestsV1>
+- ``TCSignerV1``
+
 - ``TCSignerError``
 
 ### Credentials

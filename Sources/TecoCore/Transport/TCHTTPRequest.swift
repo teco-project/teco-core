@@ -51,7 +51,7 @@ struct TCHTTPRequest {
     /// - Parameters:
     ///   - signer: Tencent Cloud API signer to use.
     ///   - mode: Signing mode.
-    internal mutating func signHeaders(with signer: TCSigner, mode: TCSigner.SigningMode) {
+    internal mutating func signHeaders(with signer: TCSignerV3, mode: TCSignerV3.SigningMode) {
         // if credentials are empty don't sign request
         guard mode == .skip || !signer.credential.isEmpty else {
             assertionFailure("Empty credential provided for request!")

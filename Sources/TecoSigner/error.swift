@@ -11,14 +11,16 @@
 //
 //===----------------------------------------------------------------------===//
 
-import struct Foundation.URL
+/// Errors returned by Teco signers.
+public enum TCSignerError: Error, CustomStringConvertible {
+    /// URL provided to the signer is invalid.
+    case invalidURL
 
-/// Tencent Cloud API V3 signer (TC3-HMAC-SHA256).
-@available(*, deprecated, renamed: "TCSignerV3")
-public typealias TCSigner = TCSignerV3
-
-extension TCSignerV3 {
-    /// Process URL before signing.
-    @available(*, deprecated, message: "Make sure the URL is RFC3986 compatible instead.")
-    public func processURL(url: URL) -> URL? { url }
+    /// Human readable description of ``TCSignerError``.
+    public var description: String {
+        switch self {
+        case .invalidURL:
+            return "URL provided to the signer is invalid."
+        }
+    }
 }

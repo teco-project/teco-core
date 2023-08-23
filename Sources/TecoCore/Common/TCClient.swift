@@ -60,7 +60,7 @@ public final class TCClient: _TecoSendable {
     /// Logger used for non-request based output.
     private let clientLogger: Logger
     /// Default signing mode.
-    private let signingMode: TCSigner.SigningMode
+    private let signingMode: TCSignerV3.SigningMode
     /// Custom client options.
     private let options: Options
     /// Holds the client shutdown state.
@@ -371,9 +371,9 @@ extension TCClient {
             }
     }
 
-    private func createSigner(serviceConfig: TCServiceConfig, logger: Logger) -> EventLoopFuture<TCSigner> {
+    private func createSigner(serviceConfig: TCServiceConfig, logger: Logger) -> EventLoopFuture<TCSignerV3> {
         return credentialProvider.getCredential(on: eventLoopGroup.next(), logger: logger).map { credential in
-            TCSigner(credential: credential, service: serviceConfig.service)
+            TCSignerV3(credential: credential, service: serviceConfig.service)
         }
     }
 }
