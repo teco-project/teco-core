@@ -80,6 +80,37 @@ final class TCSignerV1Tests: XCTestCase {
         )
     }
 
+    func testUnicodeParameter() throws {
+        let signer = TCSignerV1(credential: credential)
+        let query = signer.signQueryString(
+            host: "tag.tencentcloudapi.com",
+            queryItems: [
+                .init(name: "Action", value: "GetTagValues"),
+                .init(name: "Version", value: "2018-08-13"),
+                .init(name: "TagKeys.0", value: "平台"),
+            ],
+            nonce: 4906,
+            date: Date(timeIntervalSince1970: 1_000_000_000)
+        )
+        XCTAssertEqual(
+            query,
+            "Action=GetTagValues&Nonce=4906&SecretId=MY_TC_SECRET_ID&Signature=UjS7bczn21DgMabt7pq74p7pCVs%3D&TagKeys.0=%E5%B9%B3%E5%8F%B0&Timestamp=1000000000&Version=2018-08-13"
+        )
+    }
+
+    func testPercentEncodedParameter() throws {
+        let signer = TCSignerV1(credential: credential)
+        let query = try signer.signQueryString(
+            url: "https://tag.tencentcloudapi.com/?Action=GetTagValues&Version=2018-08-13&TagKeys.0=%E5%B9%B3%E5%8F%B0",
+            nonce: 4906,
+            date: Date(timeIntervalSince1970: 1_000_000_000)
+        )
+        XCTAssertEqual(
+            query,
+            "Action=GetTagValues&Nonce=4906&SecretId=MY_TC_SECRET_ID&Signature=UjS7bczn21DgMabt7pq74p7pCVs%3D&TagKeys.0=%E5%B9%B3%E5%8F%B0&Timestamp=1000000000&Version=2018-08-13"
+        )
+    }
+
     func testCanonicalRequest() throws {
         let url = URLComponents(string: "https://test.com/?item=apple&hello")!
         let signer = TCSignerV1(credential: credential)

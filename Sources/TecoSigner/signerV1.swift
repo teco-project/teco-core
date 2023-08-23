@@ -97,15 +97,10 @@ public struct TCSignerV1: _SignerSendable {
         nonce: UInt? = nil,
         date: Date = Date()
     ) throws -> String {
-        guard let url = URL(string: url), let host = url.host else {
+        guard let url = URLComponents(string: url), let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        let queryItems: [URLQueryItem]? = {
-            var url = URLComponents()
-            url.query = query
-            return url.queryItems
-        }()
-        return self.signQueryString(host: host, path: url.path, queryItems: queryItems, method: method, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+        return self.signQueryString(host: host, path: url.path, query: query, method: method, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
     }
 
     /// Generate signed query string, for an HTTP request.
@@ -130,12 +125,7 @@ public struct TCSignerV1: _SignerSendable {
         guard let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        let queryItems: [URLQueryItem]? = {
-            var url = URLComponents()
-            url.query = query
-            return url.queryItems
-        }()
-        return self.signQueryString(host: host, path: url.path, queryItems: queryItems, method: method, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+        return self.signQueryString(host: host, path: url.path, query: query, method: method, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
     }
 
     /// Generate signed query string, for an HTTP request.
@@ -267,18 +257,18 @@ extension TCSignerV1 {
     /// return the query string that is percent encoded properly
     static func percentEncodedQuery(_ queryItems: [URLQueryItem]) -> String {
         queryItems.sorted(by: { $0.name < $1.name })
-            .map { "\($0.name)=\($0.value?.queryEncoded() ?? "")" }
+            .map { "\($0.name)=\($0.value?.queryValueEncoded() ?? "")" }
             .joined(separator: "&")
     }
 }
 
 private extension CharacterSet {
-    static let tcQueryAllowed = CharacterSet.urlQueryAllowed.subtracting(.init(charactersIn: "/;+=&"))
+    static let tcQueryValueAllowed = CharacterSet.urlQueryAllowed.subtracting(.init(charactersIn: "/;+=&"))
 }
 
 private extension String {
-    func queryEncoded() -> String {
-        self.addingPercentEncoding(withAllowedCharacters: .tcQueryAllowed) ?? self
+    func queryValueEncoded() -> String {
+        self.addingPercentEncoding(withAllowedCharacters: .tcQueryValueAllowed) ?? self
     }
 }
 
