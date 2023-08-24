@@ -42,164 +42,118 @@ public struct TCSignerV1: _SignerSendable {
         case hmacSHA256 = "HmacSHA256"
     }
 
-    // - MARK: Sign with URL (Defaults to `GET`)
+    // - MARK: Sign a `GET` request URL
 
-    /// Generate signed query string, for an HTTP request.
+    /// Generate the signed URL for an HTTP GET request.
     ///
     /// - Parameters:
     ///   - url: Request URL string (RFC 3986).
-    ///   - method: Request HTTP method. Defaults to`.GET`.
-    ///   - omitSessionToken: Should we include security token in the canonical headers.
-    ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
-    ///   - date: Date that URL is valid from, defaults to now.
-    /// - Returns: Query string with added "Signature" field that contains request signature.
-    /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
-    public func signQueryString(
-        url: String,
-        method: HTTPMethod = .GET,
-        algorithm: Algorithm = .hmacSHA1,
-        omitSessionToken: Bool = false,
-        nonce: UInt? = nil,
-        date: Date = Date()
-    ) throws -> String {
-        guard let url = URLComponents(string: url), let host = url.host else {
-            throw TCSignerError.invalidURL
-        }
-        return self.signQueryString(host: host, path: url.path, queryItems: url.queryItems, method: method, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
-    }
-
-    /// Generate signed query string, for an HTTP request.
-    ///
-    /// - Parameters:
-    ///   - url: Request URL (RFC 3986).
-    ///   - method: Request HTTP method. Defaults to`.GET`.
-    ///   - omitSessionToken: Should we include security token in the canonical headers.
-    ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
-    ///   - date: Date that URL is valid from, defaults to now.
-    /// - Returns: Query string with added "Signature" field that contains request signature.
-    /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
-    public func signQueryString(
-        url: URL,
-        method: HTTPMethod = .GET,
-        algorithm: Algorithm = .hmacSHA1,
-        omitSessionToken: Bool = false,
-        nonce: UInt? = nil,
-        date: Date = Date()
-    ) throws -> String {
-        guard let url = URLComponents(url: url, resolvingAgainstBaseURL: false), let host = url.host else {
-            throw TCSignerError.invalidURL
-        }
-        return self.signQueryString(host: host, path: url.path, queryItems: url.queryItems, method: method, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
-    }
-
-    // - MARK: Sign with URL and query (Defaults to `POST`)
-
-    /// Generate signed query string, for an HTTP request.
-    ///
-    /// - Parameters:
-    ///   - url: Request URL (RFC 3986).
-    ///   - query: Request query string.
-    ///   - method: Request HTTP method. Defaults to`.POST`.
     ///   - algorithm: Algorithm used for signing. Defaults to HmacSHA1.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
-    /// - Returns: Query string with added "Signature" field that contains request signature.
-    /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
-    public func signQueryString(
+    /// - Returns: Signed request URL that contains a "Signature" query paramter, encoded according to RFC 3986.
+    /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
+    public func signURL(
         url: String,
-        query: String?,
-        method: HTTPMethod = .POST,
         algorithm: Algorithm = .hmacSHA1,
         omitSessionToken: Bool = false,
         nonce: UInt? = nil,
         date: Date = Date()
-    ) throws -> String {
-        guard let url = URLComponents(string: url), let host = url.host else {
+    ) throws -> URL {
+        guard var url = URLComponents(string: url), let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        return self.signQueryString(host: host, path: url.path, query: query, method: method, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+        url.percentEncodedQueryItems = self.signQueryItems(host: host, path: url.path, queryItems: url.queryItems, method: .GET, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+            .rfc3986Encoded()
+        guard let url = url.url else {
+            throw TCSignerError.invalidURL
+        }
+        return url
     }
 
-    /// Generate signed query string, for an HTTP request.
+    /// Generate the signed URL for an HTTP GET request.
     ///
     /// - Parameters:
     ///   - url: Request URL (RFC 3986).
-    ///   - query: Request query string.
-    ///   - method: Request HTTP method. Defaults to`.POST`.
     ///   - algorithm: Algorithm used for signing. Defaults to HmacSHA1.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
-    /// - Returns: Query string with added "Signature" field that contains request signature.
-    /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
-    public func signQueryString(
+    /// - Returns: Signed request URL that contains a "Signature" query paramter, encoded according to RFC 3986.
+    /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
+    public func signURL(
         url: URL,
-        query: String?,
-        method: HTTPMethod = .POST,
         algorithm: Algorithm = .hmacSHA1,
         omitSessionToken: Bool = false,
         nonce: UInt? = nil,
         date: Date = Date()
-    ) throws -> String {
-        guard let host = url.host else {
+    ) throws -> URL {
+        guard var url = URLComponents(url: url, resolvingAgainstBaseURL: false), let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        return self.signQueryString(host: host, path: url.path, query: query, method: method, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+        url.percentEncodedQueryItems = self.signQueryItems(host: host, path: url.path, queryItems: url.queryItems, method: .GET, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+            .rfc3986Encoded()
+        guard let url = url.url else {
+            throw TCSignerError.invalidURL
+        }
+        return url
     }
 
-    /// Generate signed query string, for an HTTP request.
+    // - MARK: Sign a `POST` request body
+
+    /// Generate the signed body for an HTTP POST request.
     ///
     /// - Parameters:
     ///   - url: Request URL (RFC 3986).
     ///   - queryItems: Request query items.
-    ///   - method: Request HTTP method. Defaults to`.POST`.
     ///   - algorithm: Algorithm used for signing. Defaults to HmacSHA1.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
-    /// - Returns: Query string with added "Signature" field that contains request signature.
-    /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
-    public func signQueryString(
+    /// - Returns: Signed request body that contains a "Signature" query paramter, encoded according to `x-www-form-urlencoded`.
+    /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
+    public func signBody(
         url: String,
         queryItems: [URLQueryItem]?,
-        method: HTTPMethod = .POST,
         algorithm: Algorithm = .hmacSHA1,
         omitSessionToken: Bool = false,
         nonce: UInt? = nil,
         date: Date = Date()
-    ) throws -> String {
+    ) throws -> Data {
         guard let url = URLComponents(string: url), let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        return self.signQueryString(host: host, path: url.path, queryItems: queryItems, method: method, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+        let bodyString = self.signQueryItems(host: host, path: url.path, queryItems: queryItems, method: .POST, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+            .wwwFormURLEncodedString()
+        return .init([UInt8](bodyString.utf8))
     }
 
-    /// Generate signed query string, for an HTTP request.
+    /// Generate the signed body for an HTTP POST request.
     ///
     /// - Parameters:
     ///   - url: Request URL (RFC 3986).
     ///   - queryItems: Request query items.
-    ///   - method: Request HTTP method. Defaults to`.POST`.
     ///   - algorithm: Algorithm used for signing. Defaults to HmacSHA1.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
-    /// - Returns: Query string with added "Signature" field that contains request signature.
-    /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
-    public func signQueryString(
+    /// - Returns: Signed request body that contains a "Signature" query paramter, encoded according to `x-www-form-urlencoded`.
+    /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
+    public func signBody(
         url: URL,
         queryItems: [URLQueryItem]?,
-        method: HTTPMethod = .POST,
         algorithm: Algorithm = .hmacSHA1,
         omitSessionToken: Bool = false,
         nonce: UInt? = nil,
         date: Date = Date()
-    ) throws -> String {
+    ) throws -> Data {
         guard let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        return self.signQueryString(host: host, path: url.path, queryItems: queryItems, method: method, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+        let bodyString = self.signQueryItems(host: host, path: url.path, queryItems: queryItems, method: .POST, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+            .wwwFormURLEncodedString()
+        return .init([UInt8](bodyString.utf8))
     }
 
     // - MARK: Sign with host, path and query (Non-throwing)
@@ -209,55 +163,23 @@ public struct TCSignerV1: _SignerSendable {
     /// - Parameters:
     ///   - host: Request HTTP host.
     ///   - path: Request URL path.
-    ///   - query: Request query string.
-    ///   - method: Request HTTP method. Defaults to`.GET`.
-    ///   - algorithm: Algorithm used for signing. Defaults to HmacSHA1.
-    ///   - omitSessionToken: Should we include security token in the canonical headers.
-    ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
-    ///   - date: Date that URL is valid from, defaults to now.
-    /// - Returns: Query string with added "Signature" field that contains request signature.
-    /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
-    public func signQueryString(
-        host: String,
-        path: String = "/",
-        query: String?,
-        method: HTTPMethod = .GET,
-        algorithm: Algorithm = .hmacSHA1,
-        omitSessionToken: Bool = false,
-        nonce: UInt? = nil,
-        date: Date = Date()
-    ) -> String {
-        let queryItems: [URLQueryItem]? = {
-            var url = URLComponents()
-            url.query = query
-            return url.queryItems
-        }()
-        return self.signQueryString(host: host, path: path, queryItems: queryItems, method: method, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
-    }
-
-    /// Generate signed query string, for an HTTP request.
-    ///
-    /// - Parameters:
-    ///   - host: Request HTTP host.
-    ///   - path: Request URL path.
     ///   - queryItems: Request query items.
-    ///   - method: Request HTTP method. Defaults to`.GET`.
+    ///   - method: Request HTTP method.
     ///   - algorithm: Algorithm used for signing. Defaults to HmacSHA1.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
-    /// - Returns: Query string with added "Signature" field that contains request signature.
-    /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
-    public func signQueryString(
+    /// - Returns: Query items with added "Signature" field that contains the request signature.
+    public func signQueryItems(
         host: String,
         path: String = "/",
         queryItems: [URLQueryItem]?,
-        method: HTTPMethod = .GET,
+        method: HTTPMethod,
         algorithm: Algorithm = .hmacSHA1,
         omitSessionToken: Bool = false,
         nonce: UInt? = nil,
         date: Date = Date()
-    ) -> String {
+    ) -> [URLQueryItem] {
         var queryItems = queryItems ?? []
         queryItems.remove(name: "Signature")
 
@@ -298,8 +220,7 @@ public struct TCSignerV1: _SignerSendable {
             queryItems.replaceOrAdd(name: "Token", value: sessionToken)
         }
 
-        // compose query items into string
-        return TCSignerV1.percentEncodedQuery(queryItems)
+        return queryItems.sorted(by: { $0.name < $1.name })
     }
 }
 
@@ -348,22 +269,30 @@ extension TCSignerV1 {
     static func nonce() -> String {
         String(Int32.random(in: 0...Int32.max))
     }
+}
 
-    /// return the query string that is percent encoded properly
-    static func percentEncodedQuery(_ queryItems: [URLQueryItem]) -> String {
-        queryItems.sorted(by: { $0.name < $1.name })
-            .map { "\($0.name)=\($0.value?.queryValueEncoded() ?? "")" }
+private extension Sequence where Element == URLQueryItem {
+    func rfc3986Encoded() -> [URLQueryItem] {
+        self.map { .init(name: $0.name.rfc3986Encoded(), value: $0.value?.rfc3986Encoded()) }
+    }
+    func wwwFormURLEncodedString() -> String {
+        self.map { "\($0.name.wwwFormURLEncoded())=\($0.value?.wwwFormURLEncoded() ?? "")" }
             .joined(separator: "&")
     }
 }
 
 private extension CharacterSet {
-    static let tcQueryValueAllowed = CharacterSet.urlQueryAllowed.subtracting(.init(charactersIn: "/;+=&"))
+    static let rfc3986QueryValueAllowed = CharacterSet.alphanumerics.union(.init(charactersIn: "-._~"))
+    static let wwwFormURLEncodedValueAllowed = CharacterSet.alphanumerics.union(.init(charactersIn: " -._"))
 }
 
 private extension String {
-    func queryValueEncoded() -> String {
-        self.addingPercentEncoding(withAllowedCharacters: .tcQueryValueAllowed) ?? self
+    func rfc3986Encoded() -> String {
+        self.addingPercentEncoding(withAllowedCharacters: .rfc3986QueryValueAllowed) ?? self
+    }
+    func wwwFormURLEncoded() -> String {
+        let percentEncoded = self.addingPercentEncoding(withAllowedCharacters: .wwwFormURLEncodedValueAllowed) ?? self
+        return percentEncoded.replacingOccurrences(of: " ", with: "+")
     }
 }
 

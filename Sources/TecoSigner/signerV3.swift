@@ -28,12 +28,12 @@
 #else
 import struct Foundation.Data
 #endif
-import struct Foundation.CharacterSet
 import struct Foundation.Date
 import class Foundation.DateFormatter
 import struct Foundation.Locale
 import struct Foundation.TimeZone
 import struct Foundation.URL
+import struct Foundation.URLComponents
 import struct NIOCore.ByteBuffer
 import struct NIOHTTP1.HTTPHeaders
 import enum NIOHTTP1.HTTPMethod
@@ -86,18 +86,18 @@ public struct TCSignerV3: _SignerSendable {
         case skip
     }
 
-    /// Generate signed headers, for an HTTP request.
+    /// Generate signed headers for an HTTP request.
     ///
     /// - Parameters:
     ///   - url: Request URL string (RFC 3986).
-    ///   - method: Request HTTP method. Defaults to`.POST`.
+    ///   - method: Request HTTP method. Defaults to `.POST`.
     ///   - headers: Request headers.
     ///   - body: Request body.
     ///   - mode: Signing mode.
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - date: Date that URL is valid from, defaults to now.
     /// - Returns: Request headers with added "Authorization" header that contains request signature.
-    /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed.
+    /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
     public func signHeaders(
         url: String,
         method: HTTPMethod = .POST,
@@ -107,17 +107,17 @@ public struct TCSignerV3: _SignerSendable {
         omitSessionToken: Bool = false,
         date: Date = Date()
     ) throws -> HTTPHeaders {
-        guard let url = URL(string: url) else {
+        guard let url = URLComponents(string: url) else {
             throw TCSignerError.invalidURL
         }
         return self.signHeaders(url: url, method: method, headers: headers, body: body, mode: mode, omitSessionToken: omitSessionToken, date: date)
     }
 
-    /// Generate signed headers, for an HTTP request.
+    /// Generate signed headers for an HTTP request.
     ///
     /// - Parameters:
     ///   - url: Request URL (RFC 3986).
-    ///   - method: Request HTTP method. Defaults to`.POST`.
+    ///   - method: Request HTTP method. Defaults to `.POST`.
     ///   - headers: Request headers.
     ///   - body: Request body.
     ///   - mode: Signing mode.
@@ -129,6 +129,34 @@ public struct TCSignerV3: _SignerSendable {
         method: HTTPMethod = .POST,
         headers: HTTPHeaders = HTTPHeaders(),
         body: BodyData? = nil,
+        mode: SigningMode = .default,
+        omitSessionToken: Bool = false,
+        date: Date = Date()
+    ) /*throws*/ -> HTTPHeaders {
+        // FIXME: This function should be throwing, but changing it requires major version bump.
+        guard let url = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            // throw TCSignerError.invalidURL
+            fatalError("Invalid URL provided, please ensure RFC 3986 encoding: \(url)")
+        }
+        return self.signHeaders(url: url, method: method, headers: headers, body: body, mode: mode, omitSessionToken: omitSessionToken, date: date)
+    }
+
+    /// Generate signed headers for an HTTP request.
+    ///
+    /// - Parameters:
+    ///   - url: Request URL components.
+    ///   - method: Request HTTP method.
+    ///   - headers: Request headers.
+    ///   - body: Request body.
+    ///   - mode: Signing mode.
+    ///   - omitSessionToken: Should we include security token in the canonical headers.
+    ///   - date: Date that URL is valid from, defaults to now.
+    /// - Returns: Request headers with added "Authorization" header that contains request signature.
+    public func signHeaders(
+        url: URLComponents,
+        method: HTTPMethod,
+        headers: HTTPHeaders,
+        body: BodyData?,
         mode: SigningMode = .default,
         omitSessionToken: Bool = false,
         date: Date = Date()
@@ -160,7 +188,7 @@ public struct TCSignerV3: _SignerSendable {
         }
 
         // construct signing data. Do this after adding the headers as it uses data from the headers
-        let signingData = SigningData(url: url, method: method, headers: headers, body: body, bodyHash: bodyHash, timestamp: timestamp, date: dateString, signer: self, minimal: mode == .minimal)
+        let signingData = SigningData(path: url.path, query: url.percentEncodedQuery, method: method, headers: headers, body: body, bodyHash: bodyHash, timestamp: timestamp, date: dateString, signer: self, minimal: mode == .minimal)
 
         // construct authorization string as in https://www.tencentcloud.com/document/api/213/33224#4.-concatenating-the-authorization
         let authorization = "TC3-HMAC-SHA256 " +
@@ -183,15 +211,18 @@ public struct TCSignerV3: _SignerSendable {
 extension TCSignerV3 {
     /// structure used to store data used throughout the signing process
     struct SigningData {
-        let url: URL
+        let path: String
+        let query: String
         let method: HTTPMethod
         let hashedPayload: String
         let timestamp: String
         let date: String
         let headers: HTTPHeaders
+        let signedHeaders: String
 
-        init(url: URL, method: HTTPMethod, headers: HTTPHeaders = HTTPHeaders(), body: BodyData? = nil, bodyHash: String? = nil, timestamp: String, date: String, signer: TCSignerV3, minimal: Bool = false) {
-            self.url = url
+        init(path: String, query: String?, method: HTTPMethod, headers: HTTPHeaders = HTTPHeaders(), body: BodyData? = nil, bodyHash: String? = nil, timestamp: String, date: String, signer: TCSignerV3, minimal: Bool = false) {
+            self.path = path.isEmpty ? "/" : path
+            self.query = query ?? ""
             self.method = method
             self.timestamp = timestamp
             self.date = date
@@ -203,6 +234,7 @@ extension TCSignerV3 {
             }
 
             self.headers = TCSignerV3.headersToSign(headers, minimal: minimal)
+            self.signedHeaders = self.headers.map(\.name).joined(separator: ";")
         }
     }
 
@@ -228,8 +260,8 @@ extension TCSignerV3 {
             .map { "\($0.name):\($0.value)\n" }
             .joined()
         let canonicalRequest = "\(signingData.method.rawValue)\n" +
-            "\(signingData.canonicalURI)\n" +
-            "\(signingData.canonicalQuery)\n" +
+            "\(signingData.path)\n" +
+            "\(signingData.query)\n" +
             "\(canonicalHeaders)\n" +
             "\(signingData.signedHeaders)\n" +
             signingData.hashedPayload
@@ -303,29 +335,15 @@ extension TCSignerV3 {
     }
 
     /// returns port from URL. If port is set to 80 on an http url or 443 on an https url nil is returned
-    private static func port(from url: URL) -> Int? {
+    private static func port(from url: URLComponents) -> Int? {
         guard let port = url.port else { return nil }
         guard url.scheme != "http" || port != 80 else { return nil }
         guard url.scheme != "https" || port != 443 else { return nil }
         return port
     }
 
-    private static func hostname(from url: URL) -> String {
+    private static func hostname(from url: URLComponents) -> String {
         "\(url.host ?? "")\(port(from: url).map { ":\($0)" } ?? "")"
-    }
-}
-
-private extension TCSignerV3.SigningData {
-    var canonicalURI: String {
-        let path = self.url.path
-        return path.isEmpty ? "/" : path
-    }
-    var canonicalQuery: String {
-        // assuming query parameters are already percent encoded correctly
-        self.url.query ?? ""
-    }
-    var signedHeaders: String {
-        self.headers.map(\.name).joined(separator: ";")
     }
 }
 

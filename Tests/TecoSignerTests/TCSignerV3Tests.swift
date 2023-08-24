@@ -130,10 +130,10 @@ final class TCSignerV3Tests: XCTestCase {
     }
 
     func testCanonicalRequest() throws {
-        let url = URL(string: "https://test.com/?hello=true&item=apple")!
         let signer = TCSignerV3(credential: credential, service: "sns")
         let signingData = TCSignerV3.SigningData(
-            url: url,
+            path: "/",
+            query: "hello=true&item=apple",
             method: .POST,
             headers: ["content-type": "application/json", "host": "localhost", "User-Agent": "Teco Test"],
             body: .string("{}"),
@@ -172,7 +172,7 @@ final class TCSignerV3Tests: XCTestCase {
     // https://cloud.tencent.com/document/api/213/30654
     func testTencentCloudSample() throws {
         let signer = TCSignerV3(credential: tcSampleCredential, service: "cvm")
-        let url = URL(string: "https://cvm.tencentcloudapi.com")!
+        let url = URLComponents(string: "https://cvm.tencentcloudapi.com")!
         let headers: HTTPHeaders = [
             "content-type": "application/json; charset=utf-8",
             "host": "cvm.tencentcloudapi.com",
