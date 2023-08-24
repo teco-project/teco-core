@@ -102,7 +102,7 @@ public struct TCSignerV1: _SignerSendable {
 
     // - MARK: Sign a `POST` request body
 
-    /// Generate the signed body for an HTTP POST request..
+    /// Generate the signed body for an HTTP POST request.
     ///
     /// - Parameters:
     ///   - url: Request URL (RFC 3986).
@@ -129,7 +129,7 @@ public struct TCSignerV1: _SignerSendable {
         return .init([UInt8](bodyString.utf8))
     }
 
-    /// Generate the signed body for an HTTP POST request..
+    /// Generate the signed body for an HTTP POST request.
     ///
     /// - Parameters:
     ///   - url: Request URL (RFC 3986).

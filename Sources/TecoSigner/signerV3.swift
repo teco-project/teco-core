@@ -90,7 +90,7 @@ public struct TCSignerV3: _SignerSendable {
     ///
     /// - Parameters:
     ///   - url: Request URL string (RFC 3986).
-    ///   - method: Request HTTP method. Defaults to`.POST`.
+    ///   - method: Request HTTP method. Defaults to `.POST`.
     ///   - headers: Request headers.
     ///   - body: Request body.
     ///   - mode: Signing mode.
@@ -117,7 +117,7 @@ public struct TCSignerV3: _SignerSendable {
     ///
     /// - Parameters:
     ///   - url: Request URL (RFC 3986).
-    ///   - method: Request HTTP method. Defaults to`.POST`.
+    ///   - method: Request HTTP method. Defaults to `.POST`.
     ///   - headers: Request headers.
     ///   - body: Request body.
     ///   - mode: Signing mode.
