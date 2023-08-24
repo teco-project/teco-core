@@ -88,7 +88,7 @@ public struct TCSignerV3: _SignerSendable {
         case skip
     }
 
-    /// Generate signed headers, for an HTTP request.
+    /// Generate signed headers for an HTTP request.
     ///
     /// - Parameters:
     ///   - url: Request URL string (RFC 3986).
@@ -115,7 +115,7 @@ public struct TCSignerV3: _SignerSendable {
         return self.signHeaders(url: url, method: method, headers: headers, body: body, mode: mode, omitSessionToken: omitSessionToken, date: date)
     }
 
-    /// Generate signed headers, for an HTTP request.
+    /// Generate signed headers for an HTTP request.
     ///
     /// - Parameters:
     ///   - url: Request URL (RFC 3986).
@@ -143,10 +143,10 @@ public struct TCSignerV3: _SignerSendable {
         return self.signHeaders(url: url, method: method, headers: headers, body: body, mode: mode, omitSessionToken: omitSessionToken, date: date)
     }
 
-    /// Generate signed headers, for an HTTP request.
+    /// Generate signed headers for an HTTP request.
     ///
     /// - Parameters:
-    ///   - url: Request URL (RFC 3986).
+    ///   - url: Request URL components.
     ///   - method: Request HTTP method.
     ///   - headers: Request headers.
     ///   - body: Request body.

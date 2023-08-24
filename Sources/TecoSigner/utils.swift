@@ -14,7 +14,7 @@
 import struct Foundation.URLComponents
 
 extension URLComponents {
-    /// Initialize with a URL string, enforcing RFC 3986 validation.
+    /// Initialize with a URL string.
     ///
     /// - Parameter string: The URL string.
     /// - Returns: A `URLComponents` struct for a valid URL, or `nil` if the URL is invalid according to RFC 3986.
