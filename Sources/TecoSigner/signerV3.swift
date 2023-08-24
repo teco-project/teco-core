@@ -99,7 +99,7 @@ public struct TCSignerV3: _SignerSendable {
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - date: Date that URL is valid from, defaults to now.
     /// - Returns: Request headers with added "Authorization" header that contains request signature.
-    /// - Throws: `TCSignerError.invalidURL` if the URL string is malformed (eg. not conforms to RFC 3986).
+    /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
     public func signHeaders(
         url: String,
         method: HTTPMethod = .POST,
@@ -109,7 +109,7 @@ public struct TCSignerV3: _SignerSendable {
         omitSessionToken: Bool = false,
         date: Date = Date()
     ) throws -> HTTPHeaders {
-        guard let url = TCSignerV3.urlComponents(from: url) else {
+        guard let url = URLComponents(validating: url) else {
             throw TCSignerError.invalidURL
         }
         return self.signHeaders(url: url, method: method, headers: headers, body: body, mode: mode, omitSessionToken: omitSessionToken, date: date)
@@ -334,18 +334,6 @@ extension TCSignerV3 {
                 ($0.name.lowercased(), $0.value.trimmingCharacters(in: .whitespaces).lowercased())
             }.sorted { $0.0 < $1.0 }
         )
-    }
-
-    static func urlComponents(from string: String) -> URLComponents? {
-#if canImport(Darwin)
-        if #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) {
-            return .init(string: string, encodingInvalidCharacters: false)
-        } else {
-            return .init(string: string)
-        }
-#else
-        return .init(string: string)
-#endif
     }
 
     /// returns port from URL. If port is set to 80 on an http url or 443 on an https url nil is returned
