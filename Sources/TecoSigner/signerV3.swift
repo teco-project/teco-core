@@ -28,14 +28,12 @@
 #else
 import struct Foundation.Data
 #endif
-import struct Foundation.CharacterSet
 import struct Foundation.Date
 import class Foundation.DateFormatter
 import struct Foundation.Locale
 import struct Foundation.TimeZone
 import struct Foundation.URL
 import struct Foundation.URLComponents
-import struct Foundation.URLQueryItem
 import struct NIOCore.ByteBuffer
 import struct NIOHTTP1.HTTPHeaders
 import enum NIOHTTP1.HTTPMethod
