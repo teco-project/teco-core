@@ -1,6 +1,6 @@
-# Signing API requests with `TC3-HMAC-SHA256`
+# Signing API requests (V3)
 
-Generate properly-signed HTTP headers for your Tencent Cloud API request using signature V3.
+Generate properly-signed HTTP headers for your Tencent Cloud API request using signature V3 (`TC3-HMAC-SHA256`).
 
 ## Overview
 

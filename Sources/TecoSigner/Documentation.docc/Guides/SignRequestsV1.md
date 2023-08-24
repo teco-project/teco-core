@@ -1,6 +1,6 @@
-# Signing API requests with `HmacSHA1` and `HmacSHA256` (Unrecommended)
+# Signing API requests (V1, unrecommended)
 
-Generate properly-signed URL query for your Tencent Cloud API request using signature V1.
+Generate properly-signed URL query for your Tencent Cloud API request using signature V1 (`HmacSHA1`/`HmacSHA256`).
 
 ## Overview
 
