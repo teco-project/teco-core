@@ -172,7 +172,7 @@ final class TCSignerV3Tests: XCTestCase {
     // https://cloud.tencent.com/document/api/213/30654
     func testTencentCloudSample() throws {
         let signer = TCSignerV3(credential: tcSampleCredential, service: "cvm")
-        let url = URL(string: "https://cvm.tencentcloudapi.com")!
+        let url = URLComponents(string: "https://cvm.tencentcloudapi.com")!
         let headers: HTTPHeaders = [
             "content-type": "application/json; charset=utf-8",
             "host": "cvm.tencentcloudapi.com",
