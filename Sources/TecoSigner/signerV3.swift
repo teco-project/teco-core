@@ -109,7 +109,18 @@ public struct TCSignerV3: _SignerSendable {
         omitSessionToken: Bool = false,
         date: Date = Date()
     ) throws -> HTTPHeaders {
-        guard let url = URLComponents(string: url) else {
+        let url: URLComponents? = {
+            #if canImport(Darwin)
+            if #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) {
+                return .init(string: url, encodingInvalidCharacters: false)
+            } else {
+                return .init(string: url)
+            }
+            #else
+            .init(string: url)
+            #endif
+        }()
+        guard let url = url else {
             throw TCSignerError.invalidURL
         }
         return self.signHeaders(url: url, method: method, headers: headers, body: body, mode: mode, omitSessionToken: omitSessionToken, date: date)
