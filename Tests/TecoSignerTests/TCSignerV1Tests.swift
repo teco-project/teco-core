@@ -142,7 +142,7 @@ final class TCSignerV1Tests: XCTestCase {
     // https://cloud.tencent.com/document/api/213/30654
     func testTencentCloudSample() throws {
         let signer = TCSignerV1(credential: tcSampleCredential)
-        let query = signer.signQueryString(
+        let query = signer.signQueryItems(
             host: "cvm.tencentcloudapi.com",
             queryItems: [
                 .init(name: "Action", value: "DescribeInstances"),
@@ -161,14 +161,25 @@ final class TCSignerV1Tests: XCTestCase {
         )
         XCTAssertEqual(
             query,
-            "Action=DescribeInstances&InstanceIds.0=ins-09dx96dg&Limit=20&Nonce=11886&Offset=0&Region=ap-guangzhou&SecretId=AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******&Signature=zmmjn35mikh6pM3V7sUEuX4wyYM%3D&Timestamp=1465185768&Version=2017-03-12"
+            [
+                .init(name: "Action", value: "DescribeInstances"),
+                .init(name: "InstanceIds.0", value: "ins-09dx96dg"),
+                .init(name: "Limit", value: "20"),
+                .init(name: "Nonce", value: "11886"),
+                .init(name: "Offset", value: "0"),
+                .init(name: "Region", value: "ap-guangzhou"),
+                .init(name: "SecretId", value: "AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******"),
+                .init(name: "Signature", value: "zmmjn35mikh6pM3V7sUEuX4wyYM="),
+                .init(name: "Timestamp", value: "1465185768"),
+                .init(name: "Version", value: "2017-03-12"),
+            ]
         )
     }
 
     // https://cloud.tencent.com/document/api/228/10771
     func testTencentCloudSHA256Sample() throws {
         let signer = TCSignerV1(credential: tcSHA256SampleCredential)
-        let query = signer.signQueryString(
+        let query = signer.signQueryItems(
             host: "cdn.api.qcloud.com",
             path: "/v2/index.php",
             queryItems: [
@@ -188,7 +199,16 @@ final class TCSignerV1Tests: XCTestCase {
         // This is manually computed since the document is wrong.
         XCTAssertEqual(
             query,
-            "Action=DescribeCdnHosts&Nonce=48059&SecretId=AKIDT8G5**********ooNq1rFSw1fyBVCX9D&Signature=8GGNfQ1HXC%2FJkCjUugwXZKtKuMmkbX9lPxtDdkfNxy8%3D&SignatureMethod=HmacSHA256&Timestamp=1502197934&limit=10&offset=0"
+            [
+                .init(name: "Action", value: "DescribeCdnHosts"),
+                .init(name: "Nonce", value: "48059"),
+                .init(name: "SecretId", value: "AKIDT8G5**********ooNq1rFSw1fyBVCX9D"),
+                .init(name: "Signature", value: "8GGNfQ1HXC/JkCjUugwXZKtKuMmkbX9lPxtDdkfNxy8="),
+                .init(name: "SignatureMethod", value: "HmacSHA256"),
+                .init(name: "Timestamp", value: "1502197934"),
+                .init(name: "limit", value: "10"),
+                .init(name: "offset", value: "0"),
+            ]
         )
     }
 }

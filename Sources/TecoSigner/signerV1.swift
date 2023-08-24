@@ -63,7 +63,8 @@ public struct TCSignerV1: _SignerSendable {
         guard let url = URLComponents(validating: url), let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        return self.signQueryString(host: host, path: url.path, queryItems: url.queryItems, method: .GET, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+        return self.signQueryItems(host: host, path: url.path, queryItems: url.queryItems, method: .GET, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+            .rfc3986Encoded()
     }
 
     /// Generate signed query string, for an HTTP request.
@@ -85,7 +86,8 @@ public struct TCSignerV1: _SignerSendable {
         guard let url = URLComponents(url: url, resolvingAgainstBaseURL: false), let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        return self.signQueryString(host: host, path: url.path, queryItems: url.queryItems, method: .GET, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+        return self.signQueryItems(host: host, path: url.path, queryItems: url.queryItems, method: .GET, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+            .rfc3986Encoded()
     }
 
     // - MARK: Sign a `POST` request with URL and query items
@@ -112,7 +114,8 @@ public struct TCSignerV1: _SignerSendable {
         guard let url = URLComponents(validating: url), let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        return self.signQueryString(host: host, path: url.path, queryItems: queryItems, method: .POST, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+        return self.signQueryItems(host: host, path: url.path, queryItems: queryItems, method: .POST, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+            .wwwFormURLEncoded()
     }
 
     /// Generate signed query string, for an HTTP request.
@@ -137,7 +140,8 @@ public struct TCSignerV1: _SignerSendable {
         guard let host = url.host else {
             throw TCSignerError.invalidURL
         }
-        return self.signQueryString(host: host, path: url.path, queryItems: queryItems, method: .POST, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+        return self.signQueryItems(host: host, path: url.path, queryItems: queryItems, method: .POST, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
+            .wwwFormURLEncoded()
     }
 
     // - MARK: Sign with host, path and query (Non-throwing)
@@ -154,7 +158,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
     /// - Returns: Query string with added "Signature" field that contains request signature.
-    public func signQueryString(
+    public func signQueryItems(
         host: String,
         path: String = "/",
         queryItems: [URLQueryItem]?,
@@ -163,7 +167,7 @@ public struct TCSignerV1: _SignerSendable {
         omitSessionToken: Bool = false,
         nonce: UInt? = nil,
         date: Date = Date()
-    ) -> String {
+    ) -> [URLQueryItem] {
         var queryItems = queryItems ?? []
         queryItems.remove(name: "Signature")
 
@@ -204,8 +208,7 @@ public struct TCSignerV1: _SignerSendable {
             queryItems.replaceOrAdd(name: "Token", value: sessionToken)
         }
 
-        // compose query items into string
-        return TCSignerV1.percentEncodedQuery(queryItems)
+        return queryItems.sorted(by: { $0.name < $1.name })
     }
 }
 
@@ -254,22 +257,31 @@ extension TCSignerV1 {
     static func nonce() -> String {
         String(Int32.random(in: 0...Int32.max))
     }
+}
 
-    /// return the query string that is percent encoded properly
-    static func percentEncodedQuery(_ queryItems: [URLQueryItem]) -> String {
-        queryItems.sorted(by: { $0.name < $1.name })
-            .map { "\($0.name)=\($0.value?.queryValueEncoded() ?? "")" }
+private extension Sequence where Element == URLQueryItem {
+    func rfc3986Encoded() -> String {
+        self.map { "\($0.name.rfc3986Encoded())=\($0.value?.rfc3986Encoded() ?? "")" }
+            .joined(separator: "&")
+    }
+    func wwwFormURLEncoded() -> String {
+        self.map { "\($0.name.wwwFormURLEncoded())=\($0.value?.wwwFormURLEncoded() ?? "")" }
             .joined(separator: "&")
     }
 }
 
 private extension CharacterSet {
-    static let tcQueryValueAllowed = CharacterSet.urlQueryAllowed.subtracting(.init(charactersIn: "/;+=&"))
+    static let rfc3986QueryValueAllowed = CharacterSet.alphanumerics.union(.init(charactersIn: "-._~"))
+    static let wwwFormURLEncodedValueAllowed = CharacterSet.alphanumerics.union(.init(charactersIn: " -._"))
 }
 
 private extension String {
-    func queryValueEncoded() -> String {
-        self.addingPercentEncoding(withAllowedCharacters: .tcQueryValueAllowed) ?? self
+    func rfc3986Encoded() -> String {
+        self.addingPercentEncoding(withAllowedCharacters: .rfc3986QueryValueAllowed) ?? self
+    }
+    func wwwFormURLEncoded() -> String {
+        let percentEncoded = self.addingPercentEncoding(withAllowedCharacters: .wwwFormURLEncodedValueAllowed) ?? self
+        return percentEncoded.replacingOccurrences(of: " ", with: "+")
     }
 }
 
