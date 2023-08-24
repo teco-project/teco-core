@@ -109,18 +109,7 @@ public struct TCSignerV3: _SignerSendable {
         omitSessionToken: Bool = false,
         date: Date = Date()
     ) throws -> HTTPHeaders {
-        let url: URLComponents? = {
-            #if canImport(Darwin)
-            if #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) {
-                return .init(string: url, encodingInvalidCharacters: false)
-            } else {
-                return .init(string: url)
-            }
-            #else
-            .init(string: url)
-            #endif
-        }()
-        guard let url = url else {
+        guard let url = TCSignerV3.urlComponents(from: url) else {
             throw TCSignerError.invalidURL
         }
         return self.signHeaders(url: url, method: method, headers: headers, body: body, mode: mode, omitSessionToken: omitSessionToken, date: date)
@@ -201,7 +190,7 @@ public struct TCSignerV3: _SignerSendable {
         }
 
         // construct signing data. Do this after adding the headers as it uses data from the headers
-        let signingData = SigningData(url: url, method: method, headers: headers, body: body, bodyHash: bodyHash, timestamp: timestamp, date: dateString, signer: self, minimal: mode == .minimal)
+        let signingData = SigningData(path: url.path, query: url.percentEncodedQuery, method: method, headers: headers, body: body, bodyHash: bodyHash, timestamp: timestamp, date: dateString, signer: self, minimal: mode == .minimal)
 
         // construct authorization string as in https://www.tencentcloud.com/document/api/213/33224#4.-concatenating-the-authorization
         let authorization = "TC3-HMAC-SHA256 " +
@@ -233,9 +222,9 @@ extension TCSignerV3 {
         let headers: HTTPHeaders
         let signedHeaders: String
 
-        init(url: URLComponents, method: HTTPMethod, headers: HTTPHeaders = HTTPHeaders(), body: BodyData? = nil, bodyHash: String? = nil, timestamp: String, date: String, signer: TCSignerV3, minimal: Bool = false) {
-            self.path = url.path.isEmpty ? "/" : url.path
-            self.query = url.percentEncodedQuery ?? ""
+        init(path: String, query: String?, method: HTTPMethod, headers: HTTPHeaders = HTTPHeaders(), body: BodyData? = nil, bodyHash: String? = nil, timestamp: String, date: String, signer: TCSignerV3, minimal: Bool = false) {
+            self.path = path.isEmpty ? "/" : path
+            self.query = query ?? ""
             self.method = method
             self.timestamp = timestamp
             self.date = date
@@ -345,6 +334,18 @@ extension TCSignerV3 {
                 ($0.name.lowercased(), $0.value.trimmingCharacters(in: .whitespaces).lowercased())
             }.sorted { $0.0 < $1.0 }
         )
+    }
+
+    static func urlComponents(from string: String) -> URLComponents? {
+#if canImport(Darwin)
+        if #available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) {
+            return .init(string: string, encodingInvalidCharacters: false)
+        } else {
+            return .init(string: string)
+        }
+#else
+        return .init(string: string)
+#endif
     }
 
     /// returns port from URL. If port is set to 80 on an http url or 443 on an https url nil is returned
