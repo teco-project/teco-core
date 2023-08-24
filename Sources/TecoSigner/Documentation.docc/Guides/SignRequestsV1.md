@@ -1,6 +1,6 @@
 # Signing API requests (V1, unrecommended)
 
-Generate properly-signed URL query for your Tencent Cloud API request using signature V1 (`HmacSHA1`/`HmacSHA256`).
+Generate properly-signed URL or body for your Tencent Cloud API request using signature V1 (`HmacSHA1`/`HmacSHA256`).
 
 ## Overview
 
@@ -30,8 +30,6 @@ let signer = TCSignerV1(credential: credential)
 
 ## Sign a `GET` request
 
-### Prepare the request URL
-
 Before performing the signing step, you need to have a request URL.
 
 The URL should be compatible with [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986), which requires specific characters to be percent-encoded. The following sample shows a simple `GET` request URL.
@@ -40,126 +38,64 @@ The URL should be compatible with [RFC 3986](https://www.rfc-editor.org/rfc/rfc3
 let url = URL(string: "https://region.tencentcloudapi.com/?Action=DescribeProducts&Version=2022-06-27")!
 ```
 
-> URL supplied for signature should not be changed once the request is signed.
-
-### Generate signed query string
-
-You can generate signed query string using ``TCSignerV1/signQueryString(url:method:algorithm:omitSessionToken:nonce:date:)-9ykb0``. The following sample shows a simple signing step using request URL.
+You can generate a signed URL using ``TCSignerV1/signURL(url:algorithm:omitSessionToken:nonce:date:)-6gu5z`` for a `GET` request. The following sample shows a simple signing step.
 
 ```swift
-let signedQuery = try signer.signQueryString(url: url)
+let signedURL = try signer.signURL(url: url)
 ```
 
-> The signer will throw ``TCSignerError/invalidURL`` if the URL is malformed.
-
-By default, the signer assumes the request to use current time and `GET` method, and adds a random `nonce` for the request. You can override the behavior based on your use case. The following sample signs a request for 10 seconds ago, with `nonce` set to `888`.
-
-```swift
-let signedQueryWithNonce = signer.signQueryString(
-    host: "region.tencentcloudapi.com",
-    queryItems: [
-        .init(name: "Action", value: "DescribeRegions"),
-        .init(name: "Product", value: "cvm"),
-        .init(name: "Version", value: "2022-06-27"),
-    ],
-    nonce: 888,
-    date: Date(timeIntervalSinceNow: -10)
-)
-```
-
-Note that there are non-throwing variants ``TCSignerV1/signQueryString(host:path:queryItems:method:algorithm:omitSessionToken:nonce:date:)`` and ``TCSignerV1/signQueryString(host:path:query:method:algorithm:omitSessionToken:nonce:date:)`` which accepts the request host, path and query directly.
-
-There are some other configurations to control signing behavior. For example, `omitSessionToken` specifies whether ``Credential/token`` is used for signature.
-
-```swift
-let signedQueryOmittingToken = try signer.signQueryString(url: url, omitSessionToken: true)
-```
-
-### Use the signed query
-
-With a signed query string, you can now form the signed request URL. You can construct a new URL string using the same host and path that's used for signing.
-
-```swift
-guard let url = URL(string: "https://region.tencentcloudapi.com/?\(signedQuery)") else {
-    fatalError("Invalid request!")
-}
-```
-
-Instead of using a URL string, you can also start with a `URL` and update it safely using `URLComponents`.
-
-```swift
-guard var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false),
-      case urlComponents.percentEncodedQuery = signedQuery,
-      let signedURL = urlComponents.url
-else {
-    fatalError("Invalid request!")
-}
-```
+> Note: The signer will throw a ``TCSignerError/invalidURL`` error if the URL is malformed, according to RFC 3986.
 
 ## Sign a `POST` request
 
-### Prepare the request URL and body
-
-Before performing the signing step, you need to have a request URL. `POST` request URL usually comes with no query, as shown in the following example.
+A `POST` request URL usually comes with no query, as shown in the following example.
 
 ```swift
-let url = URL(string: "https://region.tencentcloudapi.com")!
+let postURL = URL(string: "https://region.tencentcloudapi.com")!
 ```
 
-> URL supplied for signature should not be changed once the request is signed.
+> Important: URL supplied for signature should not be changed once the request is signed.
 
-``TCSignerV1`` (and the `HmacSHA1` algorithm) only supports signing a `POST` request with `application/x-www-form-urlencoded` content type, which basically sends the URL query as `POST` body. The following sample shows a simple `POST` request body.
+Signature V1 only supports signing a `POST` request with `application/x-www-form-urlencoded` content type, which basically encodes the URL query as `POST` body. ``TCSignerV1`` uses `URLQueryItem`s as the request input, so that you don't need to handle the encoding manually. The following sample shows a simple list of query items.
 
 ```swift
-let query = "Action=DescribeProducts&Version=2022-06-27"
+let queryItems: [URLQueryItem] = [
+    .init(name: "Action", value: "DescribeRegions"),
+    .init(name: "Product", value: "cvm"),
+    .init(name: "Version", value: "2022-06-27"),
+]
 ```
 
-### Generate signed query string
-
-You can generate signed query string using ``TCSignerV1/signQueryString(url:query:method:algorithm:omitSessionToken:nonce:date:)-576vr``. The following sample shows a simple signing step using request URL and body.
+You can generate a signed request body using ``TCSignerV1/signBody(url:queryItems:algorithm:omitSessionToken:nonce:date:)-9hb3o``.  The following sample shows a simple signing step using request URL and query items.
 
 ```swift
-let signedQuery = try signer.signQueryString(url: url, query: query)
+let signedBody = try signer.signBody(url: postURL, queryItems: queryItems)
 ```
 
-> The signer will throw ``TCSignerError/invalidURL`` if the URL is malformed.
+## Configure signing options
 
-If a `query` parameter is provided along with `url`, the signer assumes the request to use `POST` method by default. It'll also use current time and add a random `nonce` for the request. You can override the behavior based on your use case. The following sample signs a request for 10 seconds ago, with `nonce` set to `888`.
-
-```swift
-let signedQueryWithNonce = try signer.signQueryString(
-    url: "https://region.tencentcloudapi.com/",
-    queryItems: [
-        .init(name: "Action", value: "DescribeRegions"),
-        .init(name: "Product", value: "cvm"),
-        .init(name: "Version", value: "2022-06-27"),
-    ],
-    nonce: 888,
-    date: Date(timeIntervalSinceNow: -10)
-)
-```
-
-Note that the non-throwing variants ``TCSignerV1/signQueryString(host:path:queryItems:method:algorithm:omitSessionToken:nonce:date:)`` and ``TCSignerV1/signQueryString(host:path:query:method:algorithm:omitSessionToken:nonce:date:)`` are still available, but you'll have to specify the `method` parameter for a `POST` request.
+By default, the signer assumes the request to use current time, and adds a random `nonce` for the request. You can override the behavior based on your use case. The following sample signs a request for 10 seconds ago, with `nonce` set to `888`.
 
 ```swift
-let signedHandcraftQuery = signer.signQueryString(
-    host: "tag.tencentcloudapi.com",
+let signedBodyWithNonce = try signer.signBody(
+    url: "https://tag.tencentcloudapi.com",
     queryItems: [
         .init(name: "Action", value: "GetTagValues"),
         .init(name: "Version", value: "2018-08-13"),
         .init(name: "TagKeys.0", value: "平台"),
     ],
-    method: .POST
+    nonce: 888,
+    date: Date(timeIntervalSinceNow: -10)
 )
 ```
+
+Note that there are ``TCSignerV1/signBody(url:queryItems:algorithm:omitSessionToken:nonce:date:)-knwl`` and ``TCSignerV1/signBody(url:queryItems:algorithm:omitSessionToken:nonce:date:)-knwl`` variants that accept the request URL in string. There's also a non-throwing variant ``TCSignerV1/signQueryItems(host:path:queryItems:method:algorithm:omitSessionToken:nonce:date:)`` that takes the host, path and query items directly and outputs a list of `URLQueryItem`s with signature included.
 
 There are some other configurations to control signing behavior. For example, `omitSessionToken` specifies whether ``Credential/token`` is used for signature.
 
 ```swift
-let signedQueryOmittingToken = try signer.signQueryString(url: url, query: query, omitSessionToken: true)
+let signedURLOmittingToken = try signer.signURL(url: url, omitSessionToken: true)
 ```
-
-You can now use the signed query string as the `POST` request body, and send it to the request URL.
 
 ## Use the `HmacSHA256` algorithm
 
@@ -168,5 +104,5 @@ SHA1 is now recognized as an insecure hash function, making `HmacSHA1` unsafe in
 ``TCSignerV1`` has built-in support for the `HmacSHA256` signing algorithm. You can sign a request using `HmacSHA256` by specifying the `algorithm` parameter.
 
 ```swift
-let signedQueryWithHmacSHA256 = try signer.signQueryString(url: url, algorithm: .hmacSHA256)
+let signedURLWithHmacSHA256 = try signer.signURL(url: url, algorithm: .hmacSHA256)
 ```

@@ -65,6 +65,8 @@ You can generate signed headers using ``TCSignerV3/signHeaders(url:method:header
 let signedHeaders = signer.signHeaders(url: url, headers: headers, body: body)
 ```
 
+> Important: This function may crash if the supplied URL is not valid according to RFC 3986. In the future release, it will be correctly marked as `throws`.
+
 By default, the signer assumes the request to use current time and `POST` method. You can override the behavior based on your use case. The following sample signs a `GET` request for 10 seconds ago.
 
 ```swift
@@ -81,7 +83,9 @@ let signedHeadersForGETRequest = try signer.signHeaders(
 )
 ```
 
-Note that there is a convenience helper ``TCSignerV3/signHeaders(url:method:headers:body:mode:omitSessionToken:date:)-1rcp6`` which accepts the request URL in string, and may throw if the input is not valid URL.
+Note that the ``TCSignerV3/signHeaders(url:method:headers:body:mode:omitSessionToken:date:)-1rcp6`` variant accepts the request URL in string, and may throw if the input is not valid URL. There's also a non-throwing variant ``TCSignerV3/signHeaders(url:method:headers:body:mode:omitSessionToken:date:)-39hja`` that takes a `URLComponent` struct instead, which is compatible with RFC 3986.
+
+## Configure signing options
 
 There are some other configurations to control signing behavior. For example, `omitSessionToken` specifies whether ``Credential/token`` is used for signature.
 
