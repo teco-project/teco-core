@@ -130,7 +130,7 @@ final class TCSignerV3Tests: XCTestCase {
     }
 
     func testCanonicalRequest() throws {
-        let url = URL(string: "https://test.com/?hello=true&item=apple")!
+        let url = URLComponents(string: "https://test.com/?hello=true&item=apple")!
         let signer = TCSignerV3(credential: credential, service: "sns")
         let signingData = TCSignerV3.SigningData(
             url: url,
