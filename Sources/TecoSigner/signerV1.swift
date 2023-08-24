@@ -61,7 +61,7 @@ public struct TCSignerV1: _SignerSendable {
         nonce: UInt? = nil,
         date: Date = Date()
     ) throws -> URL {
-        guard var url = URLComponents(validating: url), let host = url.host else {
+        guard var url = URLComponents(string: url), let host = url.host else {
             throw TCSignerError.invalidURL
         }
         url.percentEncodedQueryItems = self.signQueryItems(host: host, path: url.path, queryItems: url.queryItems, method: .GET, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
@@ -121,7 +121,7 @@ public struct TCSignerV1: _SignerSendable {
         nonce: UInt? = nil,
         date: Date = Date()
     ) throws -> Data {
-        guard let url = URLComponents(validating: url), let host = url.host else {
+        guard let url = URLComponents(string: url), let host = url.host else {
             throw TCSignerError.invalidURL
         }
         let bodyString = self.signQueryItems(host: host, path: url.path, queryItems: queryItems, method: .POST, algorithm: algorithm, omitSessionToken: omitSessionToken, nonce: nonce, date: date)
