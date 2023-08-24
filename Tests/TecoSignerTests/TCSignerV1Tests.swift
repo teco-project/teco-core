@@ -45,7 +45,15 @@ final class TCSignerV1Tests: XCTestCase {
         let signer = TCSignerV1(credential: credential)
         let query = try signer.signQueryString(
             url: "https://cvm.tencentcloudapi.com",
-            query: "Action=DescribeInstances&InstanceIds.0=ins-000000&InstanceIds.1=ins-000001&Language=zh-CN&Region=ap-shanghai&Version=2017-03-12",
+            queryItems: [
+                .init(name: "Action", value: "DescribeInstances"),
+                .init(name: "InstanceIds.0", value: "ins-000000"),
+                .init(name: "InstanceIds.1", value: "ins-000001"),
+                .init(name: "Language", value: "zh-CN"),
+                .init(name: "Region", value: "ap-shanghai"),
+                .init(name: "Version", value: "2017-03-12"),
+                
+            ],
             nonce: 5860,
             date: Date(timeIntervalSince1970: 1_000_000_000)
         )
@@ -74,7 +82,10 @@ final class TCSignerV1Tests: XCTestCase {
         let signer = TCSignerV1(credential: credential)
         let query = try signer.signQueryString(
             url: "https://region.tencentcloudapi.com",
-            query: "Action=DescribeProducts&Version=2022-06-27",
+            queryItems: [
+                .init(name: "Action", value: "DescribeProducts"),
+                .init(name: "Version", value: "2022-06-27"),
+            ],
             nonce: 6457,
             date: Date(timeIntervalSince1970: 1_000_000_000)
         )
