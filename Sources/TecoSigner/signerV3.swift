@@ -247,25 +247,24 @@ extension TCSignerV3 {
 
     /// Stage 2 Create the string to sign as in https://www.tencentcloud.com/document/api/213/33224#2.-concatenating-the-string-to-be-signed
     func stringToSign(signingData: SigningData) -> String {
-        let stringToSign = "TC3-HMAC-SHA256\n" +
-            "\(signingData.timestamp)\n" +
-            "\(signingData.date)/\(service)/tc3_request\n" +
-            SHA256.hash(data: [UInt8](canonicalRequest(signingData: signingData).utf8)).hexDigest()
-        return stringToSign
+        """
+        TC3-HMAC-SHA256
+        \(signingData.timestamp)
+        \(signingData.date)/\(service)/tc3_request
+        \(SHA256.hash(data: [UInt8](canonicalRequest(signingData: signingData).utf8)).hexDigest())
+        """
     }
 
     /// Stage 1 Create the canonical request as in https://www.tencentcloud.com/document/api/213/33224#1.-concatenating-the-canonicalrequest-string
     func canonicalRequest(signingData: SigningData) -> String {
-        let canonicalHeaders = signingData.headers
-            .map { "\($0.name):\($0.value)\n" }
-            .joined()
-        let canonicalRequest = "\(signingData.method.rawValue)\n" +
-            "\(signingData.path)\n" +
-            "\(signingData.query)\n" +
-            "\(canonicalHeaders)\n" +
-            "\(signingData.signedHeaders)\n" +
-            signingData.hashedPayload
-        return canonicalRequest
+        """
+        \(signingData.method.rawValue)
+        \(signingData.path)
+        \(signingData.query)
+        \(signingData.headers.map({ "\($0.name):\($0.value)\n" }).joined())
+        \(signingData.signedHeaders)
+        \(signingData.hashedPayload)
+        """
     }
 
     /// Compute signing key.
