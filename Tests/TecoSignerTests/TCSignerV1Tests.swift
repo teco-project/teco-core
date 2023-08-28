@@ -16,15 +16,8 @@ import NIOHTTP1
 import XCTest
 
 final class TCSignerV1Tests: XCTestCase {
-
     let credential: Credential = StaticCredential(secretId: "MY_TC_SECRET_ID", secretKey: "MY_TC_SECRET_KEY")
-    let credentialWithSessionToken: Credential = StaticCredential(secretId: "MY_TC_SECRET_ID", secretKey: "MY_TC_SECRET_KEY", token: "MY_TC_SESSION_TOKEN")
-
-    let tcSampleCredential: Credential = StaticCredential(secretId: "AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******", secretKey: "Gu5t9xGARNpq86cd98joQYCN3*******")
-    let tcSampleDate: Date = Date(timeIntervalSince1970: 1465185768)
-
-    let tcSHA256SampleCredential: Credential = StaticCredential(secretId: "AKIDT8G5**********ooNq1rFSw1fyBVCX9D", secretKey: "pxPgRWD******qBTDk7WmeRZSmPco0")
-    let tcSHA256SampleDate: Date = Date(timeIntervalSince1970: 1502197934)
+    let credentialWithToken: Credential = StaticCredential(secretId: "MY_TC_SECRET_ID", secretKey: "MY_TC_SECRET_KEY", token: "MY_TC_SESSION_TOKEN")
 
     // - MARK: Examples by API Explorer - https://console.cloud.tencent.com/api/explorer
 
@@ -170,11 +163,12 @@ final class TCSignerV1Tests: XCTestCase {
         )
     }
 
-    // MARK: - Tencent Cloud signer samples
+    // MARK: - Tencent Cloud signer examples
 
     // https://cloud.tencent.com/document/api/213/30654
-    func testTencentCloudSample() throws {
-        let signer = TCSignerV1(credential: tcSampleCredential)
+    func testTencentCloudExample() throws {
+        let credential = StaticCredential(secretId: "AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******", secretKey: "Gu5t9xGARNpq86cd98joQYCN3*******")
+        let signer = TCSignerV1(credential: credential)
         let queryItems = signer.signQueryItems(
             host: "cvm.tencentcloudapi.com",
             queryItems: [
@@ -190,7 +184,7 @@ final class TCSignerV1Tests: XCTestCase {
             ],
             method: .GET,
             nonce: 11886,
-            date: tcSampleDate
+            date: Date(timeIntervalSince1970: 1465185768)
         )
         XCTAssertEqual(
             queryItems,
@@ -210,8 +204,9 @@ final class TCSignerV1Tests: XCTestCase {
     }
 
     // https://cloud.tencent.com/document/api/228/10771
-    func testTencentCloudSHA256Sample() throws {
-        let signer = TCSignerV1(credential: tcSHA256SampleCredential)
+    func testTencentCloudSHA256Example() throws {
+        let credential = StaticCredential(secretId: "AKIDT8G5**********ooNq1rFSw1fyBVCX9D", secretKey: "pxPgRWD******qBTDk7WmeRZSmPco0")
+        let signer = TCSignerV1(credential: credential)
         let queryItems = signer.signQueryItems(
             host: "cdn.api.qcloud.com",
             path: "/v2/index.php",
@@ -227,7 +222,7 @@ final class TCSignerV1Tests: XCTestCase {
             method: .GET,
             algorithm: .hmacSHA256,
             nonce: 48059,
-            date: tcSHA256SampleDate
+            date: Date(timeIntervalSince1970: 1502197934)
         )
         // This is manually computed since the document is wrong.
         XCTAssertEqual(
