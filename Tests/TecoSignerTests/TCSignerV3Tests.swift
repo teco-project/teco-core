@@ -137,7 +137,7 @@ final class TCSignerV3Tests: XCTestCase {
             method: .POST,
             headers: ["content-type": "application/json", "host": "localhost", "User-Agent": "Teco Test"],
             body: .string("{}"),
-            timestamp: TCSignerV3.timestamp(Date(timeIntervalSince1970: 234_873)),
+            timestamp: Date(timeIntervalSince1970: 234_873).timestamp,
             date: TCSignerV3.dateString(Date(timeIntervalSince1970: 234_873)),
             signer: signer
         )

@@ -164,9 +164,9 @@ public struct TCSignerV3: _SignerSendable {
         var headers = headers
 
         // compute required values for signing
-        let bodyHash = TCSignerV3.hashedPayload(body)
-        let timestamp = TCSignerV3.timestamp(date)
+        let timestamp = date.timestamp
         let dateString = TCSignerV3.dateString(date)
+        let bodyHash = TCSignerV3.hashedPayload(body)
 
         // add timestamp, host and body hash to headers
         headers.replaceOrAdd(name: "host", value: TCSignerV3.hostname(from: url))
@@ -299,15 +299,10 @@ extension TCSignerV3 {
             return hashedEmptyBody
         }
     }
-    
+
     /// return the string formatted for signing requests
     static func dateString(_ date: Date) -> String {
         dateFormatter.string(from: date)
-    }
-
-    /// return a timestamp formatted for signing requests
-    static func timestamp(_ date: Date) -> String {
-        String(UInt64(date.timeIntervalSince1970))
     }
 
     /// return the headers for signing requests
@@ -344,12 +339,5 @@ extension TCSignerV3 {
 
     private static func hostname(from url: URLComponents) -> String {
         "\(url.host ?? "")\(port(from: url).map { ":\($0)" } ?? "")"
-    }
-}
-
-private extension Sequence where Element == UInt8 {
-    /// return a hex-encoded string buffer from an array of bytes
-    func hexDigest() -> String {
-        self.map { String(format: "%02x", $0) }.joined()
     }
 }
