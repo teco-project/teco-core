@@ -19,6 +19,29 @@ final class COSSignerTests: XCTestCase {
     let credential: Credential = StaticCredential(secretId: "MY_TC_SECRET_ID", secretKey: "MY_TC_SECRET_KEY")
     let credentialWithToken: Credential = StaticCredential(secretId: "MY_TC_SECRET_ID", secretKey: "MY_TC_SECRET_KEY", token: "MY_TC_SESSION_TOKEN")
 
+    // MARK: - Examples by COS signing tool https://cos5.cloud.tencent.com/static/cos-sign/
+
+    func testSignPUTRequest() throws {
+        let signer = COSSigner(credential: credential)
+        let headers = try signer.signHeaders(
+            url: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/test/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4",
+            headers: [
+                "Host": "examplebucket-1250000000.cos.ap-beijing.myqcloud.com",
+                "Cache-Control": "max-age=86400",
+                "Content-Encoding": "gzip",
+                "Content-Type": "video/mp4",
+                "x-cos-acl": "public-read",
+            ],
+            date: Date(timeIntervalSince1970: 1_000_000_000)
+        )
+        XCTAssertEqual(
+            headers["authorization"].first,
+            "q-sign-algorithm=sha1&q-ak=MY_TC_SECRET_ID&q-sign-time=1000000000;1000000600&q-key-time=1000000000;1000000600&q-header-list=cache-control;content-encoding;content-type;host;x-cos-acl&q-url-param-list=&q-signature=4c201f82722a1070c0dd21923b553a1c36a50807"
+        )
+    }
+
+    // - MARK: Special query parameters
+
     func testCanonicalRequest() throws {
         let url = URLComponents(string: "https://test.com/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4?item=apple&hello")!
 

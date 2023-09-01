@@ -13,6 +13,8 @@
 
 import struct Foundation.Date
 import struct Foundation.TimeInterval
+import struct Foundation.URL
+import struct Foundation.URLComponents
 import struct Foundation.URLQueryItem
 import struct NIOHTTP1.HTTPHeaders
 import enum NIOHTTP1.HTTPMethod
@@ -28,6 +30,95 @@ public struct COSSigner: _SignerSendable {
     /// Initialize the signer with Tencent Cloud credential.
     public init(credential: Credential) {
         self.credential = credential
+    }
+
+    // - MARK: Sign request headers
+
+    /// Generate signed headers for an HTTP request.
+    ///
+    /// - Parameters:
+    ///   - url: Request URL string (RFC 3986).
+    ///   - method: Request HTTP method. Defaults to `.PUT`.
+    ///   - headers: Request HTTP headers.
+    ///   - tokenKey: Key for specifying the session token. Defaults to `x-cos-security-token`.
+    ///   - date: Date that the signature is valid from, defaults to now.
+    ///   - duration: Length of time that the signature is valid for. Defaults to 10 minutes.
+    /// - Returns: Request headers with added "Authorization" header that contains request signature.
+    /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
+    public func signHeaders(
+        url: String,
+        method: HTTPMethod = .PUT,
+        headers: HTTPHeaders = HTTPHeaders(),
+        tokenKey: String = "x-cos-security-token",
+        date: Date = Date(),
+        duration: TimeInterval = 600
+    ) throws -> HTTPHeaders {
+        guard let url = URLComponents(string: url) else {
+            throw TCSignerError.invalidURL
+        }
+        return self.signHeaders(method: method, headers: headers, path: url.path, parameters: url.queryItems, tokenKey: tokenKey, date: date, duration: duration)
+    }
+
+    /// Generate signed headers for an HTTP request.
+    ///
+    /// - Parameters:
+    ///   - url: Request URL (RFC 3986).
+    ///   - method: Request HTTP method. Defaults to `.PUT`.
+    ///   - headers: Request HTTP headers.
+    ///   - tokenKey: Key for specifying the session token. Defaults to `x-cos-security-token`.
+    ///   - date: Date that the signature is valid from, defaults to now.
+    ///   - duration: Length of time that the signature is valid for. Defaults to 10 minutes.
+    /// - Returns: Request headers with added "Authorization" header that contains request signature.
+    /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
+    public func signHeaders(
+        url: URL,
+        method: HTTPMethod = .PUT,
+        headers: HTTPHeaders = HTTPHeaders(),
+        tokenKey: String = "x-cos-security-token",
+        date: Date = Date(),
+        duration: TimeInterval = 600
+    ) throws -> HTTPHeaders {
+        guard let url = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            throw TCSignerError.invalidURL
+        }
+        return self.signHeaders(method: method, headers: headers, path: url.path, parameters: url.queryItems, tokenKey: tokenKey, date: date, duration: duration)
+    }
+
+    /// Generate signed headers for an HTTP request.
+    ///
+    /// - Parameters:
+    ///   - method: Request HTTP method. Defaults to `.PUT`.
+    ///   - headers: Request HTTP headers.
+    ///   - path: Request URL path.
+    ///   - parameters: Request query items.
+    ///   - tokenKey: Key for specifying the session token. Defaults to `x-cos-security-token`.
+    ///   - date: Date that the signature is valid from, defaults to now.
+    ///   - duration: Length of time that the signature is valid for. Defaults to 10 minutes.
+    /// - Returns: Request headers with added "Authorization" header that contains request signature.
+    public func signHeaders(
+        method: HTTPMethod = .PUT,
+        headers: HTTPHeaders = HTTPHeaders(),
+        path: String,
+        parameters: [URLQueryItem]? = nil,
+        tokenKey: String = "x-cos-security-token",
+        date: Date = Date(),
+        duration: TimeInterval = 600
+    ) -> HTTPHeaders {
+        var headers = headers
+
+        // clean up signature-related headers
+        headers.remove(name: "authorization")
+        headers.remove(name: tokenKey)
+
+        // compute and use the signature as Authorization header
+        let signature = self.signRequest(method: method, headers: headers, path: path, parameters: parameters, date: date, duration: duration)
+        headers.replaceOrAdd(name: "authorization", value: signature.canonicalString())
+
+        // now we have signed the request we can add the security token if supplied
+        if let token = credential.token {
+            headers.replaceOrAdd(name: tokenKey, value: token)
+        }
+        return headers
     }
 
     // - MARK: Sign with host, path and query (Non-throwing)
