@@ -51,7 +51,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
-    /// - Returns: Signed request URL that contains a "Signature" query paramter, encoded according to RFC 3986.
+    /// - Returns: Signed request URL that contains a "Signature" query parameter, encoded according to RFC 3986.
     /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
     public func signURL(
         url: String,
@@ -79,7 +79,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
-    /// - Returns: Signed request URL that contains a "Signature" query paramter, encoded according to RFC 3986.
+    /// - Returns: Signed request URL that contains a "Signature" query parameter, encoded according to RFC 3986.
     /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
     public func signURL(
         url: URL,
@@ -110,7 +110,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
-    /// - Returns: Signed request body that contains a "Signature" query paramter, encoded according to `x-www-form-urlencoded`.
+    /// - Returns: Signed request body that contains a "Signature" query parameter, encoded according to `x-www-form-urlencoded`.
     /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
     public func signBody(
         url: String,
@@ -137,7 +137,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
-    /// - Returns: Signed request body that contains a "Signature" query paramter, encoded according to `x-www-form-urlencoded`.
+    /// - Returns: Signed request body that contains a "Signature" query parameter, encoded according to `x-www-form-urlencoded`.
     /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
     public func signBody(
         url: URL,
