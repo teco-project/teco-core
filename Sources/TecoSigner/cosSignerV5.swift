@@ -22,8 +22,8 @@ import enum NIOHTTP1.HTTPMethod
 @_implementationOnly import enum Crypto.Insecure
 @_implementationOnly import struct Crypto.SymmetricKey
 
-/// Tencent Cloud COS XML API signer (HMAC-SHA1).
-public struct COSSigner: _SignerSendable {
+/// Tencent Cloud COS V5 API signer (HMAC-SHA1).
+public struct COSSignerV5: _SignerSendable {
     /// Security credential for accessing Tencent Cloud services.
     public let credential: Credential
 
@@ -264,7 +264,7 @@ public struct COSSigner: _SignerSendable {
     }
 }
 
-extension COSSigner {
+extension COSSignerV5 {
     /// structure used to store data used throughout the signing process
     struct SigningData {
         let keyTime: String

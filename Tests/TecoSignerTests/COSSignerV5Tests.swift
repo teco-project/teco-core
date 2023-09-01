@@ -15,14 +15,14 @@ import NIOHTTP1
 @testable import TecoSigner
 import XCTest
 
-final class COSSignerTests: XCTestCase {
+final class COSSignerV5Tests: XCTestCase {
     let credential: Credential = StaticCredential(secretId: "MY_TC_SECRET_ID", secretKey: "MY_TC_SECRET_KEY")
     let credentialWithToken: Credential = StaticCredential(secretId: "MY_TC_SECRET_ID", secretKey: "MY_TC_SECRET_KEY", token: "MY_TC_SESSION_TOKEN")
 
     // MARK: - Examples by COS signing tool https://cos5.cloud.tencent.com/static/cos-sign/
 
     func testGETRequest() throws {
-        let signer = COSSigner(credential: credential)
+        let signer = COSSignerV5(credential: credential)
         let signedURL = try signer.signURL(
             url: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/test/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4?response-expires=86400",
             headers: [
@@ -39,7 +39,7 @@ final class COSSignerTests: XCTestCase {
     }
 
     func testPUTRequest() throws {
-        let signer = COSSigner(credential: credential)
+        let signer = COSSignerV5(credential: credential)
         let signedHeaders = try signer.signHeaders(
             url: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/test/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4",
             headers: [
@@ -58,7 +58,7 @@ final class COSSignerTests: XCTestCase {
     }
 
     func testDELETERequest() throws {
-        let signer = COSSigner(credential: credential)
+        let signer = COSSignerV5(credential: credential)
         let signedURL = try signer.signURL(
             url: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/test/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4?versionId=2",
             method: .DELETE,
@@ -71,7 +71,7 @@ final class COSSignerTests: XCTestCase {
     }
 
     func testPOSTRequest() throws {
-        let signer = COSSigner(credential: credential)
+        let signer = COSSignerV5(credential: credential)
         let signedHeaders = try signer.signHeaders(
             url: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/test/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4?restore&versionId=1",
             method: .POST,
@@ -92,7 +92,7 @@ final class COSSignerTests: XCTestCase {
     func testCanonicalRequest() throws {
         let url = URLComponents(string: "https://test.com/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4?item=apple&hello")!
 
-        let signingData = COSSigner.SigningData(
+        let signingData = COSSignerV5.SigningData(
             path: url.path,
             method: .GET,
             headers: [:],
@@ -101,7 +101,7 @@ final class COSSignerTests: XCTestCase {
             duration: 3600
         )
 
-        let signer = COSSigner(credential: credential)
+        let signer = COSSignerV5(credential: credential)
         let httpString = signer.httpString(signingData: signingData)
         XCTAssertEqual(httpString, "get\n/示例文件.mp4\nhello=&item=apple\n\n")
 
@@ -114,7 +114,7 @@ final class COSSignerTests: XCTestCase {
     // https://cloud.tencent.com/document/product/436/7778#.E4.B8.8A.E4.BC.A0.E5.AF.B9.E8.B1.A1
     func testTencentCloudPUTExample() throws {
         let credential = StaticCredential(secretId: "AKXXXXXXXXXXXXXXXXXXX", secretKey: "BQXXXXXXXXXXXXXXXXXXXX")
-        let signer = COSSigner(credential: credential)
+        let signer = COSSignerV5(credential: credential)
         let authentication = signer.signRequest(
             method: .PUT,
             headers: [
@@ -149,7 +149,7 @@ final class COSSignerTests: XCTestCase {
     // https://cloud.tencent.com/document/product/436/7778#.E4.B8.8B.E8.BD.BD.E5.AF.B9.E8.B1.A1
     func testTencentCloudGETExample() throws {
         let credential = StaticCredential(secretId: "AKXXXXXXXXXXXXXXXXXXX", secretKey: "BQXXXXXXXXXXXXXXXXXXXX")
-        let signer = COSSigner(credential: credential)
+        let signer = COSSignerV5(credential: credential)
         let authentication = signer.signRequest(
             method: .GET,
             headers: [

@@ -28,7 +28,7 @@ It also defines the interface of Tencent Cloud security credentials.
 ### COS Signing
 
 - <doc:SignCOSRequests>
-- ``COSSigner``
+- ``COSSignerV5``
 
 ### Credentials
 
