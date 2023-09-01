@@ -21,9 +21,26 @@ final class COSSignerTests: XCTestCase {
 
     // MARK: - Examples by COS signing tool https://cos5.cloud.tencent.com/static/cos-sign/
 
+    func testSignGETRequest() throws {
+        let signer = COSSigner(credential: credential)
+        let signedURL = try signer.signURL(
+            url: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/test/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4?response-expires=86400",
+            headers: [
+                "Host": "examplebucket-1250000000.cos.ap-beijing.myqcloud.com",
+                "Range": "bytes=1000-",
+                "If-Modified-Since": "800000000"
+            ],
+            date: Date(timeIntervalSince1970: 1_000_000_000)
+        )
+        XCTAssertEqual(
+            signedURL,
+            URL(string: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/test/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4?response-expires=86400&q-sign-algorithm=sha1&q-ak=MY_TC_SECRET_ID&q-sign-time=1000000000%3B1000000600&q-key-time=1000000000%3B1000000600&q-header-list=host%3Bif-modified-since%3Brange&q-url-param-list=response-expires&q-signature=b4b36de8277ad58c18a75aaa6ff16c82de20fc21")!
+        )
+    }
+
     func testSignPUTRequest() throws {
         let signer = COSSigner(credential: credential)
-        let headers = try signer.signHeaders(
+        let signedHeaders = try signer.signHeaders(
             url: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/test/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4",
             headers: [
                 "Host": "examplebucket-1250000000.cos.ap-beijing.myqcloud.com",
@@ -35,7 +52,7 @@ final class COSSignerTests: XCTestCase {
             date: Date(timeIntervalSince1970: 1_000_000_000)
         )
         XCTAssertEqual(
-            headers["authorization"].first,
+            signedHeaders["authorization"].first,
             "q-sign-algorithm=sha1&q-ak=MY_TC_SECRET_ID&q-sign-time=1000000000;1000000600&q-key-time=1000000000;1000000600&q-header-list=cache-control;content-encoding;content-type;host;x-cos-acl&q-url-param-list=&q-signature=4c201f82722a1070c0dd21923b553a1c36a50807"
         )
     }

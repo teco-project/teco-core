@@ -32,7 +32,67 @@ public struct COSSigner: _SignerSendable {
         self.credential = credential
     }
 
-    // - MARK: Sign request headers
+    // - MARK: Sign with URL (Convenient)
+
+    /// Generate the signed URL for an HTTP request.
+    ///
+    /// - Parameters:
+    ///   - url: Request URL string (RFC 3986).
+    ///   - method: Request HTTP method. Defaults to `.GET`.
+    ///   - headers: Request HTTP headers.
+    ///   - tokenKey: Key for specifying the session token. Defaults to `x-cos-security-token`.
+    ///   - date: Date that the signature is valid from, defaults to now.
+    ///   - duration: Length of time that the signature is valid for. Defaults to 10 minutes.
+    /// - Returns: Signed request URL that contains the signature in query parameters.
+    /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
+    public func signURL(
+        url: String,
+        method: HTTPMethod = .GET,
+        headers: HTTPHeaders = HTTPHeaders(),
+        tokenKey: String = "x-cos-security-token",
+        date: Date = Date(),
+        duration: TimeInterval = 600
+    ) throws -> URL {
+        guard var url = URLComponents(string: url) else {
+            throw TCSignerError.invalidURL
+        }
+        url.percentEncodedQueryItems = self.signParameters(method: method, headers: headers, path: url.path, parameters: url.queryItems, tokenKey: tokenKey, date: date, duration: duration)
+            .rfc3986Encoded()
+        guard let url = url.url else {
+            throw TCSignerError.invalidURL
+        }
+        return url
+    }
+
+    /// Generate the signed URL for an HTTP request.
+    ///
+    /// - Parameters:
+    ///   - url: Request URL (RFC 3986).
+    ///   - method: Request HTTP method. Defaults to `.GET`.
+    ///   - headers: Request HTTP headers.
+    ///   - tokenKey: Key for specifying the session token. Defaults to `x-cos-security-token`.
+    ///   - date: Date that the signature is valid from, defaults to now.
+    ///   - duration: Length of time that the signature is valid for. Defaults to 10 minutes.
+    /// - Returns: Signed request URL that contains the signature in query parameters.
+    /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
+    public func signURL(
+        url: URL,
+        method: HTTPMethod = .GET,
+        headers: HTTPHeaders = HTTPHeaders(),
+        tokenKey: String = "x-cos-security-token",
+        date: Date = Date(),
+        duration: TimeInterval = 600
+    ) throws -> URL {
+        guard var url = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            throw TCSignerError.invalidURL
+        }
+        url.percentEncodedQueryItems = self.signParameters(method: method, headers: headers, path: url.path, parameters: url.queryItems, tokenKey: tokenKey, date: date, duration: duration)
+            .rfc3986Encoded()
+        guard let url = url.url else {
+            throw TCSignerError.invalidURL
+        }
+        return url
+    }
 
     /// Generate signed headers for an HTTP request.
     ///
@@ -84,6 +144,50 @@ public struct COSSigner: _SignerSendable {
         return self.signHeaders(method: method, headers: headers, path: url.path, parameters: url.queryItems, tokenKey: tokenKey, date: date, duration: duration)
     }
 
+    // - MARK: Sign with host, path and query (Non-throwing)
+
+    /// Generate signed query items for an HTTP request.
+    ///
+    /// - Parameters:
+    ///   - method: Request HTTP method. Defaults to `.GET`.
+    ///   - headers: Request HTTP headers.
+    ///   - path: Request URL path.
+    ///   - parameters: Request query items.
+    ///   - tokenKey: Key for specifying the session token. Defaults to `x-cos-security-token`.
+    ///   - date: Date that the signature is valid from, defaults to now.
+    ///   - duration: Length of time that the signature is valid for. Defaults to 10 minutes.
+    /// - Returns: Query items with the request signature added.
+    public func signParameters(
+        method: HTTPMethod = .GET,
+        headers: HTTPHeaders = HTTPHeaders(),
+        path: String,
+        parameters: [URLQueryItem]? = nil,
+        tokenKey: String = "x-cos-security-token",
+        date: Date = Date(),
+        duration: TimeInterval = 600
+    ) -> [URLQueryItem] {
+        var parameters = parameters ?? []
+
+        // clean up signature-related parameters
+        parameters.remove(name: "q-sign-algorithm")
+        parameters.remove(name: "q-ak")
+        parameters.remove(name: "q-sign-time")
+        parameters.remove(name: "q-key-time")
+        parameters.remove(name: "q-header-list")
+        parameters.remove(name: "q-url-param-list")
+        parameters.remove(name: "q-signature")
+        parameters.remove(name: tokenKey)
+
+        // compute and add the signature fragments
+        parameters += self.signRequest(method: method, headers: headers, path: path, parameters: parameters, date: date, duration: duration)
+
+        // now we have signed the request we can add the security token if supplied
+        if let token = credential.token {
+            parameters.replaceOrAdd(name: tokenKey, value: token)
+        }
+        return parameters
+    }
+
     /// Generate signed headers for an HTTP request.
     ///
     /// - Parameters:
@@ -120,8 +224,6 @@ public struct COSSigner: _SignerSendable {
         }
         return headers
     }
-
-    // - MARK: Sign with host, path and query (Non-throwing)
 
     /// Generate signature items for an HTTP request.
     ///
