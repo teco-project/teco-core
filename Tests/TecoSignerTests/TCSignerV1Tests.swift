@@ -56,7 +56,7 @@ final class TCSignerV1Tests: XCTestCase {
         )
     }
 
-    // - MARK: Special query parameters
+    // - MARK: Arbitrary query parameters
 
     func testEmptyQueryParameter() throws {
         let signer = TCSignerV1(credential: credential)

@@ -87,7 +87,7 @@ final class COSSignerV5Tests: XCTestCase {
         )
     }
 
-    // - MARK: Special query parameters
+    // - MARK: Arbitrary query parameters
 
     func testCanonicalRequest() throws {
         let url = URLComponents(string: "https://test.com/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4?item=apple&hello")!

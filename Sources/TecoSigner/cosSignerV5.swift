@@ -57,7 +57,6 @@ public struct COSSignerV5: _SignerSendable {
             throw TCSignerError.invalidURL
         }
         url.percentEncodedQueryItems = self.signParameters(method: method, headers: headers, path: url.path, parameters: url.queryItems, tokenKey: tokenKey, date: date, duration: duration)
-            .rfc3986Encoded()
         guard let url = url.url else {
             throw TCSignerError.invalidURL
         }
@@ -87,7 +86,6 @@ public struct COSSignerV5: _SignerSendable {
             throw TCSignerError.invalidURL
         }
         url.percentEncodedQueryItems = self.signParameters(method: method, headers: headers, path: url.path, parameters: url.queryItems, tokenKey: tokenKey, date: date, duration: duration)
-            .rfc3986Encoded()
         guard let url = url.url else {
             throw TCSignerError.invalidURL
         }
@@ -156,7 +154,7 @@ public struct COSSignerV5: _SignerSendable {
     ///   - tokenKey: Key for specifying the session token. Defaults to `x-cos-security-token`.
     ///   - date: Date that the signature is valid from, defaults to now.
     ///   - duration: Length of time that the signature is valid for. Defaults to 10 minutes.
-    /// - Returns: Query items with the request signature added.
+    /// - Returns: Query items with the request signature added, properly encoded according to RFC 3986.
     public func signParameters(
         method: HTTPMethod = .GET,
         headers: HTTPHeaders = HTTPHeaders(),
@@ -185,7 +183,7 @@ public struct COSSignerV5: _SignerSendable {
         if let token = credential.token {
             parameters.replaceOrAdd(name: tokenKey, value: token)
         }
-        return parameters
+        return parameters.rfc3986Encoded()
     }
 
     /// Generate signed headers for an HTTP request.
