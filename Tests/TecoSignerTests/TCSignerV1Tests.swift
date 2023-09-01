@@ -21,7 +21,7 @@ final class TCSignerV1Tests: XCTestCase {
 
     // - MARK: Examples by API Explorer - https://console.cloud.tencent.com/api/explorer
 
-    func testSignGETRequest() throws {
+    func testGETRequest() throws {
         let signer = TCSignerV1(credential: credential)
         let signedURL = try signer.signURL(
             url: "https://cvm.tencentcloudapi.com/?Action=DescribeInstances&InstanceIds.0=ins-000000&InstanceIds.1=ins-000001&Language=zh-CN&Region=ap-shanghai&Version=2017-03-12",
@@ -34,7 +34,7 @@ final class TCSignerV1Tests: XCTestCase {
         )
     }
 
-    func testSignPOSTRequest() throws {
+    func testPOSTRequest() throws {
         let signer = TCSignerV1(credential: credential)
         let signedBody = try signer.signBody(
             url: "https://cvm.tencentcloudapi.com",

@@ -21,7 +21,7 @@ final class COSSignerTests: XCTestCase {
 
     // MARK: - Examples by COS signing tool https://cos5.cloud.tencent.com/static/cos-sign/
 
-    func testSignGETRequest() throws {
+    func testGETRequest() throws {
         let signer = COSSigner(credential: credential)
         let signedURL = try signer.signURL(
             url: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/test/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4?response-expires=86400",
@@ -38,7 +38,7 @@ final class COSSignerTests: XCTestCase {
         )
     }
 
-    func testSignPUTRequest() throws {
+    func testPUTRequest() throws {
         let signer = COSSigner(credential: credential)
         let signedHeaders = try signer.signHeaders(
             url: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/test/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4",
@@ -57,7 +57,7 @@ final class COSSignerTests: XCTestCase {
         )
     }
 
-    func testSignDELETERequest() throws {
+    func testDELETERequest() throws {
         let signer = COSSigner(credential: credential)
         let signedURL = try signer.signURL(
             url: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/test/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4?versionId=2",
@@ -70,7 +70,7 @@ final class COSSignerTests: XCTestCase {
         )
     }
 
-    func testSignPOSTRequest() throws {
+    func testPOSTRequest() throws {
         let signer = COSSigner(credential: credential)
         let signedHeaders = try signer.signHeaders(
             url: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/test/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4?restore&versionId=1",

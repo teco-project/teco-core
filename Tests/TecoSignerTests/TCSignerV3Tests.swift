@@ -55,7 +55,7 @@ final class TCSignerV3Tests: XCTestCase {
 
     // - MARK: Extended signing
 
-    func testSignPOSTRequest() throws {
+    func testPOSTRequest() throws {
         let signer = TCSignerV3(credential: credential, service: "region")
         let headers = try signer.signHeaders(
             url: "https://region.tencentcloudapi.com",
@@ -74,7 +74,7 @@ final class TCSignerV3Tests: XCTestCase {
         )
     }
 
-    func testSignGETRequest() throws {
+    func testGETRequest() throws {
         let signer = TCSignerV3(credential: credential, service: "region")
         let headers = try signer.signHeaders(
             url: "https://region.tencentcloudapi.com/?Product=cvm",
