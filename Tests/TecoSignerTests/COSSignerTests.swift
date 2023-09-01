@@ -57,6 +57,36 @@ final class COSSignerTests: XCTestCase {
         )
     }
 
+    func testSignDELETERequest() throws {
+        let signer = COSSigner(credential: credential)
+        let signedURL = try signer.signURL(
+            url: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/test/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4?versionId=2",
+            method: .DELETE,
+            date: Date(timeIntervalSince1970: 1_000_000_000)
+        )
+        XCTAssertEqual(
+            signedURL,
+            URL(string: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/test/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4?versionId=2&q-sign-algorithm=sha1&q-ak=MY_TC_SECRET_ID&q-sign-time=1000000000%3B1000000600&q-key-time=1000000000%3B1000000600&q-header-list=&q-url-param-list=versionid&q-signature=080bd7aa662dfec82dd19aafdcb0a3b485baa9ea")!
+        )
+    }
+
+    func testSignPOSTRequest() throws {
+        let signer = COSSigner(credential: credential)
+        let signedHeaders = try signer.signHeaders(
+            url: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/test/%E7%A4%BA%E4%BE%8B%E6%96%87%E4%BB%B6.mp4?restore&versionId=1",
+            method: .POST,
+            headers: [
+                "Host": "examplebucket-1250000000.cos.ap-beijing.myqcloud.com",
+                "Content-Type": "application/xml",
+            ],
+            date: Date(timeIntervalSince1970: 1_000_000_000)
+        )
+        XCTAssertEqual(
+            signedHeaders["authorization"].first,
+            "q-sign-algorithm=sha1&q-ak=MY_TC_SECRET_ID&q-sign-time=1000000000;1000000600&q-key-time=1000000000;1000000600&q-header-list=content-type;host&q-url-param-list=restore;versionid&q-signature=9966f2243fb3f6668f60cf821949d9eac814ab9a"
+        )
+    }
+
     // - MARK: Special query parameters
 
     func testCanonicalRequest() throws {
