@@ -22,7 +22,7 @@ final class TCSignerV3Tests: XCTestCase {
 
     // - MARK: Minimal signing by API Explorer - https://console.cloud.tencent.com/api/explorer
 
-    func testMinimalSignPostRequest() throws {
+    func testMinimalSignPOSTRequest() throws {
         let signer = TCSignerV3(credential: credential, service: "cvm")
         let headers = try signer.signHeaders(
             url: "https://cvm.tencentcloudapi.com",
@@ -38,7 +38,7 @@ final class TCSignerV3Tests: XCTestCase {
         )
     }
 
-    func testMinimalSignGetRequest() throws {
+    func testMinimalSignGETRequest() throws {
         let signer = TCSignerV3(credential: credential, service: "cvm")
         let headers = try signer.signHeaders(
             url: "https://cvm.tencentcloudapi.com/?InstanceIds.0=ins-000000&InstanceIds.1=ins-000001",
@@ -55,7 +55,7 @@ final class TCSignerV3Tests: XCTestCase {
 
     // - MARK: Extended signing
 
-    func testSignPostRequest() throws {
+    func testSignPOSTRequest() throws {
         let signer = TCSignerV3(credential: credential, service: "region")
         let headers = try signer.signHeaders(
             url: "https://region.tencentcloudapi.com",
@@ -74,7 +74,7 @@ final class TCSignerV3Tests: XCTestCase {
         )
     }
 
-    func testSignGetRequest() throws {
+    func testSignGETRequest() throws {
         let signer = TCSignerV3(credential: credential, service: "region")
         let headers = try signer.signHeaders(
             url: "https://region.tencentcloudapi.com/?Product=cvm",
