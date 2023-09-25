@@ -100,3 +100,23 @@ let signedURLForPUTRequest = try signer.signURL(
 ```
 
 Note that the ``COSSignerV5/signURL(url:method:headers:tokenKey:date:duration:)-7jixa`` variant accepts the request URL in string. There's also a non-throwing variant ``COSSignerV5/signParameters(method:headers:path:parameters:tokenKey:date:duration:)`` that takes the original path and parameters without percent encoding, and returns a list of percent-encoded `URLQueryItem`s with signature included.
+
+## Set up session token key for other services
+
+A temporary Tencent Cloud credential, usually generated from a temporary role session, contains not only the secret ID and secret key but also a corresponding session token. COS V5 API requests require placing the session token side by side to the signature, either as an HTTP header or a URL query item.
+
+``COSSignerV5`` has built-in support for session tokens for COS requests, so you can get this almost for free. If you're using ``COSSignerV5`` with other Tencent Cloud products, however, they might have a different key for session tokens. You can change this by specifying the `tokenKey` parameter.
+
+```swift
+let signedHeadersForCLS = try signer.signHeaders(
+    url: "http://ap-guangzhou.cls.tencentyun.com/structuredlog?topic_id=xxxxxxxx-xxxx-xxxx-xxxx",
+    method: .POST,
+    headers: [
+        "host": "ap-guangzhou.cls.tencentyun.com",
+        "content-type: application/x-protobuf",
+    ],
+    tokenKey: "x-cls-token"
+)
+```
+
+> Not all Tencent Cloud services support both signed headers and URLs. Please refer to the API documentation for detailed information.
