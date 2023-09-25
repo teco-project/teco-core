@@ -11,7 +11,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-import struct Foundation.CharacterSet
 import struct Foundation.Data
 import struct Foundation.Date
 import struct Foundation.URL
@@ -52,7 +51,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
-    /// - Returns: Signed request URL that contains a "Signature" query paramter, encoded according to RFC 3986.
+    /// - Returns: Signed request URL that contains a "Signature" query parameter, encoded according to RFC 3986.
     /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
     public func signURL(
         url: String,
@@ -80,7 +79,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
-    /// - Returns: Signed request URL that contains a "Signature" query paramter, encoded according to RFC 3986.
+    /// - Returns: Signed request URL that contains a "Signature" query parameter, encoded according to RFC 3986.
     /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
     public func signURL(
         url: URL,
@@ -111,7 +110,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
-    /// - Returns: Signed request body that contains a "Signature" query paramter, encoded according to `x-www-form-urlencoded`.
+    /// - Returns: Signed request body that contains a "Signature" query parameter, encoded according to `x-www-form-urlencoded`.
     /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
     public func signBody(
         url: String,
@@ -138,7 +137,7 @@ public struct TCSignerV1: _SignerSendable {
     ///   - omitSessionToken: Should we include security token in the canonical headers.
     ///   - nonce: One-time unsigned integer that's used for anti-replay. Defaults to generate randomly.
     ///   - date: Date that URL is valid from, defaults to now.
-    /// - Returns: Signed request body that contains a "Signature" query paramter, encoded according to `x-www-form-urlencoded`.
+    /// - Returns: Signed request body that contains a "Signature" query parameter, encoded according to `x-www-form-urlencoded`.
     /// - Throws: `TCSignerError.invalidURL` if the URL string is invalid according to RFC 3986.
     public func signBody(
         url: URL,
@@ -158,7 +157,7 @@ public struct TCSignerV1: _SignerSendable {
 
     // - MARK: Sign with host, path and query (Non-throwing)
 
-    /// Generate signed query string, for an HTTP request.
+    /// Generate signed query items for an HTTP request.
     ///
     /// - Parameters:
     ///   - host: Request HTTP host.
@@ -184,7 +183,7 @@ public struct TCSignerV1: _SignerSendable {
         queryItems.remove(name: "Signature")
 
         // set timestamp and nonce
-        queryItems.replaceOrAdd(name: "Timestamp", value: TCSignerV1.timestamp(date))
+        queryItems.replaceOrAdd(name: "Timestamp", value: date.timestamp)
         queryItems.replaceOrAdd(name: "Nonce", value: nonce.map(String.init) ?? TCSignerV1.nonce())
 
         // add "SecretId" field
@@ -255,57 +254,11 @@ extension TCSignerV1 {
     /// Stage 1 Create the request string as in https://www.tencentcloud.com/document/api/213/31575#2.1.-sorting-parameters and https://www.tencentcloud.com/document/api/213/31575#2.2.-concatenating-a-request-string
     func requestString(items: [URLQueryItem]) -> String {
         let queryItems = items.sorted { $0.name < $1.name }
-        return queryItems
-            .map { "\($0.name)=\($0.value ?? "")" }
-            .joined(separator: "&")
-    }
-
-    /// return a timestamp formatted for signing requests
-    static func timestamp(_ date: Date) -> String {
-        String(UInt64(date.timeIntervalSince1970))
+        return queryItems.canonicalString()
     }
 
     /// return a random unsigned integer for request nonce
     static func nonce() -> String {
         String(Int32.random(in: 0...Int32.max))
-    }
-}
-
-private extension Sequence where Element == URLQueryItem {
-    func rfc3986Encoded() -> [URLQueryItem] {
-        self.map { .init(name: $0.name.rfc3986Encoded(), value: $0.value?.rfc3986Encoded()) }
-    }
-    func wwwFormURLEncodedString() -> String {
-        self.map { "\($0.name.wwwFormURLEncoded())=\($0.value?.wwwFormURLEncoded() ?? "")" }
-            .joined(separator: "&")
-    }
-}
-
-private extension CharacterSet {
-    static let rfc3986QueryValueAllowed = CharacterSet.alphanumerics.union(.init(charactersIn: "-._~"))
-    static let wwwFormURLEncodedValueAllowed = CharacterSet.alphanumerics.union(.init(charactersIn: " -._"))
-}
-
-private extension String {
-    func rfc3986Encoded() -> String {
-        self.addingPercentEncoding(withAllowedCharacters: .rfc3986QueryValueAllowed) ?? self
-    }
-    func wwwFormURLEncoded() -> String {
-        let percentEncoded = self.addingPercentEncoding(withAllowedCharacters: .wwwFormURLEncodedValueAllowed) ?? self
-        return percentEncoded.replacingOccurrences(of: " ", with: "+")
-    }
-}
-
-private extension RangeReplaceableCollection where Self : MutableCollection, Element == URLQueryItem {
-    mutating func replaceOrAdd(name: String, value: String?) {
-        let queryItem = URLQueryItem(name: name, value: value)
-        if let index = self.firstIndex(where: { $0.name == name }) {
-            self[index] = queryItem
-        } else {
-            self.append(queryItem)
-        }
-    }
-    mutating func remove(name: String) {
-        self.removeAll(where: { $0.name == name })
     }
 }
