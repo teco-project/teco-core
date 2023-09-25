@@ -142,7 +142,7 @@ public struct COSSignerV5: _SignerSendable {
         return self.signHeaders(method: method, headers: headers, path: url.path, parameters: url.queryItems, tokenKey: tokenKey, date: date, duration: duration)
     }
 
-    // - MARK: Sign with host, path and query (Non-throwing)
+    // - MARK: Sign with path and parameters (Non-throwing)
 
     /// Generate signed query items for an HTTP request.
     ///

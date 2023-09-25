@@ -27,3 +27,76 @@ Then create a signer to sign requests.
 ```swift
 let signer = COSSignerV5(credential: credential)
 ```
+
+## Prepare a request for signing
+
+Before performing the signing step, you need to extract necessary information from a request.
+
+Make sure the request URL is compatible with [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986), which requires specific characters to be percent-encoded. The following sample shows a simple object URL with key `/example.json`.
+
+```swift
+let url = URL(string: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/example.json")!
+```
+
+> Note: The signer will throw a ``TCSignerError/invalidURL`` error if the URL is malformed, according to RFC 3986.
+
+Prepare HTTP headers according to the API you want to use. The following sample contains `Host` of the bucket endpoint and `Content-Type` associated with the object.
+
+```swift
+let headers: HTTPHeaders = [
+    "host": "examplebucket-1250000000.cos.ap-beijing.myqcloud.com",
+    "content-type": "application/json",
+]
+```
+
+> Header fields supplied for signature should not be changed once the request is signed. If you want to modify a header before the request is sent, exclude it from signing step and append it later.
+
+## Generate signed request headers
+
+A COS request allows signature as either HTTP headers or URL query items. For an immediate request, you can generate signed headers using ``COSSignerV5/signHeaders(url:method:headers:tokenKey:date:duration:)-39e44``. The following sample shows a simple signing step with request URL and headers.
+
+```swift
+let signedHeaders = try signer.signHeaders(url: url, headers: headers)
+```
+
+By default, the signer assumes the request to use current time and `PUT` method, and is valid for 10 minutes. You can override the behavior based on your use case. The following sample signs a valid `GET` request that's expiring in 2 hours.
+
+```swift
+let signedHeadersForGETRequest = try signer.signHeaders(
+    url: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/example.mp4",
+    method: .GET,
+    headers: [
+        "host": "examplebucket-1250000000.cos.ap-beijing.myqcloud.com",
+        "range": "bytes=0-",
+    ],
+    duration: 2 * 60 * 60
+)
+```
+
+Note that the ``COSSignerV5/signHeaders(url:method:headers:tokenKey:date:duration:)-9ukxr`` variant accepts the request URL in string. There's also a non-throwing variant ``COSSignerV5/signRequest(method:headers:path:parameters:date:duration:)`` that takes the original path and parameters without percent encoding.
+
+## Generate signed request URLs
+
+In some situations you may want to sign a URL, with which a user can perform the action later and by themselves. You can generate pre-signed URLs using ``COSSignerV5/signURL(url:method:headers:tokenKey:date:duration:)-1amy8``. The following sample shows a simple signing step with request URL and headers.
+
+```swift
+let signedURL = try signer.signURL(url: url, headers: [
+    "host": "examplebucket-1250000000.cos.ap-beijing.myqcloud.com"
+])
+```
+
+By default, the signer assumes the request to use current time and `GET` method, and is valid for 10 minutes. You can override the behavior based on your use case. The following sample signs a valid `PUT` request that's only usable within 30 seconds.
+
+```swift
+let signedURLForPUTRequest = try signer.signURL(
+    url: "https://examplebucket-1250000000.cos.ap-beijing.myqcloud.com/example.mp4",
+    method: .PUT,
+    headers: [
+        "host": "examplebucket-1250000000.cos.ap-beijing.myqcloud.com",
+        "content-type": "video/mp4",
+    ],
+    duration: 30
+)
+```
+
+Note that the ``COSSignerV5/signURL(url:method:headers:tokenKey:date:duration:)-7jixa`` variant accepts the request URL in string. There's also a non-throwing variant ``COSSignerV5/signParameters(method:headers:path:parameters:tokenKey:date:duration:)`` that takes the original path and parameters without percent encoding, and returns a list of percent-encoded `URLQueryItem`s with signature included.
