@@ -38,7 +38,7 @@ jobs:
         with:
           swift-version: ${{ matrix.swift }}
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build
         run: swift build
       - name: Test
@@ -47,13 +47,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build
         run: swift build --build-tests -Xswiftc -warnings-as-errors
   build-with-docc:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build
         run: swift build -Xswiftc -DBUILDING_DOCC
