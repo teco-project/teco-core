@@ -21,9 +21,12 @@ jobs:
           - '5.6'
           - '5.7'
           - '5.8'
+          - '5.9'
         exclude:
           - os: macos-11
             swift: '5.8'
+          - os: macos-11
+            swift: '5.9'
           - os: macos-12
             swift: '5.5'
           - os: macos-12
@@ -39,7 +42,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Setup Swift
-        uses: swift-actions/setup-swift@v1
+        uses: SwiftyLab/setup-swift@latest
         with:
           swift-version: ${{ matrix.swift }}
       - name: Checkout
