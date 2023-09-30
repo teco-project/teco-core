@@ -42,7 +42,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Setup Swift
-        uses: SwiftyLab/setup-swift@latest
+        uses: swift-actions/setup-swift@v1
         with:
           swift-version: ${{ matrix.swift }}
       - name: Checkout
