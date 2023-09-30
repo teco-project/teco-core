@@ -37,6 +37,11 @@ jobs:
       uses: github/codeql-action/init@v2
       with:
         languages: ${{ matrix.language }}
+    - name: Setup Swift
+      if: ${{ matrix.language == 'swift' }}
+      uses: swift-actions/setup-swift@v1
+      with:
+        swift-version: '5.8'
     - name: Build Swift package
       if: ${{ matrix.language == 'swift' }}
       run: swift build
