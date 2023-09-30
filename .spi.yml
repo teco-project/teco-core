@@ -6,5 +6,4 @@ builder:
         - TecoDateHelpers
         - TecoPaginationHelpers
         - TecoSigner
-      custom_documentation_parameters: ['--include-extended-types']
       platform: linux

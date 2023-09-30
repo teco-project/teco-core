@@ -11,7 +11,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-import NIOHTTP1
 @testable import TecoSigner
 import XCTest
 

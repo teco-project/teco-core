@@ -22,12 +22,12 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout teco
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: teco-project/teco
           path: ./teco
       - name: Checkout teco-core
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ./teco-core
       - name: Update dependencies

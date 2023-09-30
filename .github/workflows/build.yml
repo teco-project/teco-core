@@ -13,6 +13,7 @@ jobs:
         os:
           - macos-11
           - macos-12
+          - macos-13
           - ubuntu-20.04
           - ubuntu-22.04
         swift:
@@ -20,12 +21,19 @@ jobs:
           - '5.6'
           - '5.7'
           - '5.8'
+          - '5.9'
         exclude:
           - os: macos-11
             swift: '5.8'
+          - os: macos-11
+            swift: '5.9'
           - os: macos-12
             swift: '5.5'
           - os: macos-12
+            swift: '5.6'
+          - os: macos-13
+            swift: '5.5'
+          - os: macos-13
             swift: '5.6'
           - os: ubuntu-22.04
             swift: '5.5'
@@ -38,7 +46,7 @@ jobs:
         with:
           swift-version: ${{ matrix.swift }}
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build
         run: swift build
       - name: Test
@@ -47,13 +55,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build
         run: swift build --build-tests -Xswiftc -warnings-as-errors
   build-with-docc:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build
         run: swift build -Xswiftc -DBUILDING_DOCC
