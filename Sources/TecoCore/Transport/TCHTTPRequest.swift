@@ -27,7 +27,6 @@ import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.JSONEncoder
 import struct Foundation.URL
-import struct Foundation.URLComponents
 import NIOCore
 import NIOFoundationCompat
 import NIOHTTP1
@@ -97,9 +96,7 @@ extension TCHTTPRequest {
         let body = try JSONEncoder().encodeAsByteBuffer(input, allocator: service.byteBufferAllocator)
 
         let endpoint = service.getEndpoint(for: region)
-        guard let urlComponents = URLComponents(string: "\(endpoint)\(path)"),
-              let url = urlComponents.url
-        else {
+        guard let url = URL(string: "\(endpoint)\(path)") else {
             throw TCClient.ClientError.invalidURL
         }
 
