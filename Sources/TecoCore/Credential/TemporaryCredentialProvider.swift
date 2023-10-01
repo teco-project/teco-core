@@ -25,7 +25,7 @@
 
 import struct Foundation.TimeInterval
 import Logging
-import NIOConcurrencyHelpers
+@_implementationOnly import NIOConcurrencyHelpers
 import NIOCore
 import TecoSigner
 

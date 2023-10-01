@@ -24,7 +24,7 @@
 //===----------------------------------------------------------------------===//
 
 import Logging
-import NIOConcurrencyHelpers
+@_implementationOnly import NIOConcurrencyHelpers
 import NIOCore
 import TecoSigner
 
@@ -44,27 +44,11 @@ import TecoSigner
 protocol CredentialProviderSelector: CredentialProvider, AnyObject {
     /// Promise to find a credential provider.
     var startupPromise: EventLoopPromise<CredentialProvider> { get }
-    /// Access lock for ``internalProvider``.
-    var lock: NIOLock { get }
-    /// The storage of ``internalProvider``. **Do not access directly.**
-    var _internalProvider: CredentialProvider? { get set }
+    /// The provider chosen to supply credentials, protected by a `NIOLock`.
+    var internalProvider: NIOLockedValueBox<CredentialProvider?> { get }
 }
 
 extension CredentialProviderSelector {
-    /// The provider chosen to supply credentials.
-    var internalProvider: CredentialProvider? {
-        get {
-            self.lock.withLock {
-                _internalProvider
-            }
-        }
-        set {
-            self.lock.withLock {
-                _internalProvider = newValue
-            }
-        }
-    }
-
     func shutdown(on eventLoop: EventLoop) -> EventLoopFuture<Void> {
         self.startupPromise.futureResult.flatMap { provider in
             provider.shutdown(on: eventLoop)
@@ -72,7 +56,7 @@ extension CredentialProviderSelector {
     }
 
     func getCredential(on eventLoop: EventLoop, logger: Logger) -> EventLoopFuture<Credential> {
-        if let provider = internalProvider {
+        if let provider = internalProvider.withLockedValue({ $0 }) {
             return provider.getCredential(on: eventLoop, logger: logger)
         }
 

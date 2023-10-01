@@ -14,7 +14,7 @@
 import Foundation
 import Logging
 import NIOCore
-import NIOFoundationCompat
+@_implementationOnly import NIOFoundationCompat
 import NIOHTTP1
 
 /// ``TCInputModel`` that serves as request payload.

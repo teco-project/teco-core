@@ -13,11 +13,15 @@
 //===----------------------------------------------------------------------===//
 
 #if canImport(Glibc)
-import Glibc
-#elseif canImport(CRT)
-import CRT
+@_implementationOnly import Glibc
 #elseif canImport(Darwin)
-import Darwin.C
+@_implementationOnly import Darwin.C
+#elseif canImport(CRT)
+@_implementationOnly import CRT
+#elseif canImport(WASILibc)
+@_implementationOnly import WASILibc
+#elseif canImport(Musl)
+@_implementationOnly import Musl
 #else
 #error("Unsupported libc.")
 #endif

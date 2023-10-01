@@ -24,12 +24,12 @@
 //===----------------------------------------------------------------------===//
 
 import AsyncHTTPClient
-import Atomics
+@_implementationOnly import Atomics
 import Dispatch
 import struct Foundation.URL
 import Logging
-import Metrics
-import NIOConcurrencyHelpers
+@_implementationOnly import Metrics
+@_implementationOnly import NIOConcurrencyHelpers
 import NIOCore
 import NIOHTTP1
 import TecoSigner
@@ -119,22 +119,19 @@ public final class TCClient: _TecoSendable {
     ///
     /// - Throws: `ClientError.alreadyShutdown`: You have already shutdown the client.
     public func syncShutdown() throws {
-        let errorStorageLock = NIOLock()
-        var errorStorage: Error?
+        let errorStorage = NIOLockedValueBox<Error?>(nil)
         let continuation = DispatchWorkItem {}
         self.shutdown(queue: DispatchQueue(label: "tc-client.shutdown")) { error in
             if let error = error {
-                errorStorageLock.withLock {
-                    errorStorage = error
+                errorStorage.withLockedValue {
+                    $0 = error
                 }
             }
             continuation.perform()
         }
         continuation.wait()
-        try errorStorageLock.withLock {
-            if let error = errorStorage {
-                throw error
-            }
+        if let error = errorStorage.withLockedValue({ $0 }) {
+            throw error
         }
     }
 
