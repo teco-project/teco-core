@@ -24,11 +24,11 @@
 //===----------------------------------------------------------------------===//
 
 import AsyncHTTPClient
-import Atomics
+@_implementationOnly import Atomics
 import Dispatch
 import struct Foundation.URL
 import Logging
-import Metrics
+@_implementationOnly import Metrics
 import NIOConcurrencyHelpers
 import NIOCore
 import NIOHTTP1
