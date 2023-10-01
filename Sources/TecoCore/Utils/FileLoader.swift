@@ -26,7 +26,7 @@
 import NIOCore
 import NIOPosix
 #if os(Linux)
-import Glibc
+@_implementationOnly import Glibc
 #else
 import Foundation.NSString
 #endif
