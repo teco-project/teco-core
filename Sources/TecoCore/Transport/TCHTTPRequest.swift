@@ -27,7 +27,7 @@ import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.JSONEncoder
 import struct Foundation.URL
-import MultipartKit
+@_implementationOnly import MultipartKit
 import NIOCore
 @_implementationOnly import NIOFoundationCompat
 import NIOHTTP1
