@@ -27,7 +27,7 @@ import struct Foundation.Data
 import class Foundation.JSONDecoder
 import Logging
 import NIOCore
-import NIOFoundationCompat
+@_implementationOnly import NIOFoundationCompat
 import NIOHTTP1
 
 /// Structure encapsulating a processed HTTP Response.
