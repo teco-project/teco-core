@@ -34,24 +34,10 @@ import TecoSigner
 ///
 /// After the wrapped ``CredentialProvider`` has generated a credential, it is stored and returned instead of calling the real `getCredential` again.
 public class DeferredCredentialProvider: CredentialProvider {
-    private let lock = NIOLock()
-
-    private var credential: Credential? {
-        get {
-            self.lock.withLock {
-                internalCredential
-            }
-        }
-        set {
-            self.lock.withLock {
-                internalCredential = newValue
-            }
-        }
-    }
-
     private let provider: CredentialProvider
     private let startupPromise: EventLoopPromise<Credential>
-    private var internalCredential: Credential?
+
+    private let credential = NIOLockedValueBox<Credential?>(nil)
 
     /// Create a ``DeferredCredentialProvider``.
     ///
@@ -64,7 +50,7 @@ public class DeferredCredentialProvider: CredentialProvider {
         provider.getCredential(on: context.eventLoop, logger: context.logger)
             .flatMapErrorThrowing { _ in throw CredentialProviderError.noProvider }
             .map { credential in
-                self.credential = credential
+                self.credential.withLockedValue { $0 = credential }
                 context.logger.debug("Tencent Cloud credential was ready", metadata: [
                     "tc-credential-provider": "\(self)"
                 ])
@@ -87,7 +73,7 @@ public class DeferredCredentialProvider: CredentialProvider {
     /// - Parameter eventLoop: `EventLoop` to run off.
     /// - Returns: `EventLoopFuture` that will hold the credential.
     public func getCredential(on eventLoop: EventLoop, logger: Logger) -> EventLoopFuture<Credential> {
-        if let credential = self.credential {
+        if let credential = self.credential.withLockedValue({ $0 }) {
             return eventLoop.makeSucceededFuture(credential)
         }
 
@@ -100,7 +86,6 @@ extension DeferredCredentialProvider: CustomStringConvertible {
 }
 
 #if compiler(>=5.6)
-// can use @unchecked Sendable here as `internalCredential` is accessed via `credential` which
-// protects access with a `NIOLock`
+// can use @unchecked Sendable here as 'credential' is a safe 'NIOLockedValueBox'
 extension DeferredCredentialProvider: @unchecked Sendable {}
 #endif

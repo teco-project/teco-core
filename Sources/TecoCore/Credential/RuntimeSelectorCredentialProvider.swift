@@ -34,9 +34,8 @@ import TecoSigner
 class RuntimeSelectorCredentialProvider: CredentialProviderSelector {
     /// Promise to find a credential provider.
     let startupPromise: EventLoopPromise<CredentialProvider>
-
-    let lock = NIOLock()
-    var _internalProvider: CredentialProvider?
+    /// The provider chosen to supply credentials.
+    let internalProvider = NIOLockedValueBox<CredentialProvider?>(nil)
 
     /// Create a ``RuntimeSelectorCredentialProvider``.
     ///
@@ -46,7 +45,7 @@ class RuntimeSelectorCredentialProvider: CredentialProviderSelector {
     init(providers: [CredentialProviderFactory], context: CredentialProviderFactory.Context) {
         self.startupPromise = context.eventLoop.makePromise(of: CredentialProvider.self)
         self.startupPromise.futureResult.whenSuccess { result in
-            self.internalProvider = result
+            self.internalProvider.withLockedValue { $0 = result }
         }
         self.setupInternalProvider(providers: providers, context: context)
     }
@@ -79,7 +78,6 @@ class RuntimeSelectorCredentialProvider: CredentialProviderSelector {
 }
 
 #if compiler(>=5.6)
-// can use @unchecked Sendable here as `_internalProvider`` is accessed via `internalProvider` which
-// protects access with a `NIOLock`
+// can use @unchecked Sendable here as 'internalProvider' is a safe 'NIOLockedValueBox'
 extension RuntimeSelectorCredentialProvider: @unchecked Sendable {}
 #endif
