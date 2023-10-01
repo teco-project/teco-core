@@ -27,9 +27,9 @@ import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.JSONEncoder
 import struct Foundation.URL
-import MultipartKit
+@_implementationOnly import MultipartKit
 import NIOCore
-import NIOFoundationCompat
+@_implementationOnly import NIOFoundationCompat
 import NIOHTTP1
 import TecoSigner
 

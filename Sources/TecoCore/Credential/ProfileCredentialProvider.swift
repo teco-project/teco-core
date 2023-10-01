@@ -13,7 +13,7 @@
 
 @_implementationOnly import INIParser
 import NIOCore
-import NIOConcurrencyHelpers
+@_implementationOnly import NIOConcurrencyHelpers
 import TecoSigner
 
 /// Credential provider that reads the identity from Tecent Cloud credential profile.
