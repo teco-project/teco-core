@@ -23,7 +23,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#if !canImport(Darwin) && compiler(>=5.6) && compiler(<5.9)
+#if !canImport(Darwin) && compiler(>=5.6) && compiler(<5.9.1)
 @preconcurrency import struct Foundation.Date
 #else
 import struct Foundation.Date
