@@ -27,7 +27,7 @@ import struct Foundation.Data
 import struct Foundation.Date
 import class Foundation.JSONEncoder
 import struct Foundation.URL
-import struct Foundation.URLComponents
+import MultipartKit
 import NIOCore
 import NIOFoundationCompat
 import NIOHTTP1
@@ -86,7 +86,7 @@ extension TCHTTPRequest {
         self.addStandardHeaders()
     }
 
-    internal init<Input: TCInputModel>(
+    internal init<Input: TCRequest>(
         action: String,
         path: String = "/",
         region: TCRegion? = nil,
@@ -97,9 +97,7 @@ extension TCHTTPRequest {
         let body = try JSONEncoder().encodeAsByteBuffer(input, allocator: service.byteBufferAllocator)
 
         let endpoint = service.getEndpoint(for: region)
-        guard let urlComponents = URLComponents(string: "\(endpoint)\(path)"),
-              let url = urlComponents.url
-        else {
+        guard let url = URL(string: "\(endpoint)\(path)") else {
             throw TCClient.ClientError.invalidURL
         }
 
@@ -112,6 +110,32 @@ extension TCHTTPRequest {
         // set common parameter headers
         self.addCommonParameters(action: action, service: service)
         self.addStandardHeaders()
+    }
+
+    internal init<Input: TCMultipartRequest>(
+        action: String,
+        path: String = "/",
+        region: TCRegion? = nil,
+        method: HTTPMethod,
+        input: Input,
+        service: TCServiceConfig
+    ) throws {
+        let body = try FormDataEncoder().encodeAsByteBuffer(input, allocator: service.byteBufferAllocator)
+
+        let endpoint = service.getEndpoint(for: region)
+        guard let url = URL(string: "\(endpoint)\(path)") else {
+            throw TCClient.ClientError.invalidURL
+        }
+
+        self.region = region ?? service.region
+        self.url = url
+        self.method = method
+        self.headers = HTTPHeaders()
+        self.body = body
+
+        // set common parameter headers
+        self.addCommonParameters(action: action, service: service)
+        self.addStandardHeaders(contentType: "multipart/form-data")
     }
 
     /// Add common header parameters to all requests: "Action", "Version", "Region" and "Language".
@@ -127,13 +151,15 @@ extension TCHTTPRequest {
     }
 
     /// Add headers standard to all requests: "content-type" and "user-agent".
-    private mutating func addStandardHeaders() {
+    private mutating func addStandardHeaders(contentType: String? = nil) {
         headers.add(name: "user-agent", value: "Teco/0.1")
 
-        switch method {
-        case .GET:
+        switch (method, contentType) {
+        case (_, .some(let contentType)):
+            headers.replaceOrAdd(name: "content-type", value: contentType)
+        case (.GET, _):
             headers.replaceOrAdd(name: "content-type", value: "application/x-www-form-urlencoded")
-        case .POST:
+        case (.POST, _):
             headers.replaceOrAdd(name: "content-type", value: "application/json")
         default:
             return
@@ -144,5 +170,23 @@ extension TCHTTPRequest {
 extension Credential {
     fileprivate var isEmpty: Bool {
         self.secretId.isEmpty || self.secretKey.isEmpty
+    }
+}
+
+extension FormDataEncoder {
+    /// Writes a Multipart Form Data representation of the value you supply into a `ByteBuffer` that is freshly allocated.
+    ///
+    /// - Parameters:
+    ///   - value: The value to encode as Multipart.
+    ///   - nonce: One-time boundary suffix. Defaults to generate randomly.
+    ///   - allocator: The `ByteBufferAllocator` which is used to allocate the `ByteBuffer` to be returned.
+    /// - Returns: The `ByteBuffer` containing the encoded form data.
+    fileprivate func encodeAsByteBuffer<T: Encodable>(_ value: T, nonce: String? = nil, allocator: ByteBufferAllocator) throws -> ByteBuffer {
+        let nonce = nonce ?? {
+            String((0..<6).compactMap({ _ in "0123456789abcdef".randomElement() }))
+        }()
+        var buffer = allocator.buffer(capacity: 0)
+        try self.encode(value, boundary: "teco-\(nonce)", into: &buffer)
+        return buffer
     }
 }

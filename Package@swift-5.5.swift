@@ -23,6 +23,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-metrics.git", "1.0.0"..<"3.0.0"),
         .package(url: "https://github.com/apple/swift-crypto.git", "1.0.0"..<"2.4.2"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.0.0"),
+        .package(url: "https://github.com/vapor/multipart-kit.git", from: "4.0.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -38,6 +39,7 @@ let package = Package(
                 .product(name: "Metrics", package: "swift-metrics"),
                 .product(name: "NIOFoundationCompat", package: "swift-nio"),
                 .product(name: "NIOHTTP1", package: "swift-nio"),
+                .product(name: "MultipartKit", package: "multipart-kit"),
             ]),
         .target(name: "TecoPaginationHelpers",
                 dependencies: ["TecoCore"]),
