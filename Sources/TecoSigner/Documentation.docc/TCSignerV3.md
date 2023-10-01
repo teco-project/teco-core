@@ -20,3 +20,7 @@
 ### Signer Options
 
 - ``SigningMode``
+
+### Deprecated
+
+- ``processURL(url:)``
