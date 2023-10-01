@@ -11,6 +11,15 @@
         }
       },
       {
+        "package": "multipart-kit",
+        "repositoryURL": "https://github.com/vapor/multipart-kit.git",
+        "state": {
+          "branch": null,
+          "revision": "1adfd69df2da08f7931d4281b257475e32c96734",
+          "version": "4.5.4"
+        }
+      },
+      {
         "package": "swift-atomics",
         "repositoryURL": "https://github.com/apple/swift-atomics.git",
         "state": {
