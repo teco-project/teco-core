@@ -25,7 +25,7 @@ public protocol TCOutputModel: TCModel {}
 /// ``TCInputModel`` that serves as request payload.
 public protocol TCRequest: TCInputModel {}
 
-/// ``TCInputModel`` that serves as multi-part request payload.
+/// ``TCInputModel`` that serves as Multipart request payload.
 public protocol TCMultipartRequest: TCInputModel {}
 
 /// ``TCOutputModel`` that serves as response payload.

@@ -174,10 +174,10 @@ extension Credential {
 }
 
 extension FormDataEncoder {
-    /// Writes a Multipart form data representation of the value you supply into a `ByteBuffer` that is freshly allocated.
+    /// Writes a Multipart Form Data representation of the value you supply into a `ByteBuffer` that is freshly allocated.
     ///
     /// - Parameters:
-    ///   - value: The value to encode as multipart.
+    ///   - value: The value to encode as Multipart.
     ///   - nonce: One-time boundary suffix. Defaults to generate randomly.
     ///   - allocator: The `ByteBufferAllocator` which is used to allocate the `ByteBuffer` to be returned.
     /// - Returns: The `ByteBuffer` containing the encoded form data.
