@@ -24,7 +24,7 @@
 //===----------------------------------------------------------------------===//
 
 import Logging
-import NIOConcurrencyHelpers
+@_implementationOnly import NIOConcurrencyHelpers
 import NIOCore
 import TecoSigner
 

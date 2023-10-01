@@ -29,7 +29,7 @@ import Dispatch
 import struct Foundation.URL
 import Logging
 @_implementationOnly import Metrics
-import NIOConcurrencyHelpers
+@_implementationOnly import NIOConcurrencyHelpers
 import NIOCore
 import NIOHTTP1
 import TecoSigner
