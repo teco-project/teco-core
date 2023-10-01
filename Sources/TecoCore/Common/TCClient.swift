@@ -278,6 +278,52 @@ extension TCClient {
         )
     }
 
+    /// Execute a request with a multipart-encoded input object and return a future with the output object generated from the response.
+    ///
+    /// - Parameters:
+    ///    - action: Name of the Tencent Cloud action.
+    ///    - path: Path to append to endpoint URL.
+    ///    - region: Region of the service to operate on.
+    ///    - httpMethod: HTTP method to use. Defaults to`.POST`.
+    ///    - serviceConfig: Tencent Cloud service configuration.
+    ///    - skipAuthorization: If "Authorization" header should be set to `SKIP`.
+    ///    - input: API request payload.
+    ///    - logger: Logger to log request details to.
+    ///    - eventLoop: `EventLoop` to run request on.
+    /// - Returns: `EventLoopFuture` containing output object that completes when response is received.
+    public func execute<Input: TCMultipartRequest, Output: TCResponse>(
+        action: String,
+        path: String = "/",
+        region: TCRegion? = nil,
+        httpMethod: HTTPMethod = .POST,
+        serviceConfig: TCServiceConfig,
+        skipAuthorization: Bool = false,
+        input: Input,
+        outputs outputType: Output.Type = Output.self,
+        logger: Logger = TCClient.loggingDisabled,
+        on eventLoop: EventLoop? = nil
+    ) -> EventLoopFuture<Output> {
+        self.execute(
+            action: action,
+            createRequest: try .init(
+                action: action,
+                path: path,
+                region: region,
+                method: httpMethod,
+                input: input,
+                service: serviceConfig
+            ),
+            skipAuthorization: skipAuthorization,
+            executor: { request, eventLoop, logger in
+                self.httpClient.execute(request: request, timeout: serviceConfig.timeout, on: eventLoop, logger: logger)
+            },
+            config: serviceConfig,
+            outputType: outputType,
+            logger: logger,
+            on: eventLoop
+        )
+    }
+
     /// Execute a request with empty body and return a future with the output object generated from the response.
     ///
     /// - Parameters:
