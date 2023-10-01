@@ -25,6 +25,9 @@ public protocol TCOutputModel: TCModel {}
 /// ``TCInputModel`` that serves as request payload.
 public protocol TCRequest: TCInputModel {}
 
+/// ``TCInputModel`` that serves as multi-part request payload.
+public protocol TCMultipartRequest: TCInputModel {}
+
 /// ``TCOutputModel`` that serves as response payload.
 ///
 /// Holds the request ID assigned by Tencent Cloud.
