@@ -56,7 +56,7 @@ extension Swift.Optional: TCDateValue where Wrapped == Foundation.Date {
     }
 }
 
-// work around the issue where retroactive Sendable conformance cannot be synthesized by '@preconcurrency'.
 #if os(Linux) && compiler(>=5.6)
+// work around the issue where retroactive Sendable conformance cannot be synthesized by '@preconcurrency'
 extension Foundation.Date: @unchecked Sendable {}
 #endif

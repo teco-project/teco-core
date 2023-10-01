@@ -20,14 +20,13 @@ import TecoSigner
 final class ProfileCredentialProvider: CredentialProviderSelector {
     /// Promise to find a credential provider.
     let startupPromise: EventLoopPromise<CredentialProvider>
-
-    let lock = NIOLock()
-    var _internalProvider: CredentialProvider?
+    /// The provider chosen to supply credentials.
+    let internalProvider = NIOLockedValueBox<CredentialProvider?>(nil)
 
     init(profile: String, path: String? = nil, context: CredentialProviderFactory.Context) {
         self.startupPromise = context.eventLoop.makePromise(of: CredentialProvider.self)
         self.startupPromise.futureResult.whenSuccess { result in
-            self.internalProvider = result
+            self.internalProvider.withLockedValue { $0 = result }
         }
 
         if let credentialsFilePath = path ?? Environment["TENCENTCLOUD_CREDENTIALS_FILE"] {
@@ -111,9 +110,3 @@ extension FileLoader {
         return StaticCredential(secretId: secretId, secretKey: secretKey)
     }
 }
-
-#if compiler(>=5.6)
-// can use @unchecked Sendable here as `_internalProvider`` is accessed via `internalProvider` which
-// protects access with a `NIOLock`
-extension ProfileCredentialProvider: @unchecked Sendable {}
-#endif
