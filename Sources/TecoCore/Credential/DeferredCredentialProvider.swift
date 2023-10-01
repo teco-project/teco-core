@@ -33,7 +33,7 @@ import TecoSigner
 /// Used for wrapping another credential provider whose `getCredential` method doesn't return instantly and is only needed to be called once.
 ///
 /// After the wrapped ``CredentialProvider`` has generated a credential, it is stored and returned instead of calling the real `getCredential` again.
-public class DeferredCredentialProvider: CredentialProvider {
+public final class DeferredCredentialProvider: CredentialProvider {
     private let provider: CredentialProvider
     private let startupPromise: EventLoopPromise<Credential>
 
@@ -84,8 +84,3 @@ public class DeferredCredentialProvider: CredentialProvider {
 extension DeferredCredentialProvider: CustomStringConvertible {
     public var description: String { "\(type(of: self))(\(provider.description))" }
 }
-
-#if compiler(>=5.6)
-// can use @unchecked Sendable here as 'credential' is a safe 'NIOLockedValueBox'
-extension DeferredCredentialProvider: @unchecked Sendable {}
-#endif

@@ -114,8 +114,3 @@ private extension FileLoader {
         }
     }
 }
-
-#if compiler(>=5.6)
-// can use @unchecked Sendable here as 'internalProvider' is a safe 'NIOLockedValueBox'
-extension TCCLICredentialProvider: @unchecked Sendable {}
-#endif

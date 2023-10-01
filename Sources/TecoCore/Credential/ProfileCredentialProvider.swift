@@ -110,8 +110,3 @@ extension FileLoader {
         return StaticCredential(secretId: secretId, secretKey: secretKey)
     }
 }
-
-#if compiler(>=5.6)
-// can use @unchecked Sendable here as 'internalProvider' is a safe 'NIOLockedValueBox'
-extension ProfileCredentialProvider: @unchecked Sendable {}
-#endif

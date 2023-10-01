@@ -31,7 +31,7 @@ import TecoSigner
 /// Get credentials from a list of possible credential providers.
 ///
 /// Goes through the list of providers in order until a credential is supplied, and uses the successful provider.
-class RuntimeSelectorCredentialProvider: CredentialProviderSelector {
+final class RuntimeSelectorCredentialProvider: CredentialProviderSelector {
     /// Promise to find a credential provider.
     let startupPromise: EventLoopPromise<CredentialProvider>
     /// The provider chosen to supply credentials.
@@ -76,8 +76,3 @@ class RuntimeSelectorCredentialProvider: CredentialProviderSelector {
         _setupInternalProvider(0)
     }
 }
-
-#if compiler(>=5.6)
-// can use @unchecked Sendable here as 'internalProvider' is a safe 'NIOLockedValueBox'
-extension RuntimeSelectorCredentialProvider: @unchecked Sendable {}
-#endif
