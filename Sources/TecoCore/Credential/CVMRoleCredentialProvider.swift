@@ -24,7 +24,7 @@
 //===----------------------------------------------------------------------===//
 
 import AsyncHTTPClient
-#if os(Linux) && compiler(>=5.6)
+#if !canImport(Darwin) && compiler(>=5.6)
 @preconcurrency import class Foundation.JSONDecoder
 #else
 import class Foundation.JSONDecoder
