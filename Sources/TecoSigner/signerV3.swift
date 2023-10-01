@@ -23,7 +23,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#if os(Linux) && compiler(>=5.6)
+#if !canImport(Darwin) && compiler(>=5.6) && compiler(<5.9)
 @preconcurrency import struct Foundation.Data
 #else
 import struct Foundation.Data
