@@ -120,7 +120,11 @@ extension TCHTTPRequest {
         input: Input,
         service: TCServiceConfig
     ) throws {
-        let body = try FormDataEncoder().encodeAsByteBuffer(input, allocator: service.byteBufferAllocator)
+        // compute a random boundary
+        let nonce = String((0..<8).compactMap({ _ in "0123456789abcdef".randomElement() }))
+        let boundary = "teco-\(nonce)"
+
+        let body = try FormDataEncoder().encodeAsByteBuffer(input, boundary: boundary, allocator: service.byteBufferAllocator)
 
         let endpoint = service.getEndpoint(for: region)
         guard let url = URL(string: "\(endpoint)\(path)") else {
@@ -135,7 +139,7 @@ extension TCHTTPRequest {
 
         // set common parameter headers
         self.addCommonParameters(action: action, service: service)
-        self.addStandardHeaders(contentType: "multipart/form-data")
+        self.addStandardHeaders(contentType: "multipart/form-data; boundary=\(boundary)")
     }
 
     /// Add common header parameters to all requests: "Action", "Version", "Region" and "Language".
@@ -170,15 +174,11 @@ extension FormDataEncoder {
     ///
     /// - Parameters:
     ///   - value: The value to encode as Multipart.
-    ///   - nonce: One-time boundary suffix. Defaults to generate randomly.
     ///   - allocator: The `ByteBufferAllocator` which is used to allocate the `ByteBuffer` to be returned.
     /// - Returns: The `ByteBuffer` containing the encoded form data.
-    fileprivate func encodeAsByteBuffer<T: Encodable>(_ value: T, nonce: String? = nil, allocator: ByteBufferAllocator) throws -> ByteBuffer {
-        let nonce = nonce ?? {
-            String((0..<6).compactMap({ _ in "0123456789abcdef".randomElement() }))
-        }()
+    fileprivate func encodeAsByteBuffer<T: Encodable>(_ value: T, boundary: String, allocator: ByteBufferAllocator) throws -> ByteBuffer {
         var buffer = allocator.buffer(capacity: 0)
-        try self.encode(value, boundary: "teco-\(nonce)", into: &buffer)
+        try self.encode(value, boundary: boundary, into: &buffer)
         return buffer
     }
 }
