@@ -4,8 +4,6 @@ The core library of [Teco](https://github.com/teco-project/teco), an open-source
 
 ## Overview
 
-The Teco project, heavily inspired by [Soto](https://github.com/soto-project), aims to provide a fully-functional and powerful Tencent Cloud SDK that allows Swift developers to use Tencent Cloud APIs easily within their server or client applications.
-
 This package provides common functionalities around calling Tencent Cloud APIs, in the following products:
 
 - `TecoCore`. This provides helpers for calling Tencent Cloud API v3.
