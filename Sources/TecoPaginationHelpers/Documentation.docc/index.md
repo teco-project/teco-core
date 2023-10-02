@@ -6,6 +6,6 @@
 
 Pagination support for Tencent Cloud APIs.
 
-## Overview
+## Discussions
 
-This module has been deprecated and all functionalities were moved into `TecoCore`.
+This module has been deprecated and all functionalities were moved into Teco Core.

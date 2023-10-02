@@ -36,7 +36,7 @@ import TecoSigner
 
 /// Client managing communication with Tencent Cloud services.
 ///
-/// This is the workhorse of TecoCore. You provide it with a ``TCRequest``, it converts it to `TCHTTPRequest` which is then converted to a raw `HTTPClient` request. This is then sent to Tencent Cloud.
+/// This is the workhorse of Teco Core. You provide it with a ``TCRequest``, it converts it to `TCHTTPRequest` which is then converted to a raw `HTTPClient` request. This is then sent to Tencent Cloud.
 ///
 /// When the response from Tencent Cloud is received, it will be converted to a `TCHTTPResponse`, which is then decoded to generate a ``TCResponse`` or to create and throw a ``TCErrorType``.
 public final class TCClient: _TecoSendable {
