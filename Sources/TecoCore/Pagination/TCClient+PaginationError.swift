@@ -11,8 +11,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-import TecoCore
-
 extension TCClient {
     /// Errors returned by `TCClient` pagination helpers.
     public enum PaginationError: Error, Equatable {

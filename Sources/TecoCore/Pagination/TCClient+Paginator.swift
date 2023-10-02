@@ -13,7 +13,6 @@
 
 import Logging
 import NIOCore
-import TecoCore
 
 extension TCClient {
     /// Tuple consisting of async sequences returned by the paginator.
