@@ -11,7 +11,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-/// Tencent Cloud API request model that represents a paginated query.
+/// ``TCRequest`` that represents a paginated query.
 public protocol TCPaginatedRequest: TCRequest {
     /// Paginated response type associated with the request.
     associatedtype Response: TCPaginatedResponse
@@ -20,7 +20,7 @@ public protocol TCPaginatedRequest: TCRequest {
     func makeNextRequest(with response: Response) -> Self?
 }
 
-/// Tencent Cloud API response model that contains a list of paginated result and a total count.
+/// ``TCResponse`` that contains a list of paginated result and a total count.
 public protocol TCPaginatedResponse: TCResponse {
     /// The total count type to be extracted from the response.
     associatedtype Count: _TecoSendable, Equatable
