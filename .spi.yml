@@ -4,6 +4,5 @@ builder:
     - documentation_targets:
         - TecoCore
         - TecoDateHelpers
-        - TecoPaginationHelpers
         - TecoSigner
       platform: linux

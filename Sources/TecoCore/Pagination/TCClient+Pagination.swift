@@ -13,7 +13,6 @@
 
 import NIOCore
 import Logging
-import TecoCore
 
 extension TCClient {
     /// Execute a series of paginated requests and return a future with the combined result generated from the responses.

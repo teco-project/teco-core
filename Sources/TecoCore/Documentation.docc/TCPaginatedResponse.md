@@ -1,4 +1,4 @@
-# ``TecoPaginationHelpers/TCPaginatedResponse``
+# ``TCPaginatedResponse``
 
 ## Discussion
 

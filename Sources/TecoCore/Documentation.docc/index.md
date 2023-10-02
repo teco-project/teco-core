@@ -34,9 +34,13 @@ This library provides most common functionalities around calling Tencent Cloud A
 - ``TCOutputModel``
 
 - ``TCRequest``
-- ``TCRequestModel``
+- ``TCMultipartRequest``
+- ``TCPaginatedRequest``
 
 - ``TCResponse``
+- ``TCPaginatedResponse``
+
+- ``TCRequestModel``
 - ``TCResponseModel``
 
 ### Credentials
@@ -66,7 +70,10 @@ This library provides most common functionalities around calling Tencent Cloud A
 - ``EndpointProvider``
 - ``EndpointProviderFactory``
 
-### Error handling
+### Error Handling
+
+- ``TCClient/ClientError``
+- ``TCClient/PaginationError``
 
 - ``TCErrorContext``
 
