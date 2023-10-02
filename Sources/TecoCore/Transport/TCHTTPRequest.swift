@@ -152,7 +152,7 @@ extension TCHTTPRequest {
 
     /// Add headers standard to all requests: "content-type" and "user-agent".
     private mutating func addStandardHeaders(contentType: String? = nil) {
-        headers.add(name: "user-agent", value: "Teco/0.1")
+        headers.add(name: "user-agent", value: "Teco/0.2")
         if let contentType = contentType {
             headers.replaceOrAdd(name: "content-type", value: contentType)
         }
