@@ -72,6 +72,9 @@ This library provides most common functionalities around calling Tencent Cloud A
 
 ### Error Handling
 
+- ``TCClient/ClientError``
+- ``TCClient/PaginationError``
+
 - ``TCErrorContext``
 
 - ``TCErrorType``

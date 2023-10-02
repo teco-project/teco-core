@@ -43,11 +43,6 @@ Some Tencent Cloud APIs provide query functionality and may return a list of obj
 - ``shutdown(queue:_:)``
 - ``syncShutdown()``
 
-### Error Handling
-
-- ``ClientError``
-- ``PaginationError``
-
 ### Utilities
 
 - ``loggingDisabled``

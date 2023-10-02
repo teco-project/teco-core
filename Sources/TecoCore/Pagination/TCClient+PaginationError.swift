@@ -12,7 +12,7 @@
 //===----------------------------------------------------------------------===//
 
 extension TCClient {
-    /// Errors returned by `TCClient` pagination helpers.
+    /// Errors returned by ``TCClient`` pagination helpers.
     public enum PaginationError: Error, Equatable {
         /// Total item count changed during pagination.
         case totalCountChanged
