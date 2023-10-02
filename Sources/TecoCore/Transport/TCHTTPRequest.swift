@@ -109,7 +109,7 @@ extension TCHTTPRequest {
 
         // set common parameter headers
         self.addCommonParameters(action: action, service: service)
-        self.addStandardHeaders()
+        self.addStandardHeaders(contentType: "application/json")
     }
 
     internal init<Input: TCMultipartRequest>(
@@ -153,16 +153,8 @@ extension TCHTTPRequest {
     /// Add headers standard to all requests: "content-type" and "user-agent".
     private mutating func addStandardHeaders(contentType: String? = nil) {
         headers.add(name: "user-agent", value: "Teco/0.1")
-
-        switch (method, contentType) {
-        case (_, .some(let contentType)):
+        if let contentType = contentType {
             headers.replaceOrAdd(name: "content-type", value: contentType)
-        case (.GET, _):
-            headers.replaceOrAdd(name: "content-type", value: "application/x-www-form-urlencoded")
-        case (.POST, _):
-            headers.replaceOrAdd(name: "content-type", value: "application/json")
-        default:
-            return
         }
     }
 }
