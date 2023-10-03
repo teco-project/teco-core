@@ -83,7 +83,7 @@ extension TCHTTPRequest {
 
         // set common parameter headers
         self.addCommonParameters(action: action, service: service)
-        self.addStandardHeaders()
+        self.addStandardHeaders(contentType: nil)
     }
 
     internal init<Input: TCRequest>(
@@ -155,7 +155,7 @@ extension TCHTTPRequest {
     }
 
     /// Add headers standard to all requests: "content-type" and "user-agent".
-    private mutating func addStandardHeaders(contentType: String? = nil) {
+    private mutating func addStandardHeaders(contentType: String?) {
         headers.add(name: "user-agent", value: "Teco/0.2")
         if let contentType = contentType {
             headers.replaceOrAdd(name: "content-type", value: contentType)
@@ -173,12 +173,13 @@ extension FormDataEncoder {
     /// Writes a Multipart Form Data representation of the value you supply into a `ByteBuffer` that is freshly allocated.
     ///
     /// - Parameters:
-    ///   - value: The value to encode as Multipart.
+    ///   - content: The content to encode as Multipart.
+    ///   - boundary: Multipart boundary to use for encoding. This must not appear anywhere in the encoded data.
     ///   - allocator: The `ByteBufferAllocator` which is used to allocate the `ByteBuffer` to be returned.
     /// - Returns: The `ByteBuffer` containing the encoded form data.
-    fileprivate func encodeAsByteBuffer<T: Encodable>(_ value: T, boundary: String, allocator: ByteBufferAllocator) throws -> ByteBuffer {
+    fileprivate func encodeAsByteBuffer<T: Encodable>(_ content: T, boundary: String, allocator: ByteBufferAllocator) throws -> ByteBuffer {
         var buffer = allocator.buffer(capacity: 0)
-        try self.encode(value, boundary: boundary, into: &buffer)
+        try self.encode(content, boundary: boundary, into: &buffer)
         return buffer
     }
 }
