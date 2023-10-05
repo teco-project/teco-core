@@ -90,7 +90,7 @@ public final class TCClient: _TecoSendable {
         case .createNewWithEventLoopGroup(let eventLoopGroup):
             self.httpClient = HTTPClient(eventLoopGroupProvider: .shared(eventLoopGroup), configuration: .init(timeout: .init(connect: .seconds(10))))
         case .createNew:
-            #if swift(>=5.6)
+            #if swift(>=5.7)
             self.httpClient = HTTPClient(eventLoopGroupProvider: .singleton, configuration: .init(timeout: .init(connect: .seconds(10))))
             #else
             self.httpClient = HTTPClient(eventLoopGroupProvider: .createNew, configuration: .init(timeout: .init(connect: .seconds(10))))
