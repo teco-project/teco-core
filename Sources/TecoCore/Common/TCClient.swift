@@ -74,13 +74,13 @@ public final class TCClient: _TecoSendable {
     ///    - credentialProvider: An object that returns valid signing credentials for request signing.
     ///    - retryPolicy: An object that tells what to do when a request fails.
     ///    - options: Client configurations.
-    ///    - httpClientProvider: `HTTPClient` to use. Use `.createNew` if you want the client to manage its own `HTTPClient`.
+    ///    - httpClientProvider: `HTTPClient` to use. Defaults to `.createNew`.
     ///    - logger: Logger used to log background `TCClient` events.
     public init(
         credentialProvider credentialProviderFactory: CredentialProviderFactory = .default,
         retryPolicy retryPolicyFactory: RetryPolicyFactory = .default,
         options: Options = Options(),
-        httpClientProvider: HTTPClientProvider,
+        httpClientProvider: HTTPClientProvider = .createNew,
         logger clientLogger: Logger = TCClient.loggingDisabled
     ) {
         self.httpClientProvider = httpClientProvider
