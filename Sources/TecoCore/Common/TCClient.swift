@@ -188,11 +188,11 @@ public final class TCClient: _TecoSendable {
         ///
         /// The user should be responsible for the lifecycle of the `HTTPClient`.
         case shared(HTTPClient)
-        /// `HTTPClient` will be created by `TCClient` using provided `EventLoopGroup`.
+        /// `HTTPClient` will be created by `TCClient` using the provided `EventLoopGroup`.
         ///
         /// When `shutdown` is called, created `HTTPClient` will be shut down as well.
         case createNewWithEventLoopGroup(EventLoopGroup)
-        /// `HTTPClient` will be created by `TCClient` using `NIOSingleton`.
+        /// `HTTPClient` will be created by `TCClient` using `NIOSingletons`.
         ///
         /// When `shutdown` is called, created `HTTPClient` will be shut down as well.
         case createNew
