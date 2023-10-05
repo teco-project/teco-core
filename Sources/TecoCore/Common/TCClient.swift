@@ -85,12 +85,12 @@ public final class TCClient: _TecoSendable {
     ) {
         self.httpClientProvider = httpClientProvider
         switch httpClientProvider {
-        case .shared(let providedHTTPClient):
-            self.httpClient = providedHTTPClient
-        case .createNewWithEventLoopGroup(let elg):
-            self.httpClient = AsyncHTTPClient.HTTPClient(eventLoopGroupProvider: .shared(elg), configuration: .init(timeout: .init(connect: .seconds(10))))
-        case .createNew:
-            self.httpClient = AsyncHTTPClient.HTTPClient(eventLoopGroupProvider: .createNew, configuration: .init(timeout: .init(connect: .seconds(10))))
+        case .shared(let httpClient):
+            self.httpClient = httpClient
+        case .createNewWithEventLoopGroup(let eventLoopGroup):
+            self.httpClient = HTTPClient(eventLoopGroup: eventLoopGroup, configuration: .init(timeout: .init(connect: .seconds(10))))
+        default:
+            self.httpClient = HTTPClient(eventLoopGroupProvider: .singleton, configuration: .init(timeout: .init(connect: .seconds(10))))
         }
 
         self.credentialProvider = credentialProviderFactory.createProvider(context: .init(
@@ -155,7 +155,9 @@ public final class TCClient: _TecoSendable {
         credentialProvider.shutdown(on: eventLoop).whenComplete { _ in
             // if httpClient was created by TCClient then it is required to shutdown the httpClient.
             switch self.httpClientProvider {
-            case .createNew, .createNewWithEventLoopGroup:
+            case .shared:
+                callback(nil)
+            default:
                 self.httpClient.shutdown(queue: queue) { error in
                     if let error = error {
                         self.clientLogger.log(
@@ -166,9 +168,6 @@ public final class TCClient: _TecoSendable {
                     }
                     callback(error)
                 }
-                
-            case .shared:
-                callback(nil)
             }
         }
     }
@@ -193,10 +192,15 @@ public final class TCClient: _TecoSendable {
         ///
         /// When `shutdown` is called, created `HTTPClient` will be shut down as well.
         case createNewWithEventLoopGroup(EventLoopGroup)
-        /// `HTTPClient` will be created by `TCClient`.
+        /// `HTTPClient` will be created by `TCClient` using `NIOSingleton`.
         ///
         /// When `shutdown` is called, created `HTTPClient` will be shut down as well.
+        @available(*, deprecated, renamed: "singleton")
         case createNew
+        /// `HTTPClient` will be created by `TCClient` using `NIOSingleton`.
+        ///
+        /// When `shutdown` is called, created `HTTPClient` will be shut down as well.
+        case singleton
     }
 
     /// Additional options.
