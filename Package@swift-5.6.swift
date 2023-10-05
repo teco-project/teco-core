@@ -17,12 +17,12 @@ let package = Package(
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.19.0"),
+        .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.14.1"),
         .package(url: "https://github.com/apple/swift-atomics.git", from: "1.1.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.1.0"),
         .package(url: "https://github.com/apple/swift-metrics.git", "1.0.0"..<"3.0.0"),
         .package(url: "https://github.com/apple/swift-crypto.git", "1.0.0"..<"4.0.0"),
-        .package(url: "https://github.com/apple/swift-nio.git", from: "2.42.0"),
+        .package(url: "https://github.com/apple/swift-nio.git", "2.42.0"..<"2.55.0"),
         .package(url: "https://github.com/vapor/multipart-kit.git", from: "4.0.0"),
     ],
     targets: [

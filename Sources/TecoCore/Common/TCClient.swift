@@ -74,23 +74,27 @@ public final class TCClient: _TecoSendable {
     ///    - credentialProvider: An object that returns valid signing credentials for request signing.
     ///    - retryPolicy: An object that tells what to do when a request fails.
     ///    - options: Client configurations.
-    ///    - httpClientProvider: `HTTPClient` to use. Use `.createNew` if you want the client to manage its own `HTTPClient`.
+    ///    - httpClientProvider: `HTTPClient` to use. Defaults to `.createNew`.
     ///    - logger: Logger used to log background `TCClient` events.
     public init(
         credentialProvider credentialProviderFactory: CredentialProviderFactory = .default,
         retryPolicy retryPolicyFactory: RetryPolicyFactory = .default,
         options: Options = Options(),
-        httpClientProvider: HTTPClientProvider,
+        httpClientProvider: HTTPClientProvider = .createNew,
         logger clientLogger: Logger = TCClient.loggingDisabled
     ) {
         self.httpClientProvider = httpClientProvider
         switch httpClientProvider {
-        case .shared(let providedHTTPClient):
-            self.httpClient = providedHTTPClient
-        case .createNewWithEventLoopGroup(let elg):
-            self.httpClient = AsyncHTTPClient.HTTPClient(eventLoopGroupProvider: .shared(elg), configuration: .init(timeout: .init(connect: .seconds(10))))
+        case .shared(let httpClient):
+            self.httpClient = httpClient
+        case .createNewWithEventLoopGroup(let eventLoopGroup):
+            self.httpClient = HTTPClient(eventLoopGroupProvider: .shared(eventLoopGroup), configuration: .init(timeout: .init(connect: .seconds(10))))
         case .createNew:
-            self.httpClient = AsyncHTTPClient.HTTPClient(eventLoopGroupProvider: .createNew, configuration: .init(timeout: .init(connect: .seconds(10))))
+            #if swift(>=5.7)
+            self.httpClient = HTTPClient(eventLoopGroupProvider: .singleton, configuration: .init(timeout: .init(connect: .seconds(10))))
+            #else
+            self.httpClient = HTTPClient(eventLoopGroupProvider: .createNew, configuration: .init(timeout: .init(connect: .seconds(10))))
+            #endif
         }
 
         self.credentialProvider = credentialProviderFactory.createProvider(context: .init(
@@ -166,7 +170,6 @@ public final class TCClient: _TecoSendable {
                     }
                     callback(error)
                 }
-                
             case .shared:
                 callback(nil)
             }
@@ -189,11 +192,11 @@ public final class TCClient: _TecoSendable {
         ///
         /// The user should be responsible for the lifecycle of the `HTTPClient`.
         case shared(HTTPClient)
-        /// `HTTPClient` will be created by `TCClient` using provided `EventLoopGroup`.
+        /// `HTTPClient` will be created by `TCClient` using the provided `EventLoopGroup`.
         ///
         /// When `shutdown` is called, created `HTTPClient` will be shut down as well.
         case createNewWithEventLoopGroup(EventLoopGroup)
-        /// `HTTPClient` will be created by `TCClient`.
+        /// `HTTPClient` will be created by `TCClient` using `NIOSingletons`.
         ///
         /// When `shutdown` is called, created `HTTPClient` will be shut down as well.
         case createNew
