@@ -88,9 +88,13 @@ public final class TCClient: _TecoSendable {
         case .shared(let httpClient):
             self.httpClient = httpClient
         case .createNewWithEventLoopGroup(let eventLoopGroup):
-            self.httpClient = HTTPClient(eventLoopGroup: eventLoopGroup, configuration: .init(timeout: .init(connect: .seconds(10))))
+            self.httpClient = HTTPClient(eventLoopGroupProvider: .shared(eventLoopGroup), configuration: .init(timeout: .init(connect: .seconds(10))))
         case .createNew:
+            #if swift(>=5.6)
             self.httpClient = HTTPClient(eventLoopGroupProvider: .singleton, configuration: .init(timeout: .init(connect: .seconds(10))))
+            #else
+            self.httpClient = HTTPClient(eventLoopGroupProvider: .createNew, configuration: .init(timeout: .init(connect: .seconds(10))))
+            #endif
         }
 
         self.credentialProvider = credentialProviderFactory.createProvider(context: .init(
