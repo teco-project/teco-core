@@ -21,6 +21,13 @@ extension TCClient {
 }
 
 private let globallySharedTCClient: TCClient = {
-    let client = TCClient(logger: TCClient.loggingDisabled)
+    let client = TCClient(
+        credentialProvider: .default,
+        retryPolicy: .default,
+        options: .init(),
+        httpClientProvider: .createNew,
+        canBeShutdown: false,
+        logger: TCClient.loggingDisabled
+    )
     return client
 }()

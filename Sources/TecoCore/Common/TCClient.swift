@@ -63,6 +63,8 @@ public final class TCClient: _TecoSendable {
     private let signingMode: TCSignerV3.SigningMode
     /// Custom client options.
     private let options: Options
+    /// If the client can be shutdown.
+    private let canBeShutdown: Bool
     /// Holds the client shutdown state.
     private let isShutdown = ManagedAtomic<Bool>(false)
 
@@ -76,12 +78,30 @@ public final class TCClient: _TecoSendable {
     ///    - options: Client configurations.
     ///    - httpClientProvider: `HTTPClient` to use. Defaults to `.createNew`.
     ///    - logger: Logger used to log background `TCClient` events.
-    public init(
+    public convenience init(
         credentialProvider credentialProviderFactory: CredentialProviderFactory = .default,
         retryPolicy retryPolicyFactory: RetryPolicyFactory = .default,
         options: Options = Options(),
         httpClientProvider: HTTPClientProvider = .createNew,
         logger clientLogger: Logger = TCClient.loggingDisabled
+    ) {
+        self.init(
+            credentialProvider: credentialProviderFactory,
+            retryPolicy: retryPolicyFactory,
+            options: options,
+            httpClientProvider: httpClientProvider,
+            canBeShutdown: true,
+            logger: clientLogger
+        )
+    }
+
+    internal required init(
+        credentialProvider credentialProviderFactory: CredentialProviderFactory,
+        retryPolicy retryPolicyFactory: RetryPolicyFactory,
+        options: Options,
+        httpClientProvider: HTTPClientProvider,
+        canBeShutdown: Bool,
+        logger clientLogger: Logger
     ) {
         self.httpClientProvider = httpClientProvider
         switch httpClientProvider {
@@ -108,6 +128,7 @@ public final class TCClient: _TecoSendable {
         self.clientLogger = clientLogger
         self.options = options
         self.signingMode = options.minimalSigning ? .minimal : .default
+        self.canBeShutdown = canBeShutdown
     }
 
     deinit {
@@ -158,8 +179,12 @@ public final class TCClient: _TecoSendable {
         // ignore errors from credential provider. Don't need shutdown erroring because no providers were available
         credentialProvider.shutdown(on: eventLoop).whenComplete { _ in
             // if httpClient was created by TCClient then it is required to shutdown the httpClient.
-            switch self.httpClientProvider {
-            case .createNew, .createNewWithEventLoopGroup:
+            switch (self.canBeShutdown, self.httpClientProvider) {
+            case (true, _):
+                fallthrough
+            case (_, .shared):
+                callback(nil)
+            default:
                 self.httpClient.shutdown(queue: queue) { error in
                     if let error = error {
                         self.clientLogger.log(
@@ -170,8 +195,6 @@ public final class TCClient: _TecoSendable {
                     }
                     callback(error)
                 }
-            case .shared:
-                callback(nil)
             }
         }
     }
