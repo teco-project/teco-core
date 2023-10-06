@@ -63,7 +63,7 @@ public final class TCClient: _TecoSendable {
     private let signingMode: TCSignerV3.SigningMode
     /// Custom client options.
     private let options: Options
-    /// If the client can be shutdown.
+    /// If the client can be shut down.
     private let canBeShutdown: Bool
     /// Holds the client shutdown state.
     private let isShutdown = ManagedAtomic<Bool>(false)
@@ -135,14 +135,14 @@ public final class TCClient: _TecoSendable {
         assert(self.isShutdown.load(ordering: .relaxed), "TCClient not shut down before the deinit. Please call client.syncShutdown() when no longer needed.")
     }
 
-    // MARK: Shutdown
+    // MARK: Shut down
 
-    /// Shutdown the client synchronously.
+    /// Shut down the client synchronously.
     ///
     /// Before a `TCClient` is deleted, you need to call this function or the async version ``shutdown(queue:_:)`` to do a clean shutdown of the client.
     /// It cleans up ``CredentialProvider`` tasks and shuts down the HTTP client if it was created by the `TCClient`.
     ///
-    /// - Throws: `ClientError.alreadyShutdown`: You have already shutdown the client.
+    /// - Throws: `ClientError.alreadyShutdown`: You have already shut down the client.
     public func syncShutdown() throws {
         let errorStorage = NIOLockedValueBox<Error?>(nil)
         let continuation = DispatchWorkItem {}
@@ -160,7 +160,7 @@ public final class TCClient: _TecoSendable {
         }
     }
 
-    /// Shutdown the client asynchronously.
+    /// Shut down the client asynchronously.
     ///
     /// Before a `TCClient` is deleted, you need to call this function or the synchronous version ``syncShutdown()`` to do a clean shutdown of the client.
     /// It cleans up ``CredentialProvider`` tasks and shuts down the HTTP client if it was created by the `TCClient`.
