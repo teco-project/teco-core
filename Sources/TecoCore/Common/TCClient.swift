@@ -171,6 +171,10 @@ public final class TCClient: _TecoSendable {
     ///   - queue: Dispatch queue to run on.
     ///   - callback: Callback called when shutdown is complete. If there was an error it will return with `Error` in callback.
     public func shutdown(queue: DispatchQueue = .global(), _ callback: @escaping (Error?) -> Void) {
+        guard self.canBeShutdown else {
+            callback(ClientError.shutdownUnsupported)
+            return
+        }
         guard self.isShutdown.compareExchange(expected: false, desired: true, ordering: .relaxed).exchanged else {
             callback(ClientError.alreadyShutdown)
             return
@@ -179,12 +183,8 @@ public final class TCClient: _TecoSendable {
         // ignore errors from credential provider. Don't need shutdown erroring because no providers were available
         credentialProvider.shutdown(on: eventLoop).whenComplete { _ in
             // if httpClient was created by TCClient then it is required to shutdown the httpClient.
-            switch (self.canBeShutdown, self.httpClientProvider) {
-            case (true, _):
-                fallthrough
-            case (_, .shared):
-                callback(nil)
-            default:
+            switch self.httpClientProvider {
+            case .createNew, .createNewWithEventLoopGroup:
                 self.httpClient.shutdown(queue: queue) { error in
                     if let error = error {
                         self.clientLogger.log(
@@ -195,6 +195,8 @@ public final class TCClient: _TecoSendable {
                     }
                     callback(error)
                 }
+            case .shared:
+                callback(nil)
             }
         }
     }
@@ -203,7 +205,9 @@ public final class TCClient: _TecoSendable {
 
     /// Errors returned by ``TCClient`` code.
     public enum ClientError: Error, Equatable {
-        /// Client has already been shutdown.
+        /// Shared client cannot be shut down.
+        case shutdownUnsupported
+        /// Client has already been shut down.
         case alreadyShutdown
         /// URL provided to the client is invalid.
         case invalidURL
@@ -535,12 +539,14 @@ extension TCClient.ClientError: CustomStringConvertible {
     /// Human readable description of ``TCClient/ClientError``.
     public var description: String {
         switch self {
+        case .shutdownUnsupported:
+            return "The globally shared TCClienrt cannot be shut down"
         case .alreadyShutdown:
-            return "The TCClient is already shutdown"
+            return "The TCClient is already shut down"
         case .invalidURL:
             return """
             The request URL has invalid format.
-            If you're using Teco, please file an issue on https://github.com/teco-project/teco/issues to help solve it.
+            If you're using Teco, please file an issue on https://github.com/teco-project/teco/issues to help solve it
             """
         }
     }
