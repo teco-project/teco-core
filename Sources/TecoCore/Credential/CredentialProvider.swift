@@ -36,7 +36,7 @@ public protocol CredentialProvider: CustomStringConvertible, _TecoSendable {
     ///   - logger: Logger to use.
     func getCredential(on eventLoop: EventLoop, logger: Logger) -> EventLoopFuture<Credential>
 
-    /// Shutdown the credential provider.
+    /// Shut down the credential provider.
     ///
     /// - Parameter eventLoop: `Eventloop` to use when shutting down.
     func shutdown(on eventLoop: EventLoop) -> EventLoopFuture<Void>

@@ -19,7 +19,7 @@ protocol CredentialProviderWithClient: CredentialProvider {
 }
 
 extension CredentialProviderWithClient {
-    /// Shutdown credential provider and its client.
+    /// Shut down the credential provider and its client.
     func shutdown(on eventLoop: EventLoop) -> EventLoopFuture<Void> {
         let promise = eventLoop.makePromise(of: Void.self)
         client.shutdown { error in

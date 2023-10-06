@@ -51,7 +51,7 @@ enum FileLoader {
         return self.loadFile(path: path, on: eventLoop, using: fileIO)
             .flatMap(callback)
             .always { _ in
-                // shutdown the threadpool async
+                // shut down the threadpool async
                 threadPool.shutdownGracefully { _ in }
             }
     }

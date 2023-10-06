@@ -63,6 +63,8 @@ public final class TCClient: _TecoSendable {
     private let signingMode: TCSignerV3.SigningMode
     /// Custom client options.
     private let options: Options
+    /// If the client can be shut down.
+    private let canBeShutdown: Bool
     /// Holds the client shutdown state.
     private let isShutdown = ManagedAtomic<Bool>(false)
 
@@ -76,12 +78,30 @@ public final class TCClient: _TecoSendable {
     ///    - options: Client configurations.
     ///    - httpClientProvider: `HTTPClient` to use. Defaults to `.createNew`.
     ///    - logger: Logger used to log background `TCClient` events.
-    public init(
+    public convenience init(
         credentialProvider credentialProviderFactory: CredentialProviderFactory = .default,
         retryPolicy retryPolicyFactory: RetryPolicyFactory = .default,
         options: Options = Options(),
         httpClientProvider: HTTPClientProvider = .createNew,
         logger clientLogger: Logger = TCClient.loggingDisabled
+    ) {
+        self.init(
+            credentialProvider: credentialProviderFactory,
+            retryPolicy: retryPolicyFactory,
+            options: options,
+            httpClientProvider: httpClientProvider,
+            canBeShutdown: true,
+            logger: clientLogger
+        )
+    }
+
+    internal required init(
+        credentialProvider credentialProviderFactory: CredentialProviderFactory,
+        retryPolicy retryPolicyFactory: RetryPolicyFactory,
+        options: Options,
+        httpClientProvider: HTTPClientProvider,
+        canBeShutdown: Bool,
+        logger clientLogger: Logger
     ) {
         self.httpClientProvider = httpClientProvider
         switch httpClientProvider {
@@ -108,20 +128,21 @@ public final class TCClient: _TecoSendable {
         self.clientLogger = clientLogger
         self.options = options
         self.signingMode = options.minimalSigning ? .minimal : .default
+        self.canBeShutdown = canBeShutdown
     }
 
     deinit {
         assert(self.isShutdown.load(ordering: .relaxed), "TCClient not shut down before the deinit. Please call client.syncShutdown() when no longer needed.")
     }
 
-    // MARK: Shutdown
+    // MARK: Shut down
 
-    /// Shutdown the client synchronously.
+    /// Shut down the client synchronously.
     ///
     /// Before a `TCClient` is deleted, you need to call this function or the async version ``shutdown(queue:_:)`` to do a clean shutdown of the client.
     /// It cleans up ``CredentialProvider`` tasks and shuts down the HTTP client if it was created by the `TCClient`.
     ///
-    /// - Throws: `ClientError.alreadyShutdown`: You have already shutdown the client.
+    /// - Throws: `ClientError.alreadyShutdown`: You have already shut down the client.
     public func syncShutdown() throws {
         let errorStorage = NIOLockedValueBox<Error?>(nil)
         let continuation = DispatchWorkItem {}
@@ -139,7 +160,7 @@ public final class TCClient: _TecoSendable {
         }
     }
 
-    /// Shutdown the client asynchronously.
+    /// Shut down the client asynchronously.
     ///
     /// Before a `TCClient` is deleted, you need to call this function or the synchronous version ``syncShutdown()`` to do a clean shutdown of the client.
     /// It cleans up ``CredentialProvider`` tasks and shuts down the HTTP client if it was created by the `TCClient`.
@@ -150,6 +171,10 @@ public final class TCClient: _TecoSendable {
     ///   - queue: Dispatch queue to run on.
     ///   - callback: Callback called when shutdown is complete. If there was an error it will return with `Error` in callback.
     public func shutdown(queue: DispatchQueue = .global(), _ callback: @escaping (Error?) -> Void) {
+        guard self.canBeShutdown else {
+            callback(ClientError.shutdownUnsupported)
+            return
+        }
         guard self.isShutdown.compareExchange(expected: false, desired: true, ordering: .relaxed).exchanged else {
             callback(ClientError.alreadyShutdown)
             return
@@ -180,7 +205,9 @@ public final class TCClient: _TecoSendable {
 
     /// Errors returned by ``TCClient`` code.
     public enum ClientError: Error, Equatable {
-        /// Client has already been shutdown.
+        /// Shared client cannot be shut down.
+        case shutdownUnsupported
+        /// Client has already been shut down.
         case alreadyShutdown
         /// URL provided to the client is invalid.
         case invalidURL
@@ -512,12 +539,14 @@ extension TCClient.ClientError: CustomStringConvertible {
     /// Human readable description of ``TCClient/ClientError``.
     public var description: String {
         switch self {
+        case .shutdownUnsupported:
+            return "The globally shared TCClienrt cannot be shut down"
         case .alreadyShutdown:
-            return "The TCClient is already shutdown"
+            return "The TCClient is already shut down"
         case .invalidURL:
             return """
             The request URL has invalid format.
-            If you're using Teco, please file an issue on https://github.com/teco-project/teco/issues to help solve it.
+            If you're using Teco, please file an issue on https://github.com/teco-project/teco/issues to help solve it
             """
         }
     }
