@@ -23,36 +23,36 @@ import class Foundation.DateFormatter
 @propertyWrapper
 public struct TCDateEncoding<WrappedValue: TCDateValue>: Codable {
     public var wrappedValue: WrappedValue {
-        self._dateValue
+        self.date
     }
 
     public var projectedValue: StorageValue {
         get {
-            self._stringValue.withLockedValue {
+            self.string.withLockedValue {
                 $0
             }
         }
         nonmutating set {
-            self._stringValue.withLockedValue {
+            self.string.withLockedValue {
                 $0 = newValue
             }
         }
     }
 
-    private let _dateValue: WrappedValue
+    private let date: WrappedValue
 
-    private let _stringValue: NIOLockedValueBox<StorageValue>
+    private let string: NIOLockedValueBox<StorageValue>
 
     public init(wrappedValue: WrappedValue) {
-        self._dateValue = wrappedValue
-        self._stringValue = NIOLockedValueBox(wrappedValue.encode(formatter: Self._formatter))
+        self.date = wrappedValue
+        self.string = NIOLockedValueBox(wrappedValue.encode(formatter: Self._formatter))
     }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let dateString = try container.decode(StorageValue.self)
-        self._dateValue = try WrappedValue.decode(from: dateString, formatter: Self._formatter, container: container, wrapper: Self.self)
-        self._stringValue = NIOLockedValueBox(dateString)
+        self.date = try WrappedValue.decode(from: dateString, formatter: Self._formatter, container: container, wrapper: Self.self)
+        self.string = NIOLockedValueBox(dateString)
     }
 }
 
