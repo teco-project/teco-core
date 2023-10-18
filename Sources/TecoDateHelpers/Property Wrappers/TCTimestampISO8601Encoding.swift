@@ -49,11 +49,11 @@ public struct TCTimestampISO8601Encoding<WrappedValue: TCDateValue>: Codable {
 }
 
 extension TCTimestampISO8601Encoding: TCDateWrapper {
-    public static var _valueDescription: String {
+    @_spi(_TecoInternals) public static var _valueDescription: String {
         "timestamp"
     }
 
-    public static var _formatter: ISO8601DateFormatter {
+    @_spi(_TecoInternals) public static var _formatter: ISO8601DateFormatter {
         ISO8601DateFormatter()
     }
 }
