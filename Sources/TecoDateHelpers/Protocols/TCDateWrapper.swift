@@ -13,15 +13,15 @@
 
 public protocol TCDateWrapper: Codable, _TecoDateSendable {
     associatedtype WrappedValue: TCDateValue
-    associatedtype _Formatter: TCDateFormatter
+    associatedtype Formatter: TCDateFormatter
 
     var wrappedValue: WrappedValue { get }
     var projectedValue: StorageValue { get }
 
     init(wrappedValue: WrappedValue)
 
-    static var _formatter: _Formatter { get }
-    static var _valueDescription: String { get }
+    @_spi(_TecoInternals) static var _formatter: Formatter { get }
+    @_spi(_TecoInternals) static var _valueDescription: StaticString { get }
 }
 
 extension TCDateWrapper {

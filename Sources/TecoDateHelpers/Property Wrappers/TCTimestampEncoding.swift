@@ -51,11 +51,11 @@ public struct TCTimestampEncoding<WrappedValue: TCDateValue>: Codable {
 }
 
 extension TCTimestampEncoding: TCDateWrapper {
-    public static var _valueDescription: String {
+    @_spi(_TecoInternals) public static var _valueDescription: StaticString {
         "timestamp"
     }
 
-    public static var _formatter: DateFormatter {
+    @_spi(_TecoInternals) public static var _formatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
