@@ -51,7 +51,7 @@ public struct TCTimestampEncoding<WrappedValue: TCDateValue>: Codable {
 }
 
 extension TCTimestampEncoding: TCDateWrapper {
-    @_spi(_TecoInternals) public static var _valueDescription: String {
+    @_spi(_TecoInternals) public static var _valueDescription: StaticString {
         "timestamp"
     }
 

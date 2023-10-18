@@ -21,7 +21,7 @@ public protocol TCDateWrapper: Codable, _TecoDateSendable {
     init(wrappedValue: WrappedValue)
 
     @_spi(_TecoInternals) static var _formatter: Formatter { get }
-    @_spi(_TecoInternals) static var _valueDescription: String { get }
+    @_spi(_TecoInternals) static var _valueDescription: StaticString { get }
 }
 
 extension TCDateWrapper {
