@@ -43,7 +43,8 @@ let package = Package(
             ]),
         .target(name: "TecoPaginationHelpers",
                 dependencies: ["TecoCore"]),
-        .target(name: "TecoDateHelpers"),
+        .target(name: "TecoDateHelpers",
+                dependencies: [.product(name: "NIOConcurrencyHelpers", package: "swift-nio")]),
         .target(name: "INIParser"),
         .target(
             name: "TecoSigner",
