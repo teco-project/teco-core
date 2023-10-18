@@ -16,7 +16,7 @@ public protocol TCDateWrapper: Codable, _TecoDateSendable {
     associatedtype Formatter: TCDateFormatter
 
     var wrappedValue: WrappedValue { get }
-    var projectedValue: StorageValue { get }
+    var projectedValue: StorageValue { get nonmutating set }
 
     init(wrappedValue: WrappedValue)
 

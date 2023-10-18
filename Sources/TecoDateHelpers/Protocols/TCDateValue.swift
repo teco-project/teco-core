@@ -27,9 +27,9 @@ extension Foundation.Date: TCDateValue {
         formatter.string(from: self)
     }
 
-    public static func decode<Wrapper: TCDateWrapper>(from stringValue: String, formatter: TCDateFormatter, container: SingleValueDecodingContainer, wrapper: Wrapper.Type = Wrapper.self) throws -> Date {
-        guard let date = formatter.date(from: stringValue) else {
-            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid \(wrapper._valueDescription): \(stringValue)")
+    public static func decode<Wrapper: TCDateWrapper>(from string: String, formatter: TCDateFormatter, container: SingleValueDecodingContainer, wrapper: Wrapper.Type = Wrapper.self) throws -> Date {
+        guard let date = formatter.date(from: string) else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid \(wrapper._valueDescription): \(string)")
         }
         return date
     }
@@ -45,12 +45,12 @@ extension Swift.Optional: TCDateValue where Wrapped == Foundation.Date {
         }
     }
 
-    public static func decode<Wrapper: TCDateWrapper>(from stringValue: String?, formatter: TCDateFormatter, container: SingleValueDecodingContainer, wrapper: Wrapper.Type = Wrapper.self) throws -> Date? {
-        guard let stringValue = stringValue else {
+    public static func decode<Wrapper: TCDateWrapper>(from string: String?, formatter: TCDateFormatter, container: SingleValueDecodingContainer, wrapper: Wrapper.Type = Wrapper.self) throws -> Date? {
+        guard let string = string else {
             return nil
         }
-        guard let date = formatter.date(from: stringValue) else {
-            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid \(wrapper._valueDescription): \(stringValue)")
+        guard let date = formatter.date(from: string) else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid \(wrapper._valueDescription): \(string)")
         }
         return date
     }

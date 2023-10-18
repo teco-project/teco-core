@@ -18,35 +18,41 @@ import struct Foundation.Date
 import struct Foundation.Locale
 import struct Foundation.TimeZone
 import class Foundation.DateFormatter
+@_implementationOnly import struct NIOConcurrencyHelpers.NIOLockedValueBox
 
 @propertyWrapper
 public struct TCTimestampEncoding<WrappedValue: TCDateValue>: Codable {
     public var wrappedValue: WrappedValue {
-        self._dateValue
+        self.date
     }
 
     public var projectedValue: StorageValue {
         get {
-            self._stringValue
+            self.string.withLockedValue {
+                $0
+            }
         }
-        set {
-            self._stringValue = newValue
+        nonmutating set {
+            self.string.withLockedValue {
+                $0 = newValue
+            }
         }
     }
 
-    private var _dateValue: WrappedValue
+    private let date: WrappedValue
 
-    private var _stringValue: StorageValue
+    private let string: NIOLockedValueBox<StorageValue>
 
     public init(wrappedValue: WrappedValue) {
-        self._dateValue = wrappedValue
-        self._stringValue = wrappedValue.encode(formatter: Self._formatter)
+        self.date = wrappedValue
+        self.string = NIOLockedValueBox(wrappedValue.encode(formatter: Self._formatter))
     }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        self._stringValue = try container.decode(StorageValue.self)
-        self._dateValue = try WrappedValue.decode(from: self._stringValue, formatter: Self._formatter, container: container, wrapper: Self.self)
+        let dateString = try container.decode(StorageValue.self)
+        self.date = try WrappedValue.decode(from: dateString, formatter: Self._formatter, container: container, wrapper: Self.self)
+        self.string = NIOLockedValueBox(dateString)
     }
 }
 
